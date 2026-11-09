@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The skill window (TRe_SkillForm, Ctrl+S or the Skill button); view model:
+     viewmodels/SkillWindow.cpp.  Tabs: physical, magical, aid, daily skills, and the element's
+     skill tree (Intro).  Under the list: what the skill under the mouse is. -->
+<Panel Name="SkillWindowLayer" Bounds="0,0,800,600">
+  <Window Name="SkillWindow" Escape="onSkillWindowEscape" Picture="Form_Skill_2" Position="255,70" Hint="spell [Ctrl+S]" Visible="false">
+    <DrawingArea Name="SkillPaint" Bounds="0,0,290,459">
+      <!-- the skill list rows: the step down from one row to the next, and the hovered row's fill, light blue -->
+      <Spot Name="SkillRows" Pitch="0,26" Color="#89BEF5"/>
+      <!-- the skill tree: one cell's size -->
+      <Spot Name="SkillTreeCell" Size="28,28"/>
+      <!-- the skill names, near-black (RGB565 2113), the info text, blue (RGB565 31), and the level numbers, yellow (RGB565 65504) -->
+      <Spot Name="SkillTextColor" Color="#080808"/>
+      <Spot Name="SkillInfoColor" Color="#0000FF"/>
+      <Spot Name="SkillLevelColor" Color="#FFFF00"/>
+    </DrawingArea>
+    <ImageButton Name="SkillCloseSmall" Picture="Btn_Close_s_1" Position="240,24" Click="onSkillWindowClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="SkillClose" Picture="btn_Close_1" Position="116,416" Hint="[ESC]" Click="onSkillWindowClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ScrollBar Name="SkillScroll" Bounds="246,104,17,203" Track="Rail_H5" Thumb="bar_H4" ThumbSource="0,0,9,21"
+               ThumbCap="7" TrackCap="16" ThumbInset="3" Scroll="onSkillScrolled"/>
+    <DrawingArea Name="SkillList" Bounds="28,88,216,240" HitTest="true" MouseDown="onSkillListPress" MouseUp="onSkillListClick" MouseWheel="onSkillListWheel"
+                 Drop="onSkillListDrop"/>
+    <!-- UpdateSkillLearnButtons: the arrow of a row of a skill not learned yet whose skill points the player has -->
+    <ImageButton Name="SkillLearn8" Picture="Btn_ArrowUp_3" Position="225,258" Visible="false" Click="onSkillLearn"/>
+    <ImageButton Name="SkillLearn7" Picture="Btn_ArrowUp_3" Position="225,232" Visible="false" Click="onSkillLearn"/>
+    <ImageButton Name="SkillLearn6" Picture="Btn_ArrowUp_3" Position="225,206" Visible="false" Click="onSkillLearn"/>
+    <ImageButton Name="SkillLearn5" Picture="Btn_ArrowUp_3" Position="225,180" Visible="false" Click="onSkillLearn"/>
+    <ImageButton Name="SkillLearn4" Picture="Btn_ArrowUp_3" Position="225,154" Visible="false" Click="onSkillLearn"/>
+    <ImageButton Name="SkillLearn3" Picture="Btn_ArrowUp_3" Position="225,128" Visible="false" Click="onSkillLearn"/>
+    <ImageButton Name="SkillLearn2" Picture="Btn_ArrowUp_3" Position="225,102" Visible="false" Click="onSkillLearn"/>
+    <ImageButton Name="SkillLearn1" Picture="Btn_ArrowUp_3" Position="225,76" Visible="false" Click="onSkillLearn"/>
+    <ImageButton Name="SkillScrollUp" Picture="Btn_ArrowUp_1" Position="246,88" Click="onSkillScrollUp"/>
+    <ImageButton Name="SkillScrollDown" Picture="Btn_ArrowDn_1" Position="246,306" Click="onSkillScrollDown"/>
+    <ImageButton Name="SkillPreviousOwner" Picture="Btn_ArrowL_5" Position="73,38" Hint="Switch to the former one" Click="onSkillPreviousOwner"/>
+    <ImageButton Name="SkillNextOwner" Picture="Btn_ArrowR_5" Position="191,38" Hint="Switch to the next one" Click="onSkillNextOwner"/>
+    <ImageButton Name="SkillTab1" Picture="Btn_SkillIcon_1" Position="23,59" Click="onSkillTab"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="SkillTab2" Picture="Btn_SkillIcon_2" Position="61,59" Click="onSkillTab"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="SkillTab3" Picture="Btn_SkillIcon_3" Position="99,59" Click="onSkillTab"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="SkillTab4" Picture="Btn_SkillIcon_4" Position="137,59" Click="onSkillTab"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="SkillTab5" Picture="Btn_SkillIcon_5" Position="175,59" Click="onSkillTab"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

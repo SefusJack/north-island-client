@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The divorce application (TMarryDivorce), opened by 45/23 when the priest takes a divorce:
+     the two players' faces and names under the Divorce heading; Divorce accepts, Close and the
+     small close button turn it down.  View model: viewmodels/MarryDivorceForm.cpp.  The game
+     draws a form's controls from the last created to the first: the controls here are in drawing
+     order, the reverse of TMarryDivorce.Create. -->
+<Panel Name="MarryDivorceLayer" Bounds="0,0,800,600">
+  <Window Name="MarryDivorceForm" Picture="Form_Marry" Position="253,195" Visible="false">
+    <!-- DrawControl: the heading, the faces and the names -->
+    <DrawingArea Name="MarryDivorcePeople" Bounds="0,0,293,246">
+      <!-- the "Form_Divorce" heading: the top 98 x 22 of the picture -->
+      <Spot Name="MarryDivorceHeading" Bounds="95,30,98,22"/>
+    </DrawingArea>
+    <ImageButton Name="MarryDivorceClose" Picture="Btn_Close_1" Position="155,214" Size="56,20" Click="onMarryDivorceCancel"/>
+    <Image Name="MarryDivorceWaiting" Picture="Btn_Divorice1" Position="73,214" Visible="false"/>
+    <ImageButton Name="MarryDivorceDivorce" Picture="Btn_Divorice" Position="73,214" Size="61,20" Click="onMarryDivorceAccept"/>
+    <ImageButton Name="MarryDivorceCloseSmall" Picture="Btn_Close_S_1" Position="248,25" Size="18,18"
+                 Click="onMarryDivorceCancel"/>
+  </Window>
+</Panel>

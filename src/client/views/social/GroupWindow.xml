@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The group window (TSe_TeamForm, Ctrl+T or the Group button); view model:
+     viewmodels/GroupWindow.cpp.  The party tab: the pets in the order they joined, each with
+     its figure, level, HP and SP (GroupPets), name (renamed by clicking it), element, what it
+     does (fight, rest; the button opens the pet command form) and Exile; under them the
+     teammates.  The guild tab shows only in a guild and is a window of its own (GuildWindow.xml);
+     the instance tab is not built yet.
+     The game draws a form's controls from the last created to the first: the controls here
+     are in drawing order, the reverse of TSe_TeamForm.Create. -->
+<Panel Name="GroupWindowLayer" Bounds="0,0,800,600">
+  <Window Name="GroupWindow" Escape="onGroupWindowEscape" Picture="Form_Team_2" Position="444,0" Size="356,539" Hint="Group [Ctrl+T]" Visible="false"
+          Click="onGroupWindowClick">
+    <!-- DrawTeamPage: the teammates' figures, names, levels and bars -->
+    <DrawingArea Name="GroupTeam" Bounds="0,0,356,539"/>
+    <DrawingArea Name="GroupPets" Bounds="0,0,356,539">
+      <!-- the instances tab button: its x when there is no guild tab, and when the guild tab is shown -->
+      <Spot Name="GroupInstancesAlone" Position="85,41"/>
+      <Spot Name="GroupInstancesWithGuild" Position="150,41"/>
+      <!-- the pet info painter's offset between its parts -->
+      <Spot Name="GroupPetParts" Position="130,0"/>
+      <!-- the pet command menu: its left x, and the y of its bottom beside the first pet row -->
+      <Spot Name="GroupCommandAt" Position="244,77"/>
+      <!-- the first teammate row, one row down each step; the portrait inside a row -->
+      <Spot Name="GroupMateRow" Position="30,265" Pitch="0,75"/>
+      <Spot Name="GroupMatePortrait" Position="31,36"/>
+      <!-- the pet name colours: near black (RGB565 2113), orange when it cannot be traded (RGB565 64512), white while editing (RGB565 65535) -->
+      <Spot Name="GroupNameColor" Color="#080808"/>
+      <Spot Name="GroupFixedNameColor" Color="#FF8200"/>
+      <Spot Name="GroupEditingColor" Color="#FFFFFF"/>
+    </DrawingArea>
+    <DrawingArea Name="GroupMateElement3" Bounds="204,451,25,25" HitTest="true" Visible="false"/>
+    <DrawingArea Name="GroupMateElement2" Bounds="204,376,25,25" HitTest="true" Visible="false"/>
+    <DrawingArea Name="GroupMateElement1" Bounds="204,301,25,25" HitTest="true" Visible="false"/>
+    <DrawingArea Name="GroupPetElement4" Bounds="214,175,25,25" HitTest="true" Visible="false"/>
+    <DrawingArea Name="GroupPetElement3" Bounds="214,141,25,25" HitTest="true" Visible="false"/>
+    <DrawingArea Name="GroupPetElement2" Bounds="214,107,25,25" HitTest="true" Visible="false"/>
+    <DrawingArea Name="GroupPetElement1" Bounds="214,73,25,25" HitTest="true" Visible="false"/>
+    <Panel Name="GroupPetNameBack4" Skin="Panel29" Borders="4,4,4,4" Bounds="63,175,85,23" Visible="false"/>
+    <TextBox Name="GroupPetName4" Bounds="63,175,86,23" ReadOnly="true" HitTest="true" MaxLength="14" FontColor="#080808"
+             Visible="false" Click="onGroupPetName" Enter="onGroupPetRenamed"/>
+    <Panel Name="GroupPetNameBack3" Skin="Panel29" Borders="4,4,4,4" Bounds="63,141,85,23" Visible="false"/>
+    <TextBox Name="GroupPetName3" Bounds="63,141,86,23" ReadOnly="true" HitTest="true" MaxLength="14" FontColor="#080808"
+             Visible="false" Click="onGroupPetName" Enter="onGroupPetRenamed"/>
+    <Panel Name="GroupPetNameBack2" Skin="Panel29" Borders="4,4,4,4" Bounds="63,107,85,23" Visible="false"/>
+    <TextBox Name="GroupPetName2" Bounds="63,107,86,23" ReadOnly="true" HitTest="true" MaxLength="14" FontColor="#080808"
+             Visible="false" Click="onGroupPetName" Enter="onGroupPetRenamed"/>
+    <Panel Name="GroupPetNameBack1" Skin="Panel29" Borders="4,4,4,4" Bounds="63,73,85,23" Visible="false"/>
+    <TextBox Name="GroupPetName1" Bounds="63,73,86,23" ReadOnly="true" HitTest="true" MaxLength="14" FontColor="#080808"
+             Visible="false" Click="onGroupPetName" Enter="onGroupPetRenamed"/>
+    <DrawingArea Name="GroupMateJob3" Bounds="149,462,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="GroupMateJob2" Bounds="149,387,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="GroupMateJob1" Bounds="149,312,16,16" HitTest="true" Visible="false"/>
+    <ImageButton Name="GroupMateLead3" Picture="Btn_AssignLeader_1" Position="265,430" Visible="false"
+                 Click="onGroupMateLead"/>
+    <ImageButton Name="GroupMateLead2" Picture="Btn_AssignLeader_1" Position="265,356" Visible="false"
+                 Click="onGroupMateLead"/>
+    <ImageButton Name="GroupMateLead1" Picture="Btn_AssignLeader_1" Position="265,282" Visible="false"
+                 Click="onGroupMateLead"/>
+    <ImageButton Name="GroupMateKick3" Picture="Btn_AssignLeave_2" Position="265,456" Visible="false"
+                 Click="onGroupMateKick"/>
+    <ImageButton Name="GroupMateKick2" Picture="Btn_AssignLeave_2" Position="265,382" Visible="false"
+                 Click="onGroupMateKick"/>
+    <ImageButton Name="GroupMateKick1" Picture="Btn_AssignLeave_2" Position="265,308" Visible="false"
+                 Click="onGroupMateKick"/>
+    <!-- qol multi-login: Log out takes Drive away's place on a party member's row, and Log in opens PartyLoginWindow -->
+    <ImageButton Name="GroupMateLogout3" Picture="Btn_Module_2" Position="265,456" Text="Log out" Visible="false"
+                 Click="onGroupMateLogout"/>
+    <ImageButton Name="GroupMateLogout2" Picture="Btn_Module_2" Position="265,382" Text="Log out" Visible="false"
+                 Click="onGroupMateLogout"/>
+    <ImageButton Name="GroupMateLogout1" Picture="Btn_Module_2" Position="265,308" Text="Log out" Visible="false"
+                 Click="onGroupMateLogout"/>
+    <ImageButton Name="GroupPartyLogin" Picture="Btn_Module_2" Position="30,235" Text="Log in" Hint="Log in another account (qol)"
+                 Visible="false" Click="onGroupPartyLogin"/>
+    <ImageButton Name="GroupLeaveTeam" Picture="btn_LeaveTeam_1" Position="140,235" Hint="Leave the team" Visible="false"
+                 Click="onGroupLeaveTeam"/>
+    <ImageButton Name="GroupPetExile4" Picture="Btn_AssignLeave_1" Position="295,179" Visible="false"
+                 Click="onGroupPetExile"/>
+    <ImageButton Name="GroupPetExile3" Picture="Btn_AssignLeave_1" Position="295,145" Visible="false"
+                 Click="onGroupPetExile"/>
+    <ImageButton Name="GroupPetExile2" Picture="Btn_AssignLeave_1" Position="295,111" Visible="false"
+                 Click="onGroupPetExile"/>
+    <ImageButton Name="GroupPetExile1" Picture="Btn_AssignLeave_1" Position="295,77" Visible="false"
+                 Click="onGroupPetExile"/>
+    <ImageButton Name="GroupPetAssign4" Picture="btn_AssignRest_1" Position="247,179" Visible="false"
+                 Click="onGroupPetAssign"/>
+    <ImageButton Name="GroupPetAssign3" Picture="btn_AssignRest_1" Position="247,145" Visible="false"
+                 Click="onGroupPetAssign"/>
+    <ImageButton Name="GroupPetAssign2" Picture="btn_AssignRest_1" Position="247,111" Visible="false"
+                 Click="onGroupPetAssign"/>
+    <ImageButton Name="GroupPetAssign1" Picture="btn_AssignRest_1" Position="247,77" Visible="false"
+                 Click="onGroupPetAssign"/>
+    <ImageButton Name="GroupCloseSmall" Picture="Btn_Close_s_1" Position="321,24" Click="onGroupWindowClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="GroupClose" Picture="Btn_Close_1" Position="157,500" Hint="[ESC]" Click="onGroupWindowClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="GroupTabInstances" Picture="Btn_DupMis" Position="85,41" Click="onGroupInstances"/>
+    <ImageButton Name="GroupTabGuild" Picture="Btn_ArmyGrounp_1" Position="85,41" Visible="false" Click="onGroupGuild"/>
+    <ImageButton Name="GroupTabTeam" Picture="Btn_Team_1" Position="20,41"/>
+    <!-- RenderWithChildren: the HP / SP of the bar under the mouse, over everything -->
+    <DrawingArea Name="GroupHints" Bounds="0,0,356,539"/>
+  </Window>
+  <!-- CH_PetStatusForm: what the pet does, above its button -->
+  <Window Name="PetCommand" Picture="Form_PetStatus" Visible="false">
+    <ImageButton Name="PetCommand3" Picture="Btn_AssignRide_1" Position="3,42" Hint="Ride the pet."
+                 Click="onPetCommand"/>
+    <ImageButton Name="PetCommand2" Picture="Btn_AssignFight_1" Position="3,22" Hint="The pet is in the battle."
+                 Click="onPetCommand"/>
+    <ImageButton Name="PetCommand1" Picture="Btn_AssignRest_1" Position="3,3" Hint="The pet is having a rest."
+                 Click="onPetCommand"/>
+  </Window>
+</Panel>

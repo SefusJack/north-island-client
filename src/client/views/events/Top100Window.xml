@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Top 100 window (TLD_Top100Form, opened by 84/1); view model: viewmodels/Top100Window.cpp.
+     Five tabs: levels (class, level, name), money (names), Q&A and PK (names), and the event
+     lists (two sub tabs: the server and the name); fifteen places a page, thirteen in the event
+     lists.  The game draws a form's controls from the last created to the first: the controls
+     here are in drawing order, the reverse of TLD_Top100Form.Create.  (The game's places edits of
+     the event lists never show: the picture lies over them.) -->
+<Panel Name="Top100Layer" Bounds="0,0,800,600">
+  <Window Name="Top100Window" Escape="onTop100Close" Picture="Form_Top100_1" Position="222,38" Visible="false">
+    <!-- DrawControl: which controls show, and the picture under the event lists' places -->
+    <DrawingArea Name="Top100Layout" Bounds="0,0,356,523">
+      <!-- the event ranking background picture -->
+      <Spot Name="Top100EventBackground" Position="23,117"/>
+    </DrawingArea>
+    <DrawingArea Name="Top100Job15" Bounds="92,402,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="Top100Job14" Bounds="92,380,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="Top100Job13" Bounds="92,358,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="Top100Job12" Bounds="92,336,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="Top100Job11" Bounds="92,314,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="Top100Job10" Bounds="92,292,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="Top100Job9" Bounds="92,270,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="Top100Job8" Bounds="92,248,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="Top100Job7" Bounds="92,226,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="Top100Job6" Bounds="92,204,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="Top100Job5" Bounds="92,182,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="Top100Job4" Bounds="92,160,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="Top100Job3" Bounds="92,138,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="Top100Job2" Bounds="92,116,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="Top100Job1" Bounds="92,94,16,16" HitTest="true" Visible="false"/>
+    <TextBox Name="Top100No15" Bounds="27,400,65,20" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="Top100No14" Bounds="27,378,65,20" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="Top100No13" Bounds="27,356,65,20" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="Top100No12" Bounds="27,334,65,20" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="Top100No11" Bounds="27,312,65,20" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="Top100No10" Bounds="27,290,65,20" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="Top100No9" Bounds="27,268,65,20" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="Top100No8" Bounds="27,246,65,20" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="Top100No7" Bounds="27,224,65,20" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="Top100No6" Bounds="27,202,65,20" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="Top100No5" Bounds="27,180,65,20" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="Top100No4" Bounds="27,158,65,20" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="Top100No3" Bounds="27,136,65,20" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="Top100No2" Bounds="27,114,65,20" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="Top100No1" Bounds="27,92,65,20" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="Top100Header" Bounds="85,47,100,20" ReadOnly="true" FontColor="#080808"/>
+    <ImageButton Name="Top100Next" Picture="Btn_ArrowR_8" Position="214,423" Size="21,21" Visible="false" Click="onTop100Next"/>
+    <ImageButton Name="Top100Previous" Picture="Btn_ArrowL_8" Position="125,423" Size="21,21" Visible="false" Click="onTop100Previous"/>
+    <ImageButton Name="Top100CloseSmall" Picture="Btn_Close_s_1" Position="307,24" Size="18,18" Click="onTop100Close" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="Top100Close" Picture="Btn_Close_1" Position="153,485" Size="56,20" Click="onTop100Close" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="Top100EventSecond" Picture="Btn_TopDPK_2" Position="86,97" Size="64,21" Visible="false" Click="onTop100EventSecond" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="Top100EventFirst" Picture="Btn_TopDPK_1" Position="23,97" Size="64,21" Visible="false" Click="onTop100EventFirst" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="Top100TabEvent" Picture="Btn_TopDEvent_1" Position="268,71" Size="66,21" Click="onTop100TabEvent" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="Top100TabPk" Picture="Btn_TopPK_1" Position="207,71" Size="66,21" Click="onTop100TabPk" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="Top100TabQuiz" Picture="Btn_TopQA_1" Position="144,71" Size="64,21" Click="onTop100TabQuiz" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="Top100TabMoney" Picture="Btn_TopGold_1" Position="81,71" Size="64,21" Click="onTop100TabMoney" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="Top100TabLevel" Picture="Btn_TopLV_1" Position="18,71" Size="64,21" Click="onTop100TabLevel" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <!-- DrawControl: the page numbers, the pictures and the texts of the places -->
+    <DrawingArea Name="Top100Page" Bounds="0,0,356,523">
+      <!-- the page numbers: right edge and top -->
+      <Spot Name="Top100PageNumbers" Position="175,426"/>
+      <!-- the first ranking row, and the step from one row to the next -->
+      <Spot Name="Top100Rows" Position="125,95" Pitch="0,22"/>
+      <!-- the "your rank" line: top-left, text box width and height -->
+      <Spot Name="Top100MyRank" Bounds="32,448,288,11"/>
+      <!-- the level list: how far left of the row origin the "Lv" word is drawn, and where the name starts right of it -->
+      <Spot Name="Top100LevelWord" Position="9,0"/>
+      <Spot Name="Top100LevelName" Position="78,0"/>
+      <!-- the money list: how far left of the row origin the coin icon is drawn, and how far above the row -->
+      <Spot Name="Top100MoneyIcon" Position="42,10"/>
+      <!-- the money, quiz and PK lists: name offset from the row origin and the name text box width -->
+      <Spot Name="Top100Name" Position="-8,0" Size="150,0"/>
+      <!-- the event lists: name offset from the row origin (x) and below it (y), and the name text box width -->
+      <Spot Name="Top100EventName" Position="-14,30" Size="220,0"/>
+      <!-- the text colour, in RGB565 2113 -->
+      <Spot Name="Top100TextColor" Color="#080808"/>
+    </DrawingArea>
+  </Window>
+</Panel>

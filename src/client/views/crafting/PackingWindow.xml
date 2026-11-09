@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Present Case's form (TPackingForm, opened by using an empty Present Case 34200); view model: viewmodels/PackingWindow.cpp.  A piece of gear of the item mall is dropped
+     on the place (the right button takes it out), OK asks and sends 23/112 option 1.  A TSe_Form (it is kept on the screen); the view model places it beside the item window.
+     The game draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of TPackingForm.Create. -->
+<Panel Name="PackingLayer" Bounds="0,0,800,600">
+  <Window Name="Packing" Escape="onPackingClose" Picture="Form_Packing" Position="200,100" Size="171,183" ScreenFit="true" Visible="false">
+    <DrawingArea Name="PackingImage" Bounds="70,71,30,30" HitTest="true" RightMouseUp="onPackingTake">
+      <!-- the stack count inside the icon, in RGB565 2113 -->
+      <Spot Name="PackingCount" Position="2,20" Color="#080808"/>
+    </DrawingArea>
+    <ImageButton Name="PackingOk" Picture="Btn_OK_2" Position="38,142" Size="39,20" Click="onPackingOk" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="PackingCancel" Picture="Btn_Cancel_3" Position="93,142" Size="39,20" Hint="[ESC]" Click="onPackingClose" ClickSound=""
+                 ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

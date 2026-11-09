@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The small map of the maps built from tiles (CH_TMiniMapForm); view model: viewmodels/TileMiniMap.cpp.  The view model
+     moves and sizes the picture, the marks and the button (the form folds into a small box); the marks area paints the
+     tiles, the signs and the player and keeps the mouse off the map behind; held with the left button it drags the form (a TSe_Form,
+     FDraggable 1 as TSe_Form.Create leaves it).  A press on it brings it over the forms made after it. -->
+<Panel Name="TileMiniMap" Bounds="0,0,800,600" Anchor="TopRight" HudScale="true" Visible="false" RaisesOnPress="true">
+  <!-- the form's default place on the screen and its size -->
+  <Spot Name="TileMiniMapForm" Bounds="574,38,226,144"/>
+  <!-- the map window inside the form: the border around it (x and y) and its size -->
+  <Spot Name="TileMiniMapWindow" Bounds="6,6,212,131"/>
+  <!-- the minimize button inside the form, and its size (also the window button's) -->
+  <Spot Name="TileMiniMapButton" Bounds="204,3,19,18"/>
+  <!-- the folded box: where the window button sits inside it, and the box size -->
+  <Spot Name="TileMiniMapFolded" Bounds="10,10,39,38"/>
+  <Image Name="TileMiniMapPicture" Picture="MiniMapForm" Bounds="574,38,226,144"/>
+  <DrawingArea Name="TileMiniMapMarks" Bounds="574,38,226,144" HitTest="true" MouseDown="onTileMiniMapPress"
+               MouseDrag="onTileMiniMapDrag" MouseUp="onTileMiniMapRelease"/>
+  <ImageButton Name="TileMiniMapMinimize" Picture="Btn_Minimize_1" Bounds="778,41,19,18" Hint="Minimize map" Click="onTileMiniMapMinimize"/>
+</Panel>

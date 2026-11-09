@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The gas storage form of the Gas Storage 39123 (CJ_Menu.pas TSmallGasForm), opened by the owner's click on the furniture; view model: viewmodels/GasStorageWindow.cpp.  The bag's cells again:
+     a click on a Gas item marks it, the right button lets it go, the Gas button deposits the marked ones, the tank on the right fills up to 250.  Made in the middle
+     of the screen.  The game draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of TSmallGasForm.Create (the bag
+     grid comes first, from TRe_ItemGridForm). -->
+<Panel Name="SmallGasLayer" Bounds="0,0,800,600">
+  <Window Name="SmallGasWindow" Escape="onSmallGasClose" Picture="Form_SmallGasCan" Position="234,59" Size="331,481" Visible="false">
+    <!-- DrawControl: the fuel and the tank -->
+    <DrawingArea Name="SmallGasPaint" Bounds="0,0,331,481">
+      <!-- the fuel text: its right edge and top, the text box size, and the colour of all three texts (RGB565 31) -->
+      <Spot Name="SmallGasFuel" Bounds="241,368,160,15" Color="#0000FF"/>
+      <!-- the slash after the fuel -->
+      <Spot Name="SmallGasSlash" Bounds="252,368,160,15"/>
+      <!-- the tank's capacity after the slash -->
+      <Spot Name="SmallGasCapacity" Bounds="264,368,160,15"/>
+    </DrawingArea>
+    <ImageButton Name="SmallGasCloseSmall" Picture="Btn_Close_S_1" Position="282,27" Size="18,18" Click="onSmallGasClose" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="SmallGasCancel" Picture="Btn_Cancel_2" Position="137,440" Size="56,20" Click="onSmallGasClose" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="SmallGasFill" Picture="Btn_Gas" Position="223,402" Size="61,20" Click="onSmallGasFill" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <IconGrid Name="SmallGasCells" Position="22,84" Columns="5" Rows="10" Pitch="34" Click="onSmallGasMark" RightClick="onSmallGasUnmark"/>
+  </Window>
+</Panel>

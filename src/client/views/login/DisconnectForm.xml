@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The form of a disconnection (TDZ_WillCloseForm1, panel15 at 300,80: the reason of the server, DZ_Connect.pas action 0, or the lost connection, and the buttons of
+     the reasons).  The game draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of
+     TDZ_WillCloseForm1.Create; the captions of the buttons are drawn over them (TSe_Button).
+     View model: viewmodels/DisconnectForm.cpp. -->
+<Panel Name="DisconnectLayer" Bounds="0,0,800,600" Topmost="true" Visible="false">
+  <Panel Name="DisconnectForm" Skin="panel15" SkinSource="0,0,50,50" Borders="15,15,15,15" Bounds="300,80,200,150">
+    <ImageButton Name="DisconnectEnd" Picture="btn_module_1" Position="60,110" Size="56,20" Click="onDisconnectQuit"/>
+    <ImageButton Name="DisconnectQuit" Picture="btn_module_1" Position="32,110" Size="56,20" Click="onDisconnectQuit"/>
+    <ImageButton Name="DisconnectUpdate" Picture="btn_module_1" Position="102,110" Size="56,20" Click="onDisconnectQuit"/>
+    <ImageButton Name="DisconnectPrevious" Picture="btn_module_1" Position="102,110" Size="56,20" Click="onDisconnectPrevious"/>
+    <TextBox Name="DisconnectText" Skin="editorBG" SkinSource="0,0,50,20" Borders="5,5,5,5" Bounds="10,25,180,22" ReadOnly="true" MaxLength="200" FontColor="#FFFFFF"/>
+    <DrawingArea Name="DisconnectCaptions" Bounds="0,0,200,150">
+      <!-- a button caption: its top from the button's top, and the width of one character; white (RGB565 65535) -->
+      <Spot Name="DisconnectCaption" Position="0,2" Pitch="8,0" Color="#FFFFFF"/>
+    </DrawingArea>
+  </Panel>
+</Panel>

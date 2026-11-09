@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Picnic Box's form (TPicnicForm, opened by using a Picnic Box 34376): fifteen cells of food kept in the box; a food of the bag is dropped on a cell, the right
+     button takes a cell's stack back, a double click turns the cursor into the one that uses a food on the player or on a pet.  A TSe_Form (it is kept on the screen),
+     made in the middle of the screen and put beside the item window when that is open; view model: viewmodels/PicnicWindow.cpp.  The game draws a form's controls from the
+     last created to the first: the controls here are in drawing order, the reverse of TPicnicForm.Create. -->
+<Panel Name="PicnicLayer" Bounds="0,0,800,600">
+  <Window Name="Picnic" AbovePopups="true" Escape="onPicnicClose" Picture="Form_Picnic" Position="288,202" Size="223,195" ScreenFit="true" Visible="false">
+    <IconGrid Name="PicnicCells" Position="29,49" Columns="5" Rows="3" Pitch="34" CellSize="30" HoverColor="#00000000" DoubleClick="onPicnicUse" RightClick="onPicnicTake"/>
+    <ImageButton Name="PicnicCancel" Picture="Btn_Cancel_1" Position="84,163" Size="56,20" Click="onPicnicClose"/>
+    <ImageButton Name="PicnicSort" Picture="Btn_Module_2" Position="146,163" Size="32,20" Narrow="true" IconLines="3,0 3,11; 0,3 3,0 6,3; 10,0 10,11; 7,8 10,11 13,8" IconWidth="2" Hint="Sort (qol)" Visible="false" Click="onPicnicSort"/>
+  </Window>
+</Panel>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The game's talk box (MainTalkMsgForm, a TSe_TalkMsgFormPlus): a question with Confirm and
+     Cancel, or a list of choices with Close, beside the speaker's figure and name; view model:
+     viewmodels/TalkDialog.cpp, which sizes and places it.  The choices (FChoiceList in
+     FChoicePanel) come first: the game draws a form's controls from the last created to the
+     first. -->
+<Panel Name="TalkLayer" Bounds="0,0,800,600" Topmost="true">
+  <Panel Name="TalkFrame" Skin="panel22" SkinSource="0,0,332,168" Borders="50,32,60,32" HitTest="true"
+         Bounds="250,25,170,68" Visible="false">
+    <DrawingArea Name="TalkContent" Bounds="0,0,170,68" HitTest="true" MouseUp="onTalkClicked">
+      <!-- the fixed boxes on the screen: the movie subtitle box and the wide box -->
+      <Spot Name="TalkMovieBox" Bounds="52,430,768,169"/>
+      <Spot Name="TalkWideBox" Bounds="35,405,768,169"/>
+      <!-- the part of the frame skin picture that is drawn -->
+      <Spot Name="TalkSkinSource" Bounds="0,0,332,168"/>
+      <!-- the face centre, this far down from the box top (the x is not used) -->
+      <Spot Name="TalkFace" Position="0,70"/>
+      <!-- the choice list, inside its panel -->
+      <Spot Name="TalkChoiceList" Position="6,8"/>
+      <!-- the text colours: yellow (RGB565 65504), red highlight (RGB565 63488), white name, and the dark grey of an NPC's name and dark text (RGB565 2113) -->
+      <Spot Name="TalkTextColor" Color="#FFFF00"/>
+      <Spot Name="TalkRedColor" Color="#FF0000"/>
+      <Spot Name="TalkNameColor" Color="#FFFFFF"/>
+      <Spot Name="TalkNpcNameColor" Color="#080808"/>
+    </DrawingArea>
+    <ListBox Name="TalkChoices" Bounds="20,8,200,135" FontColor="#FFFF00" HighlightColor="#89BEF5" FrameColor="#89BEF5"
+             AlwaysFrame="true" ScrollBar="TalkChoiceScroll" Visible="false" Select="onTalkChoice"/>
+    <ScrollBar Name="TalkChoiceScroll" Bounds="0,0,13,100" Track="rail_H4" TrackCap="10" Thumb="bar_H4" ThumbSource="0,0,9,21"
+               ThumbCap="3" Visible="false"/>
+    <ImageButton Name="TalkClose" Picture="Btn_Close_1" Visible="false" Click="onTalkClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="TalkOk" Picture="btn_ok_1" Visible="false" Click="onTalkOk"/>
+    <ImageButton Name="TalkCancel" Picture="btn_cancel_1" Visible="false" Click="onTalkCancel"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Panel>
+  <!-- a modal box (ShowShortMsg's AModalMode 1, ShowMsgModal) is the UI handler's FModalForm: its DrawControl makes it the
+       mouse's object wherever the mouse is (se_UI.pas:6140-6144), so a release anywhere on the screen, the box too, is its HandleMouseUp -->
+  <DrawingArea Name="TalkModalCatcher" Bounds="0,0,800,600" HitTest="true" Visible="false" MouseUp="onTalkClicked"/>
+</Panel>

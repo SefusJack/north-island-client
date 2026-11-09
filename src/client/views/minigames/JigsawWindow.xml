@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Jigsaw machines (kinds 11, 12 and 14; MZ_MarioGame.pas): the machine's picture, the ten prizes, the three strips and the Bingo picture are painted by
+     the view model; over them the places of the prizes (their hints), the Start button and the Quit button.  The form of the game is 800 x 600 at
+     230, 30 and is kept on the screen, which puts it at 0, -25: its Quit button (700, 573 on it) sits at 700, 548, its Start button (683, 409) at 683, 384
+     and a prize's place (x, y + 24) at x, y - 1.  The game draws a form's controls from the last created to the first: the controls here are in drawing
+     order, the reverse of TMarioForm.Create.  View model: viewmodels/JigsawWindow.cpp. -->
+<Panel Name="JigsawLayer" Bounds="0,0,800,600">
+  <Panel Name="JigsawForm" Bounds="0,0,800,600" Visible="false">
+    <DrawingArea Name="JigsawPage" Bounds="0,0,800,600" HitTest="true">
+      <!-- the machine's ground picture -->
+      <Spot Name="JigsawGround" Position="98,16"/>
+      <!-- the first reel strip: one frame is 420 x 70, and the strips are 70 px apart -->
+      <Spot Name="JigsawStrip" Bounds="175,88,420,70"/>
+      <!-- the Bingo flash: one frame is 210 x 210 -->
+      <Spot Name="JigsawBingo" Bounds="280,88,210,210"/>
+      <!-- a prize's name: its offset from the prize icon, and the text box -->
+      <Spot Name="JigsawName" Bounds="-120,8,112,15"/>
+    </DrawingArea>
+    <DrawingArea Name="JigsawPrize10" Bounds="610,517,32,32" HitTest="true"/>
+    <DrawingArea Name="JigsawPrize9" Bounds="610,477,32,32" HitTest="true"/>
+    <DrawingArea Name="JigsawPrize8" Bounds="610,437,32,32" HitTest="true"/>
+    <DrawingArea Name="JigsawPrize7" Bounds="610,399,32,32" HitTest="true"/>
+    <DrawingArea Name="JigsawPrize6" Bounds="610,360,32,32" HitTest="true"/>
+    <DrawingArea Name="JigsawPrize5" Bounds="287,517,32,32" HitTest="true"/>
+    <DrawingArea Name="JigsawPrize4" Bounds="287,477,32,32" HitTest="true"/>
+    <DrawingArea Name="JigsawPrize3" Bounds="287,438,32,32" HitTest="true"/>
+    <DrawingArea Name="JigsawPrize2" Bounds="287,399,32,32" HitTest="true"/>
+    <DrawingArea Name="JigsawPrize1" Bounds="287,360,32,32" HitTest="true"/>
+    <ImageButton Name="JigsawStart" Picture="Mario_Start" Position="683,384" Size="84,84" Hint="Start" Press="onJigsawStart"/>
+    <ImageButton Name="JigsawQuit" Picture="Hunting_Exit_Btn" Position="700,548" Size="74,40" Hint="Quit" Press="onJigsawQuit"/>
+  </Panel>
+</Panel>

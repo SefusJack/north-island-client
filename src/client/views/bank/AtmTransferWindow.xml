@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The ATM's transfer form (TATMTransferForm, 23/165 2): the gold left in the ATM, the name of an online player (typed, or picked with List from the friends
+     and guild members: AtmListWindow) and the amount; Confirm asks "You will N Transfer your money to <name> account?" and the answer sends 29/5.  Closing
+     lets the event go on.  View model: viewmodels/AtmTransferWindow.cpp.  The game draws a form's controls from the last created to the first: the
+     controls here are in drawing order, the reverse of TATMTransferForm.Create. -->
+<Panel Name="AtmTransferLayer" Bounds="0,0,800,600">
+  <Window Name="AtmTransfer" Escape="onAtmTransferClose" Picture="Form_ATM_Transfer" Position="284,188" Visible="false">
+    <!-- DrawControl: the gold in the ATM -->
+    <DrawingArea Name="AtmTransferPaint" Bounds="0,0,232,223">
+      <!-- the colour of the two amounts of gold (RGB565 2113) -->
+      <Spot Name="AtmTransferText" Color="#080808"/>
+    </DrawingArea>
+    <TextBox Name="AtmTransferAmount" Bounds="63,170,135,44" HitTest="true" CharFilter="Digits" MaxLength="9" FontColor="#080808"/>
+    <TextBox Name="AtmTransferName" Bounds="65,150,115,20" Skin="Panel26" SkinSource="0,0,104,14" Borders="1,1,1,1" HitTest="true" MaxLength="14"
+             AllowPaste="true" FontColor="#080808"/>
+    <ImageButton Name="AtmTransferCancel" Picture="Btn_Cancel_1" Position="134,227" Size="56,20" Click="onAtmTransferClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="AtmTransferConfirm" Picture="btn_ok_1" Position="58,227" Size="56,20" Click="onAtmTransferConfirm"/>
+    <ImageButton Name="AtmTransferList" Picture="Btn_List" Position="186,150" Size="42,20" Click="onAtmTransferList"/>
+    <ImageButton Name="AtmTransferCloseSmall" Picture="Btn_Close_S_1" Position="200,24" Size="18,18" Click="onAtmTransferClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

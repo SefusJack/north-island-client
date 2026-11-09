@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Lucky Wheel (TTurnGameForm, sport 21): the form's picture with the twenty prizes round it, the
+     prizes worth a place on the panel, the points, and Refresh, Double, Start and Exit.  The form
+     is centred on the screen (its picture's size) by the view model, which also paints it all (the form
+     picture, the prizes, the frames running round the top ones, the box that runs round the wheel, the
+     lights of a win, the texts).  The game draws a form's controls from the last created to the first:
+     the controls here are in drawing order, the reverse of TTurnGameForm.Create.  View model:
+     viewmodels/LuckyWheelWindow.cpp. -->
+<Panel Name="LuckyWheelLayer" Bounds="0,0,800,600">
+  <Panel Name="LuckyWheelForm" Bounds="64,44,672,512" Visible="false">
+    <DrawingArea Name="LuckyWheelPage" Bounds="0,0,672,512">
+      <!-- a prize place's hover box (40 x 40) -->
+      <Spot Name="LuckyWheelPrizeBox" Size="40,40"/>
+      <!-- the panel's first row text: its place and box; the rows are as far apart as the panel's cells -->
+      <Spot Name="LuckyWheelRowText" Bounds="440,94,144,10"/>
+      <!-- the points text box -->
+      <Spot Name="LuckyWheelPoints" Position="510,385" Size="160,15"/>
+      <!-- a prize's count: this far below the prize place, in a text box of this size -->
+      <Spot Name="LuckyWheelCount" Position="0,27" Size="16,15"/>
+      <!-- the x2 mark -->
+      <Spot Name="LuckyWheelDoubleMark" Position="187,293"/>
+      <!-- the frame effect round a prize: this far up and left of the prize place; a segment is 30 long and 4 thick -->
+      <Spot Name="LuckyWheelFrame" Position="4,4" Size="30,4"/>
+      <!-- the spin box: this far up and left of the prize place; its picture is 56 x 56 -->
+      <Spot Name="LuckyWheelGetPrize" Position="8,8" Size="56,56"/>
+      <!-- the win light: this far below its anchor -->
+      <Spot Name="LuckyWheelLight" Position="0,25"/>
+      <!-- the panel text colour: near-black (RGB565 2113) -->
+      <Spot Name="LuckyWheelText" Color="#080808"/>
+      <!-- the tooltip: white text, light blue fill (alpha 200) and dark blue border -->
+      <Spot Name="LuckyWheelTipText" Color="#FFFFFF"/>
+      <Spot Name="LuckyWheelTipFill" Color="#C83D8AF9"/>
+      <Spot Name="LuckyWheelTipBorder" Color="#000080"/>
+    </DrawingArea>
+    <IconGrid Name="LuckyWheelPrizes" Position="590,91" Columns="1" Rows="6" Pitch="46" CellSize="32" HoverColor="#00000000"/>
+    <ImageButton Name="LuckyWheelExit" Picture="Poke_Exit_Btn" Position="572,445" Click="onLuckyWheelExit"/>
+    <ImageButton Name="LuckyWheelStart" Picture="Btn_TGStart" Position="299,435" Size="123,33" Click="onLuckyWheelStart"/>
+    <ImageButton Name="LuckyWheelDouble" Picture="Btn_TGDouble" Position="166,435" Size="123,33" Click="onLuckyWheelDouble"/>
+    <ImageButton Name="LuckyWheelRefresh" Picture="Btn_TGFresh" Position="33,435" Size="123,33" Click="onLuckyWheelRefresh"/>
+  </Panel>
+</Panel>

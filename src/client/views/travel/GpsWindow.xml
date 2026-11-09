@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The GPS form (TGPSForm, opened by using a Normal GPS 34006, Advance GPS 34195 or Smart GPS 34373): the place recorded in the point shown, Set Point (74/1) and
+     Transmit (the light, then 74/2); the arrows step through the points of an Advance or Smart GPS.  A TSe_Form (it is kept on the screen); the view model places
+     it beside the item window; view model: viewmodels/GpsWindow.cpp.  The game draws a form's controls from the last created to the first: the controls here are in
+     drawing order, the reverse of TGPSForm.Create. -->
+<Panel Name="GpsLayer" Bounds="0,0,800,600">
+  <Window Name="Gps" AbovePopups="true" Picture="Form_GPS" Position="290,200" Size="223,223" ScreenFit="true" Visible="false">
+    <!-- DrawControl: the place's name and coordinates -->
+    <DrawingArea Name="GpsPaint" Bounds="0,0,223,223">
+      <!-- the map name: the x it is centred on, its y and the text box width (the height is not used) -->
+      <Spot Name="GpsName" Bounds="121,65,136,0"/>
+      <!-- the "X: n" and "Y: n" coordinate texts: top-left and text box width (the height is not used) -->
+      <Spot Name="GpsX" Bounds="43,94,80,0"/>
+      <Spot Name="GpsY" Bounds="123,94,80,0"/>
+      <!-- the "Field without record" line: the x it is centred on and its y -->
+      <Spot Name="GpsEmpty" Position="120,70"/>
+    </DrawingArea>
+    <ImageButton Name="GpsNext" Picture="Btn_ArrowR_7" Animation="Btn_ArrowR_7" AnimationFirst="1" AnimationFrames="2" AnimationInterval="300" Position="188,80" Size="14,13"
+                 Visible="false" Click="onGpsNext"/>
+    <ImageButton Name="GpsPrevious" Picture="Btn_ArrowL_7" Animation="Btn_ArrowL_7" AnimationFirst="1" AnimationFrames="2" AnimationInterval="300" Position="22,80" Size="14,13"
+                 Visible="false" Click="onGpsPrevious"/>
+    <ImageButton Name="GpsClose" Picture="btn_close_1" Position="82,170" Size="56,20" Click="onGpsClose"/>
+    <ImageButton Name="GpsTransmit" Picture="Btn_Transmi" Position="82,145" Size="56,20" Click="onGpsTransmit"/>
+    <ImageButton Name="GpsSetPoint" Picture="Btn_SetPoint" Position="82,120" Size="56,20" Click="onGpsSetPoint"/>
+    <ImageButton Name="GpsCloseSmall" Picture="Btn_Close_s_1" Position="173,25" Size="17,17" Click="onGpsClose"/>
+  </Window>
+</Panel>

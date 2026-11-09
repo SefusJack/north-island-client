@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The chat lines at the bottom left of the world (TTalkMsgForm); view model:
+     viewmodels/ChatWindow.cpp.  The form starts 520 x 100 at 0,475; its controls are placed
+     from its size (ArrangeTalkControls), so the view model moves them when it is resized.
+     The button at its bottom left cycles its looks: see-through (the frame picture
+     Panel_TalkForm2_1, 45 pixels wide, shows as the left strip), hidden (only the button, at
+     the left edge), dithered (a grid tiled under the full panel_TalkForm frame; the form then
+     catches the mouse, can be dragged and resized by the button at its top right).  The
+     system messages run along the screen at 50,555 whatever the form does, and the prize announcements (the banner) across the top. -->
+<Panel Name="ChatWindow" Bounds="0,0,800,600" Anchor="BottomLeft" HudScale="true" Visible="false">
+  <Panel Name="ChatForm" Bounds="0,475,520,100">
+    <DrawingArea Name="ChatBackground" Bounds="0,0,520,100"/>
+    <Panel Name="ChatSolidFrame" Bounds="0,0,520,100" Skin="panel_TalkForm" SkinSource="0,0,524,86"
+           Borders="66,38,90,36" Visible="false"/>
+    <DrawingArea Name="ChatDragArea" Bounds="0,0,520,100" MouseDown="onChatFormDown" MouseDrag="onChatFormDrag"/>
+    <ImageButton Name="ChatLock" Picture="Btn_MsgLock_1" Position="7,-8" Hint="Show Dialogue Located" Press="onChatLock"/>
+    <ImageButton Name="ChatScrollUp" Picture="Btn_ArrowUp_1" Position="8,13" Click="onChatScrollUp"/>
+    <ImageButton Name="ChatScrollDown" Picture="Btn_ArrowDn_1" Position="8,77" Click="onChatScrollDown"/>
+    <ScrollBar Name="ChatScroll" Bounds="10,32,11,43" Thumb="bar_H4" ThumbSource="0,0,9,21" ThumbX="2" ThumbCap="7"
+               Scroll="onChatScrolled"/>
+    <ImageButton Name="ChatMode" Picture="Btn_Transition_1" Position="24,79" Hint="switch the chat window"
+                 Click="onChatMode"/>
+    <DrawingArea Name="ChatLines" Bounds="50,14,405,60" MouseDown="onChatLinesDown"/>
+    <!-- dithered, the lines' first 80 pixels take the mouse (TSe_CharMsg.ContainsScreenPoint) -->
+    <DrawingArea Name="ChatNames" Bounds="50,14,80,60" HitTest="true" Visible="false"
+                 Hint="Double click the name to whisper to the target" DoubleClick="onChatNamesDouble"/>
+    <DrawingArea Name="ChatResize" Bounds="496,2,20,20" HitTest="true" Hint="Resize the chat window" Visible="false"
+                 MouseDown="onChatResizeDown" MouseDrag="onChatResizeDrag" MouseUp="onChatResizeUp"/>
+  </Panel>
+  <DrawingArea Name="ChatResizePreview" Bounds="0,0,800,600"/>
+  <!-- the step down from one chat line to the next -->
+  <Spot Name="ChatRow" Pitch="0,20"/>
+  <!-- the system messages' red (RGB565 63488), and the blue of the resize preview outline -->
+  <Spot Name="ChatSystemColor" Color="#FF0000"/>
+  <Spot Name="ChatPreviewColor" Color="#0000FF"/>
+  <DrawingArea Name="ChatMarquee" Bounds="50,555,450,15"/>
+  <DrawingArea Name="ChatAnnounce" Bounds="0,0,800,600"/>
+</Panel>

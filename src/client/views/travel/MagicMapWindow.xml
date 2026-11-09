@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The world map the teleport items open (TMagicMap, the Teleport Scroll 34163 and the Dragonflies): a button for each of the forty places, which
+     asks to teleport there.  The game draws a form's controls from the last created to the first: the controls here are in drawing order, the
+     reverse of TMagicMap.Create.  The buttons stand at the place's point of the 12000-wide world divided by 24, from the map's (146, 17); the two places west of the map's edge (negative points) lie a pixel further left than that, as measured against the game.
+     View model: viewmodels/MagicMapWindow.cpp (generated from MapPts_D_Storage and MagicMapPlaceNames). -->
+<Panel Name="MagicMapLayer" Bounds="0,0,800,600">
+  <Window Name="MagicMapWindow" Escape="onMagicMapClose" Picture="GlobaMap" Position="30,30" Size="667,538" Visible="false">
+    <ImageButton Name="MagicMapPlace40" Picture="GlobaBtn" Frames="1" Position="200,121" Size="18,17" Hint="Deep Jungle (Mediterranean,3427,2717)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace39" Picture="GlobaBtn" Frames="1" Position="403,138" Size="18,17" Hint="Chang'an (6175,2900)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace38" Picture="GlobaBtn" Frames="1" Position="137,55" Size="18,17" Hint="Fog Jungle (Mediterranean,1987,1219)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace37" Picture="GlobaBtn" Frames="1" Position="141,88" Size="18,17" Hint="Lost Jungle (Mediterranean,2207,1952)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace36" Picture="GlobaBtn" Frames="1" Position="454,199" Size="18,17" Hint="Filipine (7390,4375)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace35" Picture="GlobaBtn" Frames="1" Position="271,144" Size="18,17" Hint="Persia (3000,3050)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace34" Picture="GlobaBtn" Frames="1" Position="161,100" Size="18,17" Hint="Rome (Mediterranean,2635,2242)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace33" Picture="GlobaBtn" Frames="1" Position="501,334" Size="18,17" Hint="Training Island (8530,7601)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace32" Picture="GlobaBtn" Frames="1" Position="513,167" Size="18,17" Hint="Small Island of Hawaii (8800,3600)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace31" Picture="GlobaBtn" Frames="1" Position="184,110" Size="18,17" Hint="Athens  (Mediterranean,3057,2573)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace30" Picture="GlobaBtn" Frames="1" Position="469,124" Size="18,17" Hint="Yamataikoku (7750,2570)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace29" Picture="GlobaBtn" Frames="1" Position="205,243" Size="18,17" Hint="African Villages (1422,5415)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace28" Picture="GlobaBtn" Frames="1" Position="329,445" Size="18,17" Hint="Sky City (4402,10275)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace27" Picture="GlobaBtn" Frames="1" Position="309,276" Size="18,17" Hint="Centaur Island (3902,6215)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace26" Picture="GlobaBtn" Frames="1" Position="329,220" Size="18,17" Hint="Lion Isle (4382,4875)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace25" Picture="GlobaBtn" Frames="1" Position="391,202" Size="18,17" Hint="Bangkok (5882,4435)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace24" Picture="GlobaBtn" Frames="1" Position="411,180" Size="18,17" Hint="Ancient Yazhou City (6350,3900)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace23" Picture="GlobaBtn" Frames="1" Position="497,85" Size="18,17" Hint="Shayii Hill (8422,1635)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace22" Picture="GlobaBtn" Frames="1" Position="528,73" Size="18,17" Hint="Ghost Isle (9162,1335)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace21" Picture="GlobaBtn" Frames="1" Position="624,346" Size="18,17" Hint="Inca (11462,7895)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace20" Picture="GlobaBtn" Frames="1" Position="238,474" Size="18,17" Hint="Snow Island (2202,10975)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace19" Picture="GlobaBtn" Frames="1" Position="424,295" Size="18,17" Hint="Hezrou Island (6682,6675)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace18" Picture="GlobaBtn" Frames="1" Position="397,253" Size="18,17" Hint="Polo Island (6012,5675)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace17" Picture="GlobaBtn" Frames="1" Position="229,299" Size="18,17" Hint="Madagascar (2002,6765)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace16" Picture="GlobaBtn" Frames="1" Position="200,148" Size="18,17" Hint="Egypt (1300,3135)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace15" Picture="GlobaBtn" Frames="1" Position="442,442" Size="18,17" Hint="Stoowa Isle (7100,10200)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace14" Picture="GlobaBtn" Frames="1" Position="456,370" Size="18,17" Hint="North Island (7450,8460)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace13" Picture="GlobaBtn" Frames="1" Position="459,421" Size="18,17" Hint="South Island (7500,9700)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace12" Picture="GlobaBtn" Frames="1" Position="446,167" Size="18,17" Hint="Taiwan  (7200,3600)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace11" Picture="GlobaBtn" Frames="1" Position="467,110" Size="18,17" Hint="Koyota (7692,2235)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace10" Picture="GlobaBtn" Frames="1" Position="624,462" Size="18,17" Hint="Iceberg (11482,10675)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace9" Picture="GlobaBtn" Frames="1" Position="436,111" Size="18,17" Hint="Korea (6960,2255)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace8" Picture="GlobaBtn" Frames="1" Position="415,483" Size="18,17" Hint="South Pole (6460,11195)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace7" Picture="GlobaBtn" Frames="1" Position="521,184" Size="18,17" Hint="Big Island of Hawaii (9000,4000)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace6" Picture="GlobaBtn" Frames="1" Position="590,421" Size="18,17" Hint="Revival Isle  (10662,9700)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace5" Picture="GlobaBtn" Frames="1" Position="352,294" Size="18,17" Hint="Universal (4950,6650)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace4" Picture="GlobaBtn" Frames="1" Position="634,265" Size="18,17" Hint="Mayan Forest (11722,5955)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace3" Picture="GlobaBtn" Frames="1" Position="429,373" Size="18,17" Hint="Oslya (6782,8555)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace2" Picture="GlobaBtn" Frames="1" Position="348,184" Size="18,17" Hint="Calcutta (4842,4000)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapPlace1" Picture="GlobaBtn" Frames="1" Position="434,144" Size="18,17" Hint="Fishing Village (6900,3050)" Click="onMagicMapPlace"/>
+    <ImageButton Name="MagicMapClose" Picture="Btn_Close_s_3" Position="647,3" Size="18,18" Click="onMagicMapClose" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

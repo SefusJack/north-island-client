@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The login screen's background; view model: viewmodels/LoginScene.cpp.  The forms on it are ServerSelectForm and
+     LoginForm.  Positions are screen pixels. -->
+<Screen Name="LoginScene" Bounds="0,0,800,600">
+  <Image Name="Background" Source="pic/LogPic1.jpg" Position="0,0"/>
+  <Image Name="Logo" Picture="Icon_LoginLogo_1" Position="617,0"/>
+</Screen>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The instructions a mini game opens with (CH_GameStartForm): the game's own picture, Begin and Leave
+     under it, the small close button at its corner; the picture and the places of the buttons are the
+     game's (the view model sets them).  Not dragged (FDraggable 0); its place 215, 60 is pulled up to 50 by the form clamp (a TSe_Form is kept above 565 at the bottom).  View model:
+     viewmodels/GameStartWindow.cpp.  The game draws a form's controls from the last created to the
+     first: the controls here are in drawing order, the reverse of CH_GameStartForm.Create. -->
+<Panel Name="GameStartLayer" Bounds="0,0,800,600">
+  <Panel Name="GameStartWindow" Bounds="215,50,409,525" HitTest="true" Visible="false">
+    <Image Name="GameStartPicture" Picture="MiniGame_TG_Form" Position="0,0"/>
+    <!-- the standard form: its x, width and height, and the y of its top edge (the form is put here before the clamp) -->
+    <Spot Name="GameStartStandard" Bounds="215,60,409,525"/>
+    <!-- DrawControl: the figures the game puts on its instructions -->
+    <DrawingArea Name="GameStartPage" Bounds="0,0,409,525">
+      <!-- the points printed on the instructions: the text box (24 x 15) and blue (RGB565 31) -->
+      <Spot Name="GameStartPoints" Size="24,15" Color="#0000FF"/>
+    </DrawingArea>
+    <ImageButton Name="GameStartClose" Picture="btn_close_s_3" Position="359,26" Size="18,18" Hint="Quit" Click="onGameStartLeave"/>
+    <ImageButton Name="GameStartLeave" Picture="Btn_Leave_1" Position="229,471" Size="56,20" Hint="Quit" Click="onGameStartLeave"/>
+    <ImageButton Name="GameStartBegin" Picture="Btn_Start_1" Position="120,471" Size="56,20" Hint="Start" Click="onGameStartBegin"/>
+  </Panel>
+</Panel>

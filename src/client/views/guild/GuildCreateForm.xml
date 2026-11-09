@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The create guild form (TSe_ArmyCreateForm), opened by 39/40; view model:
+     viewmodels/GuildCreateForm.cpp.  A name of up to 14 characters; Confirm founds the guild
+     (39/1), Cancel closes the form.  The game draws a form's controls from the last created to
+     the first: the controls here are in drawing order, the reverse of
+     TSe_ArmyCreateForm.Create. -->
+<Panel Name="GuildCreateLayer" Bounds="0,0,800,600">
+  <Window Name="GuildCreate" Picture="Form_CreatArmyGroup_1" Position="150,150" Visible="false">
+    <ImageButton Name="GuildCreateCancel" Picture="Btn_Cancel_1" Position="113,59" Click="onGuildCreateCancel"/>
+    <ImageButton Name="GuildCreateOk" Picture="btn_ok_1" Position="46,59" Click="onGuildCreateOk"/>
+    <TextBox Name="GuildCreateName" Bounds="48,33,120,18" HitTest="true" MaxLength="14" AllowPaste="true" FontColor="#080808"
+             Enter="onGuildCreateOk"/>
+  </Window>
+</Panel>

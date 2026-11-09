@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Q&A activity's screen (TConundrumGame, 57/8); view model: viewmodels/QuizWindow.cpp.  The whole screen is the page, which
+     the view model paints (the picture of the screen, the timer bar, the host, the player's figure, the question and its
+     answers, the lives, the names) and which takes the click on an answer (when the button goes up, as in the game); over it
+     the Exit button.  The game draws a form's controls from the last created to the first: the controls here are in drawing
+     order, the reverse of TConundrumGame.Create. -->
+<Panel Name="QuizLayer" Bounds="0,0,800,600">
+  <Panel Name="QuizForm" Bounds="0,0,800,600" Visible="false">
+    <DrawingArea Name="QuizPage" Bounds="0,0,800,600" HitTest="true" MouseUp="onQuizUp">
+      <!-- the timer bar (centred: 7 px in from its picture's corner), and the first second segment, 16 px between segments -->
+      <Spot Name="QuizTimerBar" Position="321,10"/>
+      <Spot Name="QuizTimerSeconds" Position="327,29" Pitch="16,0"/>
+      <!-- the player's figure (its feet) and the host's portrait -->
+      <Spot Name="QuizPlayer" Position="678,420"/>
+      <Spot Name="QuizHost" Position="676,250"/>
+      <!-- the life faces: the first one's place, 30 px between faces -->
+      <Spot Name="QuizLives" Position="607,535" Pitch="30,0"/>
+      <!-- the participants' names: the first one's place, 18 px between names -->
+      <Spot Name="QuizParticipants" Position="50,80" Pitch="0,18"/>
+      <!-- the answers' texts: the first one's place, 68 px between answers -->
+      <Spot Name="QuizAnswers" Position="250,184" Pitch="0,68"/>
+      <!-- the box round the chosen answer: its x and size (its y follows the answer) -->
+      <Spot Name="QuizBox" Bounds="240,0,308,44"/>
+      <!-- the text colours: yellow (RGB565 65504) and white (RGB565 65535) -->
+      <Spot Name="QuizYellow" Color="#FFFF00"/>
+      <Spot Name="QuizWhite" Color="#FFFFFF"/>
+    </DrawingArea>
+    <ImageButton Name="QuizExit" Picture="MiniGame_Exit_Btn" Position="730,20" Click="onQuizLeave"/>
+  </Panel>
+</Panel>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Scotd game (kind 2; TH_scotd.pas TSport_scotd): the whole screen is the page, which the view model paints (the field, the hearts, the player's figure and
+     the NPCs that jump about it, the flash of a hit, You Win and You Lose) and which takes the mouse going down (ScotdMouseDown: the left button steers the
+     player to the point, the right button jumps); over it the Exit button the game's explain form brings when the play starts (CH_GameExplain, SetupExitButton
+     of kind 2: 700, 20).  The keys (arrows, Space, Q) come through the world scene.  View model: viewmodels/ScotdWindow.cpp. -->
+<Panel Name="ScotdLayer" Bounds="0,0,800,600">
+  <Panel Name="ScotdForm" Bounds="0,0,800,600" Visible="false">
+    <DrawingArea Name="ScotdPage" Bounds="0,0,800,600" HitTest="true" MouseDown="onScotdDown" RightMouseDown="onScotdRightDown">
+      <!-- the field and top pictures, and the front picture -->
+      <Spot Name="ScotdField" Position="0,-45"/>
+      <Spot Name="ScotdFront" Position="0,180"/>
+      <!-- the hearts: heart 0's x, every heart's y and size, 40 px between hearts (heart j is j steps to the right) -->
+      <Spot Name="ScotdHeart" Bounds="100,50,30,25" Pitch="40,0"/>
+      <!-- the You Win / You Lose letters: centred on this point, 65 px between letters -->
+      <Spot Name="ScotdMessage" Position="400,200" Pitch="65,0"/>
+    </DrawingArea>
+    <ImageButton Name="ScotdExit" Picture="MiniGame_Exit_Btn" Position="700,20" Visible="false" Press="onScotdExit"/>
+  </Panel>
+</Panel>

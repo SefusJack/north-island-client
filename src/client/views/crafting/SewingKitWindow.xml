@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Sewing Tools' and the Weapon Model's form (THL_SewingKitForm, opened by using a Sewing Tools 34167 or a Weapon Model 34170); view model:
+     viewmodels/SewingKitWindow.cpp.  Two pieces of gear of the same kind go on the first two places (the first gives its look, the second keeps its attributes), the
+     third shows the result; Confirm asks and sends 23/105 option 1.  A TSe_Form (it is kept on the screen) with no picture of its own: the view model sets the kit's
+     (Form_SewingKit_1 or Form_WeaponMold_1) and places it beside the item window.  The game draws a form's controls from the last created to the first: the controls
+     here are in drawing order, the reverse of THL_SewingKitForm.Create. -->
+<Panel Name="SewingKitLayer" Bounds="0,0,800,600">
+  <Window Name="SewingKit" Escape="onSewingKitClose" Picture="Form_SewingKit_1" Position="200,100" Size="237,288" ScreenFit="true" Visible="false">
+    <DrawingArea Name="SewingKitPlace3" Bounds="37,190,30,30" HitTest="true"/>
+    <DrawingArea Name="SewingKitPlace2" Bounds="37,132,30,30" HitTest="true" RightMouseUp="onSewingKitTake2"/>
+    <DrawingArea Name="SewingKitPlace1" Bounds="37,74,30,30" HitTest="true" RightMouseUp="onSewingKitTake1">
+      <!-- a place's icon size (all three places), and the stack count text inside it in RGB565 2113 -->
+      <Spot Name="SewingKitIcon" Size="30,30"/>
+      <Spot Name="SewingKitCount" Position="2,20" Color="#080808"/>
+    </DrawingArea>
+    <ImageButton Name="SewingKitConfirm" Picture="Btn_confirm_1" Position="51,241" Size="56,20" Click="onSewingKitConfirm"/>
+    <ImageButton Name="SewingKitClose" Picture="btn_close_1" Position="124,241" Size="56,20" Hint="[ESC]" Click="onSewingKitClose" ClickSound=""
+                 ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="SewingKitCloseSmall" Picture="Btn_Close_s_1" Position="190,26" Size="18,18" Hint="[ESC]" Click="onSewingKitClose" ClickSound=""
+                 ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The galaxy competition's ranking (TRE_GalaxyRankForm, opened by the server's 36/10; 36/9 brings the groups); view model: viewmodels/GalaxyRankWindow.cpp.  The title
+     of the group, five rows of a name and the server it plays on beside a big rank number, a scroll bar, the group arrows with the group and the group count between
+     them, and Close.  The frame picture form_modulePlus is in none of this client's picture files, so no frame is drawn; neither are Arrow_L2 and Arrow_R2, so the two
+     arrows are invisible but catch the mouse, as buttons without a picture do in the game (the game gives both a hint [ESC]).  Made in the middle of the screen
+     (389 x 345 in a 400 high place).  The game draws a form's own part first (the title, the figures, the rank numbers), then its controls from the last created to the
+     first: the controls here are in drawing order, the reverse of TRE_GalaxyRankForm.CreateGalaxyRankForm (the row panels lie over the rank numbers, as in the game). -->
+<Panel Name="GalaxyRankLayer" Bounds="0,0,800,600">
+  <Window Name="GalaxyRank" Escape="onGalaxyClose" Position="205,100" Size="389,345" Visible="false">
+    <Panel Name="GalaxyFrame" Bounds="0,0,389,345" Skin="form_modulePlus" SkinSource="0,0,200,205" Borders="85,65,60,20"/>
+    <!-- DrawControl of the form: the title, the figures, the rank numbers -->
+    <DrawingArea Name="GalaxyPaint" Bounds="0,0,389,345">
+      <!-- the title: its centre, and the width of one character -->
+      <Spot Name="GalaxyTitle" Position="194,32" Pitch="9,0"/>
+      <!-- the page indicator: the centre of the group and the group count, and its digit size -->
+      <Spot Name="GalaxyPage" Position="192,281"/>
+      <Spot Name="GalaxySmallDigit" Size="10,12"/>
+      <!-- the first rank number: top-left of the first row, how far down in a row, and its digit size -->
+      <Spot Name="GalaxyRankAt" Position="17,66"/>
+      <Spot Name="GalaxyRankShift" Position="0,7"/>
+      <Spot Name="GalaxyBigDigit" Size="20,28"/>
+      <!-- the text colour (white, in RGB565 65535) -->
+      <Spot Name="GalaxyWhite" Color="#FFFFFF"/>
+    </DrawingArea>
+    <ScrollBar Name="GalaxyScroll" Bounds="361,69,15,200" Track="rail_H3" Thumb="bar_H3" ThumbSource="0,0,12,130" ThumbCap="12" TrackCap="15" Scroll="onGalaxyScrolled"/>
+    <Panel Name="GalaxyRow5" Bounds="17,226,339,41" Skin="Panel22" SkinSource="0,0,120,21" Borders="5,5,5,5"/>
+    <Panel Name="GalaxyRow4" Bounds="17,186,339,41" Skin="Panel22" SkinSource="0,0,120,21" Borders="5,5,5,5"/>
+    <Panel Name="GalaxyRow3" Bounds="17,146,339,41" Skin="Panel22" SkinSource="0,0,120,21" Borders="5,5,5,5"/>
+    <Panel Name="GalaxyRow2" Bounds="17,106,339,41" Skin="Panel22" SkinSource="0,0,120,21" Borders="5,5,5,5"/>
+    <Panel Name="GalaxyRow1" Bounds="17,66,339,41" Skin="Panel22" SkinSource="0,0,120,21" Borders="5,5,5,5"/>
+    <ImageButton Name="GalaxyNext" Picture="Arrow_R2" Position="235,278" Size="27,19" FrameHeight="19" Hint="[ESC]" Click="onGalaxyNext"/>
+    <ImageButton Name="GalaxyPrevious" Picture="Arrow_L2" Position="123,278" Size="27,19" FrameHeight="19" Hint="[ESC]" Click="onGalaxyPrevious"/>
+    <ImageButton Name="GalaxyClose" Picture="Btn_Close_1" Position="159,308" Size="70,25" FrameHeight="25" Hint="[ESC]" Click="onGalaxyClose"/>
+    <ImageButton Name="GalaxyCloseSmall" Picture="Btn_Close_s_1" Position="367,5" Size="17,17" Click="onGalaxyClose"/>
+    <DrawingArea Name="GalaxyList" Bounds="18,69,340,200" HitTest="true" MouseWheel="onGalaxyWheel">
+      <!-- a ranking row: list width and row height -->
+      <Spot Name="GalaxyRow" Size="340,40"/>
+      <!-- the name column: left edge and text top in a row, and line height; the server column: this far right of it, and this many px narrower than the space left -->
+      <Spot Name="GalaxyName" Position="50,10" Size="0,20"/>
+      <Spot Name="GalaxyServer" Pitch="130,15"/>
+      <!-- the hovered row bar: red tint with alpha -->
+      <Spot Name="GalaxyHoverColor" Color="#32FF322E"/>
+    </DrawingArea>
+  </Window>
+</Panel>

@@ -1,0 +1,50 @@
+# Build output
+/build/
+/out/
+/builds/
+/cmake-build-*/
+/CMakeUserPresets.json
+/compile_commands.json
+
+# Compiled files
+*.exe
+*.dll
+*.lib
+*.exp
+*.pdb
+*.ilk
+*.obj
+*.o
+*.a
+*.so
+*.dylib
+*.res
+
+# Editors and IDEs
+/.vs/
+/.vscode/
+/.idea/
+*.user
+*.suo
+*.swp
+*~
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Game files and player data, if the client is run from this folder
+/data/
+/pic/
+/font/
+/jma/
+/menu/
+/sound/
+/Mp3s/
+/Photo/
+/cursor/
+/user/
+/mods/
+/SERVER.INI
+*.log

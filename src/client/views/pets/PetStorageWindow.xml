@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The inn's pet storage (TRe_InnForm, 31/7); view model: viewmodels/PetStorageWindow.cpp.
+     The stored pets on the left, the carried ones on the right, each row a small picture with
+     level and bars; clicks check rows; the left arrow stores the checked carried pets (and
+     takes out checked stored ones: 31/3 or 31/4), the right one takes out (31/2 or 31/4).  A
+     pet under the mouse shows bigger with its name, level, HP and amity.  Closing lets the
+     event go on.  The game draws a form's controls from the last created to the first: the
+     controls here are in drawing order, the reverse of TRe_InnForm.Create. -->
+<Panel Name="PetStorageLayer" Bounds="0,0,800,600">
+  <Window Name="PetStorage" Escape="onPetStorageClose" Picture="Form_Inn_1" Position="164,62" Visible="false">
+    <!-- DrawControl: the friend picture, the inn icon, the pet under the mouse -->
+    <DrawingArea Name="PetStoragePaint" Bounds="0,0,472,476">
+      <!-- the anchor of the selected pet's figure, and the text colour (near black, in RGB565 2113) -->
+      <Spot Name="PetStoragePreview" Position="347,330"/>
+      <Spot Name="PetStorageTextColor" Color="#080808"/>
+    </DrawingArea>
+    <Image Name="PetStorageRestrain" Picture="panel_restrainINN_2" Position="16,358"/>
+    <BlockList Name="PetStorageStored" Bounds="17,65,201,366" RowHeight="33" RowSpacing="4" HighlightColor="#89BEF5"
+               HoverAlpha="100" FontColor="#080808" Click="onPetStorageStoredClick"/>
+    <BlockList Name="PetStorageCarried" Bounds="244,65,201,144" RowHeight="33" RowSpacing="4" HighlightColor="#89BEF5"
+               HoverAlpha="100" FontColor="#080808" Click="onPetStorageCarriedClick"/>
+    <!-- the rows' TRe_MiniPetInfo -->
+    <DrawingArea Name="PetStorageInfos" Bounds="0,0,472,476">
+      <!-- the first carried and the first stored pet's info block, and the step from one row to the next -->
+      <Spot Name="PetStorageCarriedInfo" Position="248,63" Pitch="0,37"/>
+      <Spot Name="PetStorageStoredInfo" Position="21,63"/>
+    </DrawingArea>
+    <ImageButton Name="PetStorageTake" Picture="Btn_ArrowR_8" Position="221,108" Size="21,21" Click="onPetStorageTake"/>
+    <ImageButton Name="PetStorageStore" Picture="Btn_ArrowL_8" Position="221,144" Size="21,21" Click="onPetStorageStore"/>
+    <ImageButton Name="PetStorageCloseSmall" Picture="Btn_Close_s_1" Position="422,24" Size="18,18" Click="onPetStorageClose"/>
+    <ImageButton Name="PetStorageClose" Picture="Btn_Close_1" Position="208,440" Click="onPetStorageClose"/>
+    <!-- RenderWithChildren, after the controls: the names and elements -->
+    <DrawingArea Name="PetStorageNames" Bounds="0,0,472,476">
+      <!-- a pet's name, from the top left of its info block -->
+      <Spot Name="PetStorageNameOffset" Position="33,10"/>
+      <!-- the element icon of the first carried and of the first stored pet -->
+      <Spot Name="PetStorageCarriedElement" Position="361,67"/>
+      <Spot Name="PetStorageStoredElement" Position="134,67"/>
+      <!-- the name colours: a carried pet (blue, in RGB565 31), an untradable pet (red, in RGB565 63488) and a stored pet (orange, in RGB565 64512) -->
+      <Spot Name="PetStorageCarriedName" Color="#0000FF"/>
+      <Spot Name="PetStorageUntradableName" Color="#FF0000"/>
+      <Spot Name="PetStorageStoredName" Color="#FF8200"/>
+    </DrawingArea>
+  </Window>
+</Panel>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The server list (TSe_SelectServer, redone for qol); view model: viewmodels/login/ServerSelectForm.cpp.
+     One list with two sections that fold away: the servers added by address (saved-servers.json) and SERVER.INI's groups;
+     under it the fields to add a server by its IP or host name. -->
+<Panel Name="ServerSelectForm" Bounds="0,0,800,600">
+  <Panel Name="ServerFrame" Bounds="195,84,410,432">
+    <!-- form_module_1: Borders keep the ornaments whole (top 122, bottom 45) and repeat only the picture's steady rows 122..177;
+         an odd height keeps its two-row stripes in step where the repeats meet the bottom -->
+    <Panel Name="ServerFrameSkin" Bounds="0,0,410,431" Skin="form_module_1" SkinSource="0,0,223,223" Borders="64,122,80,45"/>
+    <Label Name="ServerTitle" Position="34,22" Text="Server" FontColor="#1E3C78" Effect="Plain"/>
+    <ImageButton Name="ServerClose" Picture="Btn_Close_s_1" Position="360,26" Size="18,18" Click="onLeave"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+
+    <Panel Name="ServerBox" Bounds="18,48,374,232" Skin="panel10" SkinSource="0,0,50,50" Borders="7,7,7,7">
+      <DrawingArea Name="ServerRows" Bounds="4,4,348,224" HitTest="true" MouseDown="onServerRowDown"
+                   DoubleClick="onServerRowDouble" MouseWheel="onServerRowsWheel">
+        <!-- a row: its height -->
+        <Spot Name="ServerRow" Size="0,20"/>
+        <!-- the status icon: its x in a row, its size, and the x of its tooltip from the icon's left edge -->
+        <Spot Name="ServerIcon" Position="326,0" Size="18,18" Pitch="40,0"/>
+        <!-- the x of the section header text, of the group's fold arrow and header text, of a server name outside and inside a group, and of the address column -->
+        <Spot Name="ServerSectionAt" Position="16,0"/>
+        <Spot Name="ServerGroupArrowAt" Position="16,0"/>
+        <Spot Name="ServerGroupTextAt" Position="28,0"/>
+        <Spot Name="ServerNameAt" Position="28,0"/>
+        <Spot Name="ServerGroupNameAt" Position="40,0"/>
+        <Spot Name="ServerAddressAt" Position="186,0"/>
+        <!-- the text colours: section header (pale gold), group header (pale blue), server name (white) and address (muted blue) -->
+        <Spot Name="ServerSectionColor" Color="#FFE7A0"/>
+        <Spot Name="ServerGroupColor" Color="#C8DCFF"/>
+        <Spot Name="ServerNameColor" Color="#FFFFFF"/>
+        <Spot Name="ServerAddressColor" Color="#96AFD7"/>
+        <!-- the selected row band and the hovered row band: light blue with alpha -->
+        <Spot Name="ServerSelectedColor" Color="#6E89BFF5"/>
+        <Spot Name="ServerHoverColor" Color="#2D89BFF5"/>
+      </DrawingArea>
+      <ScrollBar Name="ServerRowsScroll" Bounds="354,4,17,224" Track="Rail_H5" TrackCap="16" Thumb="bar_H4"
+                 ThumbSource="0,0,9,21" ThumbCap="7" ThumbInset="3" Scroll="onServerRowsScroll"/>
+    </Panel>
+    <Label Name="ServerMessage" Bounds="20,288,370,15" FontColor="#1E3C78" Effect="Plain"/>
+
+    <Label Name="ServerNameText" Position="20,314" Text="Name" FontColor="#1E3C78" Effect="Plain"/>
+    <Panel Name="ServerNameField" Bounds="92,310,300,21" Skin="panel16" SkinSource="0,0,120,21" Borders="4,4,4,4">
+      <TextBox Name="ServerNameBox" Bounds="4,4,292,14" HitTest="true" MaxLength="24" AllowPaste="true" FontColor="#080808"
+               Enter="onServerAdd" Tab="onServerNameTab"/>
+    </Panel>
+    <Label Name="ServerAddressText" Position="20,340" Text="Address" FontColor="#1E3C78" Effect="Plain"/>
+    <Panel Name="ServerAddressField" Bounds="92,336,300,21" Skin="panel16" SkinSource="0,0,120,21" Borders="4,4,4,4">
+      <TextBox Name="ServerAddressBox" Bounds="4,4,292,14" HitTest="true" MaxLength="64" AllowPaste="true" FontColor="#080808"
+               Enter="onServerAdd" Tab="onServerAddressTab"/>
+    </Panel>
+
+    <ImageButton Name="ServerAdd" Picture="Btn_Module_2" Position="18,366" Text="Add" Click="onServerAdd"/>
+    <ImageButton Name="ServerRemove" Picture="Btn_Module_2" Position="93,366" Text="Remove" Click="onServerRemove"/>
+    <ImageButton Name="ServerRefresh" Picture="Btn_Module_2" Position="168,366" Text="Refresh" Click="onServerRefresh"/>
+    <ImageButton Name="Next" Picture="Btn_Module_2" Position="248,366" Text="Next" Click="onNext"/>
+    <ImageButton Name="Leave" Picture="Btn_Module_2" Position="323,366" Text="Leave" Click="onLeave"/>
+  </Panel>
+  <!-- RenderWithChildren, after the controls: the tooltip of the status icon under the mouse -->
+  <DrawingArea Name="ServerTooltip" Bounds="0,0,800,600"/>
+</Panel>

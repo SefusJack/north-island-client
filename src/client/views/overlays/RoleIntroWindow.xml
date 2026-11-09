@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A character's introduction (TTH_SHowHumInfoForm): a picture over the whole screen, opened from a star of the
+     star book, with a button that goes back to the sky (its page buttons are never shown); view model:
+     viewmodels/RoleIntroWindow.cpp.  A right click goes back as well. -->
+<Panel Name="RoleIntroLayer" Bounds="0,0,800,600" Visible="false">
+  <DrawingArea Name="RoleIntroArea" Bounds="0,0,800,600" HitTest="true" RightMouseUp="onRoleIntroRightUp">
+    <!-- the extra overlay picture: top-left -->
+    <Spot Name="RoleIntroOverlay" Position="606,78"/>
+  </DrawingArea>
+  <ImageButton Name="RoleIntroBack" Picture="Btn_Minimize_1" Position="780,10" Hint="Previous" Click="onRoleIntroBack"/>
+</Panel>

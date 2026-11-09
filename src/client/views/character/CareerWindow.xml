@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The class form (TCareerForm): three models in the clothes of a class (the killer, warrior and
+     knight, or the wit, priest and seer), the player above them, the totem of the line under the
+     first; the one under the mouse faces another way and is described below, a click chooses it
+     (a tinted frame, another pose).  OK asks for the choice (79/1, or 79/2 changing the class),
+     Cancel and the small close button put the form away.  The game draws a form's controls from
+     the last created to the first: the controls here are in drawing order, the reverse of
+     TCareerForm.Create.  View model: viewmodels/CareerWindow.cpp. -->
+<Panel Name="CareerLayer" Bounds="0,0,800,600">
+  <Window Name="CareerWindow" Escape="onCareerClose" Picture="Form_Career" Position="190,30" Size="420,539" ScreenFit="true" Visible="false">
+    <!-- DrawCareerForm: the totem, the frame, the texts, the models -->
+    <DrawingArea Name="CareerPage" Bounds="0,0,420,539" HitTest="true" MouseDown="onCareerDown" RightMouseDown="onCareerRightDown">
+      <!-- the fill over the chosen model, translucent orange -->
+      <Spot Name="CareerChosen" Color="#50FF6C01"/>
+      <!-- the player's own figure: its feet -->
+      <Spot Name="CareerSelfFeet" Position="210,140"/>
+      <!-- the totem icon of line 1 (war) and of line 2 (magic): top-left -->
+      <Spot Name="CareerWarTotem" Position="21,193"/>
+      <Spot Name="CareerMagicTotem" Position="20,193"/>
+      <!-- the description text: top-left, wrap width and line height, blue (RGB565 31) -->
+      <Spot Name="CareerDescription" Bounds="31,317,352,16" Color="#0000FF"/>
+      <!-- the bonus text: top-left, wrap width and line height, red (RGB565 63488) -->
+      <Spot Name="CareerBonus" Bounds="31,425,352,18" Color="#FF0000"/>
+    </DrawingArea>
+    <ImageButton Name="CareerCloseSmall" Picture="Btn_Close_S_1" Position="370,24" Size="18,18" Click="onCareerClose"/>
+    <ImageButton Name="CareerCancel" Picture="Btn_Cancel_1" Position="230,503" Size="56,20" Click="onCareerClose"/>
+    <ImageButton Name="CareerOk" Picture="Btn_OK_1" Position="134,503" Size="56,20" Click="onCareerOk"/>
+  </Window>
+</Panel>

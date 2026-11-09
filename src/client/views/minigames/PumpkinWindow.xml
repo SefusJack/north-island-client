@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The pumpkin game (kind 17; LD_MiniGame.pas TPumpkin, TPumpkinForm): the field, the figure, the ghosts, the pumpkin, the hearts, the score and the time are
+     painted by the view model, and a left click anywhere throws the pumpkin (PumpkinMouseDown); over them the form's Quit button.  The form of the game is 832 x 640 at
+     230, 30 and is kept on the screen (and above the input bar), which puts it at -32, -65: its Quit button (700, 600 on it, 77 x 40) sits at 668, 535.  View model:
+     viewmodels/PumpkinWindow.cpp. -->
+<Panel Name="PumpkinLayer" Bounds="0,0,800,600">
+  <Panel Name="PumpkinForm" Bounds="0,0,800,600" Visible="false">
+    <DrawingArea Name="PumpkinPage" Bounds="0,0,800,600" HitTest="true" MouseDown="onPumpkinDown">
+      <!-- the field and the front pictures -->
+      <Spot Name="PumpkinField" Position="-500,-45"/>
+      <Spot Name="PumpkinFront" Position="-337,259"/>
+      <!-- a life heart: the first one's place and size, and the step to the next -->
+      <Spot Name="PumpkinHeart" Bounds="50,10,30,25" Pitch="40,0"/>
+      <!-- the life, score and time labels, and the digits of the score and the time -->
+      <Spot Name="PumpkinLife" Position="15,10"/>
+      <Spot Name="PumpkinScore" Position="630,10"/>
+      <Spot Name="PumpkinScoreNumber" Position="740,13"/>
+      <Spot Name="PumpkinTime" Position="330,10"/>
+      <Spot Name="PumpkinTimeNumber" Position="430,13"/>
+      <!-- the centre of the big message letters, and the step between letters -->
+      <Spot Name="PumpkinMessage" Position="400,300" Pitch="80,0"/>
+      <!-- the aim line: red -->
+      <Spot Name="PumpkinAim" Color="#FF0000"/>
+      <!-- the coin icon is drawn this far left of and above the ghost's feet -->
+      <Spot Name="PumpkinCoin" Position="16,43"/>
+    </DrawingArea>
+    <ImageButton Name="PumpkinQuit" Picture="Hunting_Exit_Btn" Position="668,535" Size="77,40" Hint="Quit" Visible="false" Press="onPumpkinQuit"/>
+  </Panel>
+</Panel>

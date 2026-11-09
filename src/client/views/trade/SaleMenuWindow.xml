@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The sale net's manager (TCY_SaleMenu, 23/64): the web auction of the 2014 client.  View model:
+     viewmodels/SaleMenuWindow.cpp.  The gold carried (right) and the gold of the sale account (left, 26/5, 26/6)
+     above the two amount boxes (the left box: gold to take out, 26/4; the right one: gold to put in, 26/3, each with
+     its own arrows); the bag on the right, the ten places of the sale store on the left: pressing an item chooses it
+     (a green tint, the bag's items the sale refuses say so); the lower arrows put the bag's chosen items into the
+     store (23/40) or take the store's back (23/41).  The three icons below ask for the list of the sale net (23/44),
+     the manager page (23/42) and the website (not built).  Closing lets the event go on.  The game draws a form's
+     controls from the last created to the first: the controls here are in drawing order, the reverse of
+     TCY_SaleMenu.Create. -->
+<Panel Name="SaleMenuLayer" Bounds="0,0,800,600">
+  <Window Name="SaleMenu" Escape="onSaleMenuClose" Picture="Form_Sale" Position="191,78" Size="441,474" Visible="false">
+    <!-- DrawControl: the gold carried and the gold of the sale account -->
+    <DrawingArea Name="SaleMenuPaint" Bounds="0,0,441,474">
+      <!-- the money text colour, in RGB565 2113 -->
+      <Spot Name="SaleMenuText" Color="#080808"/>
+    </DrawingArea>
+    <IconGrid Name="SaleMenuStore" Position="24,216" Columns="5" Rows="2" Pitch="36" PitchY="35" Press="onSaleMenuStorePress"/>
+    <IconGrid Name="SaleMenuBag" Position="242,196" Columns="5" Rows="10" Pitch="36" Press="onSaleMenuBagPress"/>
+    <!-- TCY_SaleBody / TCY_SaleItem.DrawControl: the chosen cells tinted green -->
+    <DrawingArea Name="SaleMenuChosen" Bounds="0,0,441,474">
+      <!-- the tint over a chosen cell: its size, translucent green -->
+      <Spot Name="SaleMenuChosenCell" Size="32,32" Color="#5000FF00"/>
+    </DrawingArea>
+    <ImageButton Name="SaleMenuCountDown" Picture="arrow_dw1" Position="278,133" Size="9,10" Click="onSaleMenuCountDown"/>
+    <ImageButton Name="SaleMenuCountUp" Picture="arrow_up1" Position="278,119" Size="9,10" Click="onSaleMenuCountUp"/>
+    <ImageButton Name="SaleMenuAmountDown" Picture="arrow_dw1" Position="61,134" Size="9,10" Click="onSaleMenuAmountDown"/>
+    <ImageButton Name="SaleMenuAmountUp" Picture="arrow_up1" Position="61,120" Size="9,10" Click="onSaleMenuAmountUp"/>
+    <TextBox Name="SaleMenuCount" Bounds="290,118,95,24" HitTest="true" CharFilter="Digits" MaxLength="7" Align="Right"
+             FontColor="#FFFFFF"/>
+    <TextBox Name="SaleMenuAmount" Bounds="73,118,95,24" HitTest="true" CharFilter="Digits" MaxLength="7" Align="Right"
+             FontColor="#FFFFFF"/>
+    <ImageButton Name="SaleMenuSend" Picture="icon_SendSale" Position="82,319" Size="70,25" Click="onSaleMenuSend"/>
+    <ImageButton Name="SaleMenuManage" Picture="icon_SaleManage" Position="132,375" Size="70,25" Click="onSaleMenuManage"/>
+    <ImageButton Name="SaleMenuLink" Picture="icon_SaleLink" Position="33,375" Size="70,25" Click="onSaleMenuLink"/>
+    <ImageButton Name="SaleMenuTakeBack" Picture="btn_Bank_Gold_R" Position="208,256" Size="27,22" Click="onSaleMenuTakeBack"/>
+    <ImageButton Name="SaleMenuPut" Picture="btn_Bank_Gold_L" Position="208,221" Size="27,22" Click="onSaleMenuPut"/>
+    <ImageButton Name="SaleMenuWithdraw" Picture="btn_Bank_Gold_R" Position="208,119" Size="27,22" Click="onSaleMenuWithdraw"/>
+    <ImageButton Name="SaleMenuDeposit" Picture="btn_Bank_Gold_L" Position="208,86" Size="27,22" Click="onSaleMenuDeposit"/>
+    <ImageButton Name="SaleMenuClose" Picture="Btn_Close_1" Position="189,430" Size="70,25" Hint="[ESC]" Click="onSaleMenuClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="SaleMenuCloseSmall" Picture="Btn_Close_s_1" Position="418,5" Size="17,17" Click="onSaleMenuClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

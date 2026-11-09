@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The pet trade window (TCY_TradeFNpcMenu); view model: viewmodels/PetTradeWindow.cpp.  The
+     partner's pet and gold on the left, the own on the right (the arrows choose which pet);
+     Confirm puts the offer up (25/11); once the partner's has come, Trade agrees (25/12).  The
+     game draws a form's controls from the last created to the first: the controls here are in
+     drawing order, the reverse of TCY_TradeFNpcMenu.Create. -->
+<Panel Name="PetTradeLayer" Bounds="0,0,800,600">
+  <Window Name="PetTrade" Picture="Form_TradePet_1" Position="337,120" Visible="false">
+    <!-- DrawControl: the gear frames, the pets, their level, HP and amity -->
+    <DrawingArea Name="PetTradePaint" Bounds="0,0,463,455">
+      <!-- the text colour, in RGB565 2113, and the name colour of a fixed pet, in RGB565 64512 -->
+      <Spot Name="PetTradeText" Color="#080808"/>
+      <Spot Name="PetTradeFixedName" Color="#FF8200"/>
+    </DrawingArea>
+    <ImageButton Name="PetTradeCancel" Picture="Btn_Cancel_1" Position="280,418" Hint="Cancel" Click="onPetTradeCancel"
+                 ClickSound="" ReleaseSound="sound/wav0151.wav"/>
+    <Image Name="PetTradeTradeIcon" Picture="icon_trade_1" Position="205,418" Size="56,20" Hint="Trade"/>
+    <ImageButton Name="PetTradeTrade" Picture="Btn_Trade_2" Position="205,418" Hint="Trade" Visible="false" Click="onPetTradeTrade"/>
+    <Image Name="PetTradeConfirmIcon" Picture="icon_Confirm_1" Position="130,418" Size="56,20" Hint="Two parties confirm"/>
+    <ImageButton Name="PetTradeConfirm" Picture="Btn_confirm_1" Position="130,418" Hint="Two parties confirm"
+                 Click="onPetTradeConfirm"/>
+    <ImageButton Name="PetTradeNext" Picture="Btn_ArrowR_5" Position="399,184" Click="onPetTradeNext"/>
+    <ImageButton Name="PetTradePrevious" Picture="Btn_ArrowL_5" Position="255,184" Click="onPetTradePrevious"/>
+    <TextBox Name="PetTradeGiveGold" Bounds="306,380,127,14" HitTest="true" Align="Right" CharFilter="Digits" MaxLength="9"
+             FontColor="#080808"/>
+    <TextBox Name="PetTradePartnerGold" Bounds="95,380,128,14" ReadOnly="true" Align="Right" FontColor="#080808"/>
+    <IconGrid Name="PetTradePartnerGear6" Position="178,266" CellSize="33" FirstIndex="6"/>
+    <IconGrid Name="PetTradePartnerGear" Position="37,308" Columns="5" Pitch="35" CellSize="33"/>
+    <IconGrid Name="PetTradeMyGear6" Position="388,266" CellSize="33" FirstIndex="6"/>
+    <IconGrid Name="PetTradeMyGear" Position="247,308" Columns="5" Pitch="35" CellSize="33"/>
+    <TextBox Name="PetTradeMyPetName" Bounds="243,230,128,24" ReadOnly="true" FontColor="#080808"/>
+    <TextBox Name="PetTradePartnerPetName" Bounds="33,230,160,20" ReadOnly="true" FontColor="#080808"/>
+    <TextBox Name="PetTradeMyName" Bounds="242,63,160,20" ReadOnly="true" FontColor="#080808"/>
+    <TextBox Name="PetTradePartnerName" Bounds="31,63,160,20" ReadOnly="true" FontColor="#080808"/>
+    <ImageButton Name="PetTradeCloseSmall" Picture="Btn_Close_s_1" Position="413,25" Size="17,17" Click="onPetTradeCancel"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

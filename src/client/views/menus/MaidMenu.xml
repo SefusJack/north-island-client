@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Wit Maid's menu (THL_MaidManager, whose box is HL_TalkMsgFormPlus_1 in its wide layout: Form_Talk_1 at 35, 405, the maid's figure at the left,
+     her words or the choices); view model: viewmodels/MaidMenu.cpp, which paints the box.  The choices come after the box: the game draws a form's
+     controls after the form itself. -->
+<Panel Name="MaidLayer" Bounds="0,0,800,600" Topmost="true">
+  <DrawingArea Name="MaidContent" Bounds="35,405,768,169" HitTest="true" Visible="false" MouseUp="onMaidClicked">
+    <!-- the words: the gap above the first line, the text box width and height, the step from one line to the next, yellow (RGB565 65504) -->
+    <Spot Name="MaidText" Bounds="0,45,658,20" Pitch="0,18" Color="#FFFF00"/>
+    <!-- the feet of the maid figure on the screen -->
+    <Spot Name="MaidFigure" Position="180,568"/>
+  </DrawingArea>
+  <ListBox Name="MaidChoices" Bounds="275,443,240,100" RowHeight="20" FontColor="#FFFF00" HighlightColor="#89BEF5" ShowSelection="false"
+           ShowHoverBar="true" FocusFrame="false" WrapColumns="21" Visible="false" Select="onMaidChoice"/>
+</Panel>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The city warehouse (TCY_WareMenu, 23/46, the Stock Keepers); view model:
+     viewmodels/WarehouseWindow.cpp.  The warehouse on the left, the bag on the right, one item
+     to a cell: pressing an item chooses it or not (an orange tint); the left arrow puts the bag's
+     chosen items in (23/34), the right one takes the warehouse's out (23/35).  Closing lets the
+     event go on.  The game draws a form's controls from the last created to the first: the
+     controls here are in drawing order, the reverse of TCY_WareMenu.Create. -->
+<Panel Name="WarehouseLayer" Bounds="0,0,800,600">
+  <Window Name="Warehouse" Escape="onWarehouseClose" Picture="Form_Warehouse" Position="360,276" Size="441,299" Visible="false">
+    <ImageButton Name="WarehouseDeposit" Picture="btn_Bank_Gold_L" Position="206,99" Size="27,22" Click="onWarehouseDeposit"/>
+    <ImageButton Name="WarehouseWithdraw" Picture="btn_Bank_Gold_R" Position="207,180" Size="27,22" Click="onWarehouseWithdraw"/>
+    <ImageButton Name="WarehouseClose" Picture="Btn_Close_1" Position="188,255" Size="70,25" Hint="[ESC]" Click="onWarehouseClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="WarehouseCloseSmall" Picture="Btn_Close_s_1" Position="418,5" Size="17,17" Click="onWarehouseClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <IconGrid Name="WarehouseBag" Position="242,61" Columns="5" Rows="10" Pitch="36" Press="onWarehouseBagPress"/>
+    <IconGrid Name="WarehouseItems" Position="22,61" Columns="5" Rows="10" Pitch="36" Press="onWarehouseItemPress"/>
+    <!-- TCY_WareImage.DrawControl: the chosen cells tinted orange -->
+    <DrawingArea Name="WarehouseChosen" Bounds="0,0,441,299">
+      <!-- a chosen cell: its size, and the orange tint over it (alpha 120) -->
+      <Spot Name="WarehouseChosenCell" Size="32,32" Color="#78FF6C01"/>
+    </DrawingArea>
+  </Window>
+</Panel>

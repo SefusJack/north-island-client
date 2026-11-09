@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The lost property office (TPropertyForm, opened by the server's 86/1); view model: viewmodels/PropertyWindow.cpp.  The items the player lost, a row each with
+     its icon and name; a click marks a row (up to 50, red over it), the right button unmarks it; the points the marked ones cost (100 each) under the list; OK
+     asks and sends the marked ones (86/2).  Made in the middle of the screen.  The game draws a form's controls from the last created to the first: the
+     controls here are in drawing order, the reverse of TPropertyForm.Create. -->
+<Panel Name="PropertyLayer" Bounds="0,0,800,600">
+  <Window Name="Property" Escape="onPropertyClose" Picture="Form_Property" Position="272,64" Visible="false">
+    <!-- DrawControl: the points, the red over the marked rows -->
+    <DrawingArea Name="PropertyPaint" Bounds="0,0,255,471">
+      <!-- inside a list row: the item icon's box, and the name's box and colour (RGB565 2113) -->
+      <Spot Name="PropertyRowIcon" Size="34,34"/>
+      <Spot Name="PropertyRowName" Bounds="75,3,115,30" Color="#080808"/>
+      <!-- the points the marked rows cost, centred on this point (RGB565 2113) -->
+      <Spot Name="PropertyCost" Position="140,410" Color="#080808"/>
+      <!-- the red over a marked row: one row's box (the first row is the one above this), translucent red, 9 rows shown -->
+      <Spot Name="PropertyMark" Bounds="20,96,195,34" Color="#50C83232" Rows="9"/>
+    </DrawingArea>
+    <ImageButton Name="PropertyDown" Picture="Btn_ArrowDn_1" Position="219,386" Size="17,17" Click="onPropertyDown"/>
+    <ImageButton Name="PropertyUp" Picture="Btn_ArrowUp_1" Position="219,61" Size="17,17" Click="onPropertyUp"/>
+    <BlockList Name="PropertyList" Bounds="20,65,195,340" RowHeight="32" RowSpacing="2" HighlightColor="#89BEF5" HoverAlpha="100" FontColor="#080808"
+               Click="onPropertyPick" RightClick="onPropertyUnpick"/>
+    <ScrollBar Name="PropertyScroll" Bounds="219,78,17,308" Track="Rail_H5" Thumb="bar_H4" ThumbSource="0,0,9,21" ThumbCap="7" TrackCap="10" ThumbInset="3"
+               Scroll="onPropertyScrolled"/>
+    <ImageButton Name="PropertyOk" Picture="Btn_ok_1" Position="63,435" Size="56,20" Click="onPropertyOk"/>
+    <ImageButton Name="PropertyClose" Picture="Btn_Close_1" Position="139,435" Size="56,20" Click="onPropertyClose"/>
+    <ImageButton Name="PropertyCloseSmall" Picture="Btn_Close_S_1" Position="207,23" Size="18,18" Click="onPropertyClose"/>
+  </Window>
+</Panel>

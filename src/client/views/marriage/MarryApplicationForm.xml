@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The marriage application (TMarryApplication), opened by 45/1 when the priest takes a couple's
+     application: the two players' faces and names; Marry accepts (the button then waits as
+     "Marry" pressed), Close and the small close button turn it down.  View model:
+     viewmodels/MarryApplicationForm.cpp.  The game draws a form's controls from the last created
+     to the first: the controls here are in drawing order, the reverse of
+     TMarryApplication.Create. -->
+<Panel Name="MarryApplicationLayer" Bounds="0,0,800,600">
+  <Window Name="MarryApplicationForm" Picture="Form_Marry" Position="253,195" Visible="false">
+    <!-- DrawControl: the faces and the names -->
+    <DrawingArea Name="MarryApplicationPeople" Bounds="0,0,293,246"/>
+    <ImageButton Name="MarryApplicationClose" Picture="Btn_Close_1" Position="155,214" Size="56,20" Click="onMarryApplicationCancel"/>
+    <Image Name="MarryApplicationWaiting" Picture="btn_Marry_2" Position="73,214" Visible="false"/>
+    <ImageButton Name="MarryApplicationMarry" Picture="btn_Marry_1" Position="73,214" Size="61,20" Click="onMarryApplicationAccept"/>
+    <ImageButton Name="MarryApplicationCloseSmall" Picture="Btn_Close_S_1" Position="248,25" Size="18,18"
+                 Click="onMarryApplicationCancel"/>
+  </Window>
+</Panel>

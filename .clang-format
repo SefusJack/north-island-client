@@ -1,0 +1,46 @@
+---
+Language: Cpp
+BasedOnStyle: LLVM
+Standard: c++17
+IndentWidth: 4
+ContinuationIndentWidth: 4
+ColumnLimit: 160
+UseTab: Never
+LineEnding: DeriveLF
+BreakBeforeBraces: Attach
+NamespaceIndentation: All
+FixNamespaceComments: false
+IndentAccessModifiers: true
+IndentCaseLabels: true
+PointerAlignment: Left
+ReferenceAlignment: Left
+SortIncludes: Never
+IncludeBlocks: Preserve
+InsertBraces: true
+MaxEmptyLinesToKeep: 1
+SeparateDefinitionBlocks: Always
+AlignAfterOpenBracket: BlockIndent
+BinPackParameters: OnePerLine
+BinPackArguments: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowAllArgumentsOnNextLine: false
+PackConstructorInitializers: Never
+BreakConstructorInitializers: BeforeColon
+ConstructorInitializerIndentWidth: 4
+AllowShortFunctionsOnASingleLine: All
+AllowShortLambdasOnASingleLine: All
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: Empty
+AllowShortEnumsOnASingleLine: true
+BreakTemplateDeclarations: Yes
+SpaceBeforeCpp11BracedList: false
+Cpp11BracedListStyle: true
+ReflowComments: false
+BreakStringLiterals: false
+AlignTrailingComments:
+  Kind: Never
+SpacesBeforeTrailingComments: 1
+PenaltyReturnTypeOnItsOwnLine: 1000
+...

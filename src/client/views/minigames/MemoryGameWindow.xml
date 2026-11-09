@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The memory game (kind 15; CJ_MiniGame.pas TSport_MemoryGame and TMemoryGameForm): the board, the hearts, the time and score, the numbers
+     and the circles are painted by the view model, which also takes the clicks on the circles; over it the Leave button (which the
+     form shows once the game is begun).  The game draws a form's controls from the last created to the first: the controls here are in
+     drawing order, the reverse of TMemoryGameForm.Create.  View model: viewmodels/MemoryGameWindow.cpp. -->
+<Panel Name="MemoryGameLayer" Bounds="0,0,800,600">
+  <Panel Name="MemoryGameForm" Bounds="0,0,800,600" Visible="false">
+    <DrawingArea Name="MemoryGamePage" Bounds="0,0,800,600" HitTest="true" MouseDown="onMemoryGameDown">
+      <!-- the board picture -->
+      <Spot Name="MemoryGameBoard" Position="200,100"/>
+      <!-- a life heart: x of the first heart (plus life times the step), y and size, and the step to the next -->
+      <Spot Name="MemoryGameHeart" Bounds="50,10,30,25" Pitch="40,0"/>
+      <!-- the score and time labels, and the digits of the score and the time -->
+      <Spot Name="MemoryGameScore" Position="630,10"/>
+      <Spot Name="MemoryGameScoreNumber" Position="740,13"/>
+      <Spot Name="MemoryGameTime" Position="330,10"/>
+      <Spot Name="MemoryGameTimeNumber" Position="430,13"/>
+      <!-- the centre of the countdown and result message, and the step between big letters -->
+      <Spot Name="MemoryGameMessage" Position="400,300" Pitch="80,0"/>
+      <!-- the right answer sign and the wrong answer sign -->
+      <Spot Name="MemoryGameRightSign" Position="339,250"/>
+      <Spot Name="MemoryGameWrongSign" Position="353,250"/>
+      <!-- the card number digits, from the card's top left -->
+      <Spot Name="MemoryGameCardNumber" Position="18,10"/>
+    </DrawingArea>
+    <ImageButton Name="MemoryGameLeave" Picture="Hunting_Exit_Btn" Position="700,535" Hint="Leave" Visible="false" Press="onMemoryGameLeave"/>
+  </Panel>
+</Panel>

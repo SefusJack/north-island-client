@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The ball-throwing game (kind 1; CH_MiniGame.pas CH_TThrowGame): the whole screen is the page, which the view model paints (the two sides, their hearts, the
+     balls, the strength bar) and which takes the mouse buttons (the click that walks or charges, its release that throws); over it the Exit button the game's
+     explain form brings when the play starts (CH_GameExplain, SetupExitButton of kind 1: 700, 20).  View model: viewmodels/ThrowWindow.cpp. -->
+<Panel Name="ThrowLayer" Bounds="0,0,800,600">
+  <Panel Name="ThrowForm" Bounds="0,0,800,600" Visible="false">
+    <DrawingArea Name="ThrowPage" Bounds="0,0,800,600" HitTest="true" MouseDown="onThrowDown" MouseUp="onThrowUp" RightMouseUp="onThrowRightUp"/>
+    <ImageButton Name="ThrowExit" Picture="ThrowGame_Exit_Btn" Position="700,20" Visible="false" Press="onThrowExit"/>
+  </Panel>
+</Panel>

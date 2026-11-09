@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Gift Exchange Card's form (TGiftExchangeCardForm, opened by 23/108/4 after a card of item type 40 was used): the card's list of what it can be exchanged for,
+     four a page with a tick each, and how many times; Exchange asks and sends 23/133/2.  A TSe_Form (it is kept on the screen), made in the middle of the screen;
+     view model: viewmodels/GiftExchangeWindow.cpp.  The game draws a form's controls from the last created to the first: the controls here are in drawing order,
+     the reverse of TGiftExchangeCardForm.Create. -->
+<Panel Name="GiftExchangeLayer" Bounds="0,0,800,600">
+  <Window Name="GiftExchange" Escape="onGiftClose" Picture="Form_GiftExchange_1" Position="176,153" Size="447,293" ScreenFit="true" Visible="false">
+    <!-- DrawControl: the card's name, the page, the rows' names and the number of times's pictures -->
+    <DrawingArea Name="GiftPaint" Bounds="0,0,447,293">
+      <!-- the gift card name: the x it is centred on and its y, colour in RGB565 2113 -->
+      <Spot Name="GiftName" Position="224,54" Color="#080808"/>
+      <!-- the page counter: the x it is centred on and its y, blue (RGB565 31) -->
+      <Spot Name="GiftPage" Position="224,224" Color="#0000FF"/>
+      <!-- the quantity label picture and the exchange mark picture -->
+      <Spot Name="GiftQuantity" Position="386,224"/>
+      <Spot Name="GiftMark" Position="318,223"/>
+      <!-- the first choice row's item name, the step down to the next row, colour in RGB565 2113 -->
+      <Spot Name="GiftRowName" Position="92,90" Pitch="0,34" Color="#080808"/>
+    </DrawingArea>
+    <TextBox Name="GiftTimes" Bounds="386,224,24,14" HitTest="true" MaxLength="3" CharFilter="Digits" Align="Right" FontColor="#080808"/>
+    <ImageButton Name="GiftCheck4" Picture="btn_UnCheck_1" Position="25,192" Size="16,16" Press="onGiftCheck4"/>
+    <ImageButton Name="GiftCheck3" Picture="btn_UnCheck_1" Position="25,158" Size="16,16" Press="onGiftCheck3"/>
+    <ImageButton Name="GiftCheck2" Picture="btn_UnCheck_1" Position="25,124" Size="16,16" Press="onGiftCheck2"/>
+    <ImageButton Name="GiftCheck1" Picture="btn_UnCheck_1" Position="25,90" Size="16,16" Press="onGiftCheck1"/>
+    <DrawingArea Name="GiftItem4" Bounds="51,183,32,32"/>
+    <DrawingArea Name="GiftItem3" Bounds="51,149,32,32"/>
+    <DrawingArea Name="GiftItem2" Bounds="51,115,32,32"/>
+    <DrawingArea Name="GiftItem1" Bounds="51,81,32,32"/>
+    <ImageButton Name="GiftNext" Picture="Btn_ArrowR_5" Position="256,224" Size="17,17" Hint="Next page" Click="onGiftNext"/>
+    <ImageButton Name="GiftPrevious" Picture="Btn_ArrowL_5" Position="175,224" Size="17,17" Hint="Previous page" Click="onGiftPrevious"/>
+    <ImageButton Name="GiftExchangeButton" Picture="Btn_GiftExchange_1" Position="152,250" Size="56,20" Click="onGiftExchange"/>
+    <ImageButton Name="GiftClose" Picture="Btn_Close_1" Position="240,250" Size="56,20" Click="onGiftClose"/>
+    <ImageButton Name="GiftCloseSmall" Picture="Btn_Close_S_1" Position="393,22" Size="18,18" Click="onGiftClose"/>
+  </Window>
+</Panel>

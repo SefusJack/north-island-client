@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The contents of a random pack or a Lucky Bag (TArticleInfoForm, which the mall's rows open); view model: viewmodels/ArticleInfoWindow.cpp, which sizes
+     it (207 pixels wide and 130 more for each further column of ten) and paints the frame, the title, the icons and the names.  The game draws a form's
+     controls from the last created to the first: the controls here are in drawing order. -->
+<Panel Name="ArticleLayer" Bounds="0,0,800,600">
+  <Window Name="ArticleWindow" Escape="onArticleClose" Bounds="296,60,207,427" Visible="false">
+    <DrawingArea Name="ArticleContent" Bounds="0,0,207,427">
+      <!-- the window: x of the screen centre it is centred on, y on the screen, width with one column of items, height, and the width added by each further column -->
+      <Spot Name="ArticleForm" Bounds="400,60,207,427" Pitch="130,0"/>
+      <!-- the first entry's icon (top-left, size), the step to the next column and row, and the entries in a column -->
+      <Spot Name="ArticleCells" Bounds="5,35,32,32" Pitch="150,36" Rows="10"/>
+      <!-- an item name: x from the column's left edge, how far it is moved up from its row, box width and height -->
+      <Spot Name="ArticleName" Bounds="40,8,96,15"/>
+      <!-- a pet's sprite cell: x from the column's left edge, y of the first row -->
+      <Spot Name="ArticlePet" Position="30,40"/>
+      <!-- a pet's name: x from the column's left edge, y below the cell top, box width and height -->
+      <Spot Name="ArticlePetName" Bounds="55,5,96,15"/>
+      <!-- the title: starts this far left of the window centre, this far from the top -->
+      <Spot Name="ArticleTitle" Position="60,10"/>
+      <!-- the text colour, near black (RGB565 2113) -->
+      <Spot Name="ArticleTextColor" Color="#080808"/>
+    </DrawingArea>
+    <ImageButton Name="ArticleCancel" Picture="Btn_Cancel_1" Position="83,400" Click="onArticleClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="ArticleClose" Picture="Btn_Close_S_1" Position="187,2" Hint="Close" Click="onArticleClose"/>
+  </Window>
+</Panel>

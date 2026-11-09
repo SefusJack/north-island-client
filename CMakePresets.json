@@ -1,0 +1,67 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build/${presetName}"
+    },
+    {
+      "name": "windows-base",
+      "hidden": true,
+      "inherits": "base",
+      "generator": "Visual Studio 18 2026",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+    {
+      "name": "windows-x64",
+      "displayName": "Windows 10/11 x64",
+      "inherits": "windows-base",
+      "architecture": { "value": "x64", "strategy": "set" }
+    },
+    {
+      "name": "windows-arm64",
+      "displayName": "Windows 11 ARM64",
+      "description": "Needs the Visual Studio component \"MSVC ARM64/ARM64EC build tools\".",
+      "inherits": "windows-base",
+      "architecture": { "value": "ARM64", "strategy": "set" }
+    },
+    {
+      "name": "windows-xp",
+      "displayName": "Windows XP 32-bit",
+      "description": "VS 2017's v141_xp toolset and the Windows 7.1A SDK; the exe asks for Windows 5.01.",
+      "inherits": "windows-base",
+      "architecture": { "value": "Win32", "strategy": "set" },
+      "toolset": { "value": "v141_xp", "strategy": "set" },
+      "environment": { "TargetUniversalCRTVersion": "10.0.19041.0" }
+    },
+    {
+      "name": "linux-x64",
+      "displayName": "Linux x86_64",
+      "inherits": "base",
+      "generator": "Ninja",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" },
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Linux" }
+    },
+    {
+      "name": "macos",
+      "displayName": "macOS (Apple silicon and Intel)",
+      "inherits": "base",
+      "generator": "Unix Makefiles",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_OSX_ARCHITECTURES": "arm64;x86_64",
+        "CMAKE_OSX_DEPLOYMENT_TARGET": "11.0"
+      },
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Darwin" }
+    }
+  ],
+  "buildPresets": [
+    { "name": "windows-x64", "configurePreset": "windows-x64", "configuration": "Release" },
+    { "name": "windows-arm64", "configurePreset": "windows-arm64", "configuration": "Release" },
+    { "name": "windows-xp", "configurePreset": "windows-xp", "configuration": "Release" },
+    { "name": "linux-x64", "configurePreset": "linux-x64" },
+    { "name": "macos", "configurePreset": "macos" }
+  ]
+}

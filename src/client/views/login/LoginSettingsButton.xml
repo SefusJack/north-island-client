@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The qol client's Settings button on the server and login screens (LoginScene.cpp): it opens SettingsWindow before login
+     (the music and sound of these screens and the Video tab). -->
+<Panel Name="LoginSettingsLayer" Bounds="0,0,800,600">
+  <!-- the world's System button (MainButtons.xml MainSystem: Btn_16) at the same place -->
+  <ImageButton Name="LoginSettings" Picture="Btn_16" Position="751,549" Hint="Settings" Click="onLoginSettings"/>
+</Panel>

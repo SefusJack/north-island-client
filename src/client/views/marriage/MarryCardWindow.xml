@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Marry tab of the social window (TMarryCard): the spouse's card - the figure, the face,
+     name, nickname, guild, level, job, element, the five attributes, where the spouse is and
+     whether online - with the mail icon beside the name.  A window of its own that takes the
+     social window's place; its tabs lead back to the Friend, Emotion and Setup tabs.  View model:
+     viewmodels/MarryCardWindow.cpp.  The game draws a form's controls from the last created to
+     the first: the controls here are in drawing order, the reverse of TMarryCard.Create. -->
+<Panel Name="MarryCardLayer" Bounds="0,0,800,600">
+  <Window Name="MarryCardWindow" Picture="Form_setup_2" Position="224,53" Size="352,493" Visible="false" DoubleClick="onMarryCardDoubleClick">
+    <!-- DrawControl: the figure, the face, the texts and the icons -->
+    <DrawingArea Name="MarryCardPage" Bounds="0,0,352,493">
+      <!-- the spouse's figure (its feet) and the face portrait's anchor -->
+      <Spot Name="MarryCardFigure" Position="175,400"/>
+      <Spot Name="MarryCardFace" Position="78,130"/>
+      <!-- the element icon, the level digits and the job icon -->
+      <Spot Name="MarryCardElement" Position="135,75"/>
+      <Spot Name="MarryCardLevel" Position="160,110"/>
+      <Spot Name="MarryCardJob" Position="140,110"/>
+      <!-- the online state icon, and the part of its picture that is drawn (32 x 16) -->
+      <Spot Name="MarryCardOnline" Position="219,184"/>
+      <Spot Name="MarryCardOnlinePart" Bounds="0,0,32,16"/>
+      <!-- the spouse name, guild, nickname and location texts -->
+      <Spot Name="MarryCardName" Position="170,80"/>
+      <Spot Name="MarryCardGuild" Position="180,160"/>
+      <Spot Name="MarryCardNickname" Position="180,133"/>
+      <Spot Name="MarryCardLocation" Position="140,235"/>
+      <!-- a text box (200 x 20) and the text colour of all the texts (RGB565 2113) -->
+      <Spot Name="MarryCardStat" Size="200,20" Color="#080808"/>
+    </DrawingArea>
+    <ImageButton Name="MarryCardMail" Picture="icon_mail_1" Frames="1" Position="295,80" Click="onMarryCardMail"/>
+    <ImageButton Name="MarryCardClose" Picture="Btn_Close_1" Position="152,458" Click="onMarryCardClose"/>
+    <ImageButton Name="MarryCardTabMarry" Picture="Btn_Marry" Position="217,43" Size="66,21"/>
+    <ImageButton Name="MarryCardTabFriend" Picture="Btn_FriendIcon_1" Position="20,43" Size="66,21" Click="onMarryCardTabFriend"/>
+    <ImageButton Name="MarryCardTabEmote" Picture="Btn_EmuationalIcon_1" Position="85,43" Size="66,21" Click="onMarryCardTabEmote"/>
+    <ImageButton Name="MarryCardTabSetup" Picture="Btn_setup_2" Position="151,43" Size="66,21" Click="onMarryCardTabSetup"/>
+    <ImageButton Name="MarryCardCloseSmall" Picture="Btn_Close_S_1" Position="304,24" Size="18,18" Click="onMarryCardClose"/>
+  </Window>
+</Panel>

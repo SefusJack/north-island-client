@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The ATM's point exchange form (TExchange, opened by 23/200 after the point exchange event 7/22 at the Store's ATM); view model: viewmodels/PointExchangeWindow.cpp.
+     How many IM points to give (up to 9999), the gold they make with the gold a point is worth; OK asks and sends 23/109.  Made in the middle of the screen.  The game
+     draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of TExchange.Create. -->
+<Panel Name="PointExchangeLayer" Bounds="0,0,800,600">
+  <Window Name="PointExchange" Escape="onExchangeClose" Picture="Form_Exchange" Position="305,178" Size="190,243" Visible="false">
+    <!-- DrawControl: the rate and the gold -->
+    <DrawingArea Name="ExchangePaint" Bounds="0,0,190,243">
+      <!-- the rate, in RGB565 2113 -->
+      <Spot Name="ExchangeRate" Position="90,60" Color="#080808"/>
+      <!-- the "Pay host" fee mark: the top 77 x 13 of Form_headling -->
+      <Spot Name="ExchangeFeeMark" Bounds="99,133,77,13"/>
+      <!-- the gold the points make, in RGB565 2113 -->
+      <Spot Name="ExchangeGold" Position="70,165" Color="#080808"/>
+    </DrawingArea>
+    <TextBox Name="ExchangePoints" Bounds="65,106,80,20" HitTest="true" CharFilter="Digits" MaxLength="4" FontColor="#080808"/>
+    <ImageButton Name="ExchangeOk" Picture="Btn_ok_2" Position="49,200" Size="39,20" Click="onExchangeOk"/>
+    <ImageButton Name="ExchangeClose" Picture="Btn_Close_2" Position="109,200" Size="39,20" Click="onExchangeClose"/>
+    <ImageButton Name="ExchangeCloseSmall" Picture="Btn_Close_S_1" Position="163,9" Size="18,18" Click="onExchangeClose"/>
+  </Window>
+</Panel>

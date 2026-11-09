@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The EXP Bag's form (TExpBoxForm, opened by using an EXP Bag 34377): ten cells of EXP potions, cards and statues kept for the player; an item of the bag is dropped on
+     a cell, the right button takes a stack back, a double click drinks one, the tick says whether the bag drinks by itself, Confirm keeps it.  A TSe_Form (it is kept on
+     the screen), made in the middle of the screen and put beside the item window when that is open; view model: viewmodels/ExpBoxWindow.cpp.  The game draws a form's
+     controls from the last created to the first: the controls here are in drawing order, the reverse of TExpBoxForm.Create. -->
+<Panel Name="ExpBoxLayer" Bounds="0,0,800,600">
+  <Window Name="ExpBox" AbovePopups="true" Escape="onExpBoxClose" Picture="Form_ExpBox" Position="288,202" Size="223,195" ScreenFit="true" Visible="false">
+    <IconGrid Name="ExpBoxCells" Position="31,53" Columns="5" Rows="2" Pitch="34" CellSize="30" HoverColor="#00000000" DoubleClick="onExpBoxUse" RightClick="onExpBoxTake"/>
+    <ImageButton Name="ExpBoxCancel" Picture="Btn_Cancel_1" Position="96,165" Size="56,20" Click="onExpBoxClose"/>
+    <ImageButton Name="ExpBoxConfirm" Picture="Btn_confirm_1" Position="34,165" Size="56,20" Click="onExpBoxConfirm"/>
+    <ImageButton Name="ExpBoxAuto" Picture="btn_UnCheck_1" Position="25,136" Size="16,16" Click="onExpBoxAuto"/>
+    <ImageButton Name="ExpBoxSort" Picture="Btn_Module_2" Position="158,165" Size="32,20" Narrow="true" IconLines="3,0 3,11; 0,3 3,0 6,3; 10,0 10,11; 7,8 10,11 13,8" IconWidth="2" Hint="Sort (qol)" Visible="false" Click="onExpBoxSort"/>
+  </Window>
+</Panel>

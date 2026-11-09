@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The pet info popup at the mouse over the partner's pet in a pet trade and over a pet of a pet
+     stall (TCY_PopFNpcInfoForm); view model: viewmodels/PetInfoPopup.cpp. -->
+<Panel Name="PetInfoLayer" Bounds="0,0,800,600" Topmost="true">
+  <Panel Name="PetInfo" Skin="panel4" SkinSource="0,0,50,50" Borders="15,15,15,15" Bounds="0,0,200,150" Visible="false">
+    <DrawingArea Name="PetInfoLines" Bounds="0,0,150,150">
+      <!-- the popup width -->
+      <Spot Name="PetInfoWidth" Size="150,0"/>
+      <!-- a text line: the margin from the popup's top left, the line width and the line height; yellow (RGB565 65504) -->
+      <Spot Name="PetInfoText" Bounds="10,10,130,20" Color="#FFFF00"/>
+    </DrawingArea>
+  </Panel>
+</Panel>

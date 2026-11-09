@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Memory Card's form for the one who plays for others (TMemCardForm1, opened from the status icon while he plays): up to three cards, each with the player it belongs
+     to (portrait, name, title, guild, job, level, element, on line or not) and the exp earned for him on a bar, with the buttons to write to him, to check the time left and to
+     stop (Unseal).  A TSe_FixedForm (it is not kept on the screen).  The game draws a form's controls from the last created to the first: the controls here are in drawing order,
+     the reverse of TMemCardForm1.Create; DrawControl's rows and DrawHintBox's exp hint are over them.  View model: viewmodels/MemCardWindow.cpp. -->
+<Panel Name="MemCardLayer" Bounds="0,0,800,600">
+  <Window Name="MemCard" Escape="onMemCardClose" Picture="Form_MemCard2" Position="214,101" Size="371,397" Visible="false">
+    <ImageButton Name="MemCardClose" Picture="btn_close_1" Position="159,362" Size="56,20" Click="onMemCardClose" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MemCardCloseSmall" Picture="Btn_Close_s_1" Position="321,24" Size="18,18" Click="onMemCardClose" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MemCardTime3" Picture="icon_Time_1" Position="260,310" Size="21,21" Hint="Check out the time" Visible="false" Click="onMemCardTime3" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MemCardTime2" Picture="icon_Time_1" Position="260,228" Size="21,21" Hint="Check out the time" Visible="false" Click="onMemCardTime2" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MemCardTime1" Picture="icon_Time_1" Position="260,146" Size="21,21" Hint="Check out the time" Visible="false" Click="onMemCardTime1" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MemCardStop3" Picture="Btn_UnCachet_2" Position="288,311" Size="56,20" Visible="false" Click="onMemCardStop3" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MemCardStop2" Picture="Btn_UnCachet_2" Position="288,229" Size="56,20" Visible="false" Click="onMemCardStop2" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MemCardStop1" Picture="Btn_UnCachet_2" Position="288,147" Size="56,20" Visible="false" Click="onMemCardStop1" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MemCardMail3" Picture="icon_mail_1" Frames="1" Position="311,259" Size="20,15" Visible="false" Click="onMemCardMail3"/>
+    <ImageButton Name="MemCardMail2" Picture="icon_mail_1" Frames="1" Position="311,177" Size="20,15" Visible="false" Click="onMemCardMail2"/>
+    <ImageButton Name="MemCardMail1" Picture="icon_mail_1" Frames="1" Position="311,95" Size="20,15" Visible="false" Click="onMemCardMail1"/>
+    <!-- HandleDblClick: a double click on a card's portrait whispers to its player -->
+    <DrawingArea Name="MemCardFace1" Bounds="36,102,60,60" HitTest="true" DoubleClick="onMemCardFace1"/>
+    <DrawingArea Name="MemCardFace2" Bounds="36,184,60,60" HitTest="true" DoubleClick="onMemCardFace2"/>
+    <DrawingArea Name="MemCardFace3" Bounds="36,266,60,60" HitTest="true" DoubleClick="onMemCardFace3"/>
+    <!-- DrawControl: the three rows; DrawHintBox: the exp over a bar -->
+    <DrawingArea Name="MemCardPaint" Bounds="0,0,371,397">
+      <!-- the step down from one card row to the next; the positions below are relative to the first card row -->
+      <Spot Name="MemCardRow" Pitch="0,82"/>
+      <!-- the job icon, the level word and its digits, the element icon, the online / offline icon, the portrait: top-left -->
+      <Spot Name="MemCardJob" Position="202,95"/>
+      <Spot Name="MemCardLevelWord" Position="222,95"/>
+      <Spot Name="MemCardLevelDigits" Position="252,96"/>
+      <Spot Name="MemCardElement" Position="284,95"/>
+      <Spot Name="MemCardOnline" Position="298,127"/>
+      <Spot Name="MemCardPortrait" Position="66,130"/>
+      <!-- the player name, title and guild name: top-left and text box size -->
+      <Spot Name="MemCardPlayerName" Bounds="100,102,112,15"/>
+      <Spot Name="MemCardPlayerTitle" Bounds="145,120,112,15"/>
+      <Spot Name="MemCardGuildName" Bounds="144,137,112,15"/>
+      <!-- the exp bar, also the hover area of the exp hint: top-left and size -->
+      <Spot Name="MemCardBar" Bounds="147,156,108,9"/>
+      <!-- the text colour, blue (RGB565 31) -->
+      <Spot Name="MemCardText" Color="#0000FF"/>
+      <!-- the exp hint: box fill (light blue, translucent), box border (dark blue) and text colour (white) -->
+      <Spot Name="MemCardHintFill" Color="#C83D8BF9"/>
+      <Spot Name="MemCardHintBorder" Color="#000080"/>
+      <Spot Name="MemCardHintText" Color="#FFFFFF"/>
+    </DrawingArea>
+  </Window>
+</Panel>

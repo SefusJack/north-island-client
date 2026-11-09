@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The own item stall (TRe_ItemStallForm, Sell Item in the gold menu); view model:
+     viewmodels/ItemStallWindow.cpp.  A copy of the bag on the right: an item clicked there
+     goes into the first free of the five rows on the left with its price (the right button
+     takes it out again); the arrows choose the stall's picture; Set a Stall opens it (23/30),
+     End Stall pulls it (23/31).  What was sold adds up under the picture.  The game draws a
+     form's controls from the last created to the first: the controls here are in drawing
+     order, the reverse of TRe_ItemStallForm.Create. -->
+<Panel Name="ItemStallLayer" Bounds="0,0,800,600">
+  <Window Name="ItemStall" Picture="Form_KeepItemStall_1" Position="222,69" Visible="false">
+    <!-- DrawControl: the stall's picture and the gold it brought -->
+    <DrawingArea Name="StallPaint" Bounds="0,0,355,461">
+      <!-- the income text: top-left, colour in RGB565 2113 -->
+      <Spot Name="StallIncome" Position="65,394" Color="#080808"/>
+      <!-- the sign preview: its centre -->
+      <Spot Name="StallSignCentre" Position="84,341"/>
+    </DrawingArea>
+    <Image Name="StallRevokeIcon" Picture="Icon_RevokeStall_1" Position="148,425" Size="56,20"/>
+    <Image Name="StallKeepIcon" Picture="Icon_KeepStall_1" Position="79,425" Size="56,20" Visible="false"/>
+    <TextBox Name="StallPrice5" Bounds="57,235,92,15" HitTest="true" ReadOnly="true" Align="Right" CharFilter="Digits"
+             MaxLength="7" FontColor="#080808" Tab="onStallPriceTab"/>
+    <TextBox Name="StallPrice4" Bounds="57,200,92,15" HitTest="true" ReadOnly="true" Align="Right" CharFilter="Digits"
+             MaxLength="7" FontColor="#080808" Tab="onStallPriceTab"/>
+    <TextBox Name="StallPrice3" Bounds="57,165,92,15" HitTest="true" ReadOnly="true" Align="Right" CharFilter="Digits"
+             MaxLength="7" FontColor="#080808" Tab="onStallPriceTab"/>
+    <TextBox Name="StallPrice2" Bounds="57,130,92,15" HitTest="true" ReadOnly="true" Align="Right" CharFilter="Digits"
+             MaxLength="7" FontColor="#080808" Tab="onStallPriceTab"/>
+    <TextBox Name="StallPrice1" Bounds="57,95,92,15" HitTest="true" ReadOnly="true" Align="Right" CharFilter="Digits"
+             MaxLength="7" FontColor="#080808" Tab="onStallPriceTab"/>
+    <IconGrid Name="StallItems" Position="19,87" Columns="1" Rows="5" Pitch="35" RightClick="onStallItemRemove"/>
+    <ImageButton Name="StallCancel" Picture="Btn_Cancel_1" Position="217,425" Hint="Cancel" Click="onStallClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="StallRevoke" Picture="Btn_RevokeStall_1" Position="148,425" Hint="Pull a stall" Visible="false"
+                 Click="onStallRevoke"/>
+    <ImageButton Name="StallKeep" Picture="Btn_KeepStall_1" Position="79,425" Hint="Set a stall" Click="onStallKeep"/>
+    <TextBox Name="StallName" Bounds="162,27,121,19" Skin="Panel26" SkinSource="0,0,104,14" Borders="1,1,1,1"
+             HitTest="true" FontColor="#080808"/>
+    <ImageButton Name="StallNextLook" Picture="Btn_ArrowR_9" Position="129,331" Click="onStallNextLook"/>
+    <ImageButton Name="StallPreviousLook" Picture="Btn_ArrowL_9" Position="21,331" Click="onStallPreviousLook"/>
+    <ImageButton Name="StallCloseSmall" Picture="Btn_Close_s_1" Position="304,23" Size="18,18" Click="onStallClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <IconGrid Name="StallBag" Position="163,67" Columns="5" Rows="10" Pitch="34" Click="onStallBagClick"
+              RightClick="onStallBagRemove"/>
+  </Window>
+</Panel>

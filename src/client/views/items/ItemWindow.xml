@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The item window (TSe_EquipForm2, Ctrl+I or the Item button); view model:
+     viewmodels/ItemWindow.cpp.  The left column shows the character (what it wears around its
+     figure, level, HP, SP, experience, gold and stats), the right one the bag. -->
+<Panel Name="ItemWindowLayer" Bounds="0,0,800,600">
+  <Window Name="ItemWindow" Escape="onItemWindowEscape" AbovePopups="true" Picture="Form_RoleStatus_1" Position="207,69" Hint="Item [Ctrl+I]" Visible="false">
+    <DrawingArea Name="ItemStatus" Bounds="0,0,386,461">
+      <!-- the text colour, in RGB565 2113, and the colour of a buffed value, red (RGB565 63488) -->
+      <Spot Name="ItemStatusText" Color="#080808"/>
+      <Spot Name="ItemStatusBuffed" Color="#FF0000"/>
+      <!-- the status figure: its feet -->
+      <Spot Name="ItemFigureFeet" Position="100,211"/>
+    </DrawingArea>
+    <Image Name="ItemElement" Bounds="19,56,25,25" HitTest="true"/>
+    <Image Name="ItemLevelWord" Picture="Main_Word_Lv" Position="20,88"/>
+    <DigitText Name="ItemLevel" Position="50,89" Picture="Num_White3_1" Spacing="-1"/>
+    <DrawingArea Name="ItemName" Bounds="0,0,386,461"/>
+    <ImageButton Name="ItemCloseSmall" Picture="Btn_Close_s_1" Position="336,26" Click="onItemWindowClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="ItemSort" Picture="Btn_Module_2" Position="280,423" Size="32,20" Narrow="true" IconLines="3,0 3,11; 0,3 3,0 6,3; 10,0 10,11; 7,8 10,11 13,8" IconWidth="2" Hint="Sort (qol)" Visible="false" Click="onItemSort"/>
+    <ImageButton Name="ItemClose" Picture="Btn_Close_1" Position="165,423" Hint="[ESC]" Click="onItemWindowClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <IconGrid Name="ItemHead" Position="84,84" FirstIndex="1" DoubleClick="onUnequip" Draggable="true" Drop="onItemDrop"/>
+    <IconGrid Name="ItemBody" Position="147,186" FirstIndex="2" DoubleClick="onUnequip" Draggable="true" Drop="onItemDrop"/>
+    <IconGrid Name="ItemWeapon" Position="25,125" FirstIndex="3" DoubleClick="onUnequip" Draggable="true" Drop="onItemDrop"/>
+    <IconGrid Name="ItemWrist" Position="147,126" FirstIndex="4" DoubleClick="onUnequip" Draggable="true" Drop="onItemDrop"/>
+    <IconGrid Name="ItemFeet" Position="84,220" FirstIndex="5" DoubleClick="onUnequip" Draggable="true" Drop="onItemDrop"/>
+    <IconGrid Name="ItemSpecial" Position="24,185" FirstIndex="6" DoubleClick="onUnequip" Draggable="true" Drop="onItemDrop"/>
+    <ImageButton Name="ItemPreviousCharacter" Picture="Btn_ArrowL_9" Position="40,245" Click="onItemPreviousCharacter"/>
+    <ImageButton Name="ItemNextCharacter" Picture="Btn_ArrowR_9" Position="139,245" Click="onItemNextCharacter"/>
+    <IconGrid Name="ItemBag" Position="193,74" Columns="5" Rows="10" Pitch="34" DoubleClick="onUseItem" RightClick="onItemRightClick" Draggable="true" Drop="onItemDrop"/>
+    <ImageButton Name="ItemStatusOnly" Picture="Btn_ArrowL_5" Position="149,30" Hint="Only display status column" Click="onItemStatusOnly"/>
+    <ImageButton Name="ItemItemsOnly" Picture="Btn_ArrowR_5" Position="222,30" Hint="Only display item column" Click="onItemItemsOnly"/>
+    <ImageButton Name="ItemPotential" Picture="Btn_Potential_1" Position="126,88" Click="onItemPotential"/>
+    <ImageButton Name="ItemExpress" Picture="Btn_Express_1" Position="74,143" Visible="false" Click="onItemExpress"/>
+    <ImageButton Name="ItemPointStr" Picture="Btn_ArrowUp_2" Position="154,339" Visible="false" Click="onAddStatPoint"/>
+    <ImageButton Name="ItemPointCon" Picture="Btn_ArrowUp_2" Position="154,355" Visible="false" Click="onAddStatPoint"/>
+    <ImageButton Name="ItemPointInt" Picture="Btn_ArrowUp_2" Position="154,371" Visible="false" Click="onAddStatPoint"/>
+    <ImageButton Name="ItemPointWis" Picture="Btn_ArrowUp_2" Position="154,387" Visible="false" Click="onAddStatPoint"/>
+    <ImageButton Name="ItemPointAgi" Picture="Btn_ArrowUp_2" Position="154,403" Visible="false" Click="onAddStatPoint"/>
+    <ImageButton Name="ItemPointsOk" Picture="Btn_Ok_1" Position="117,423" Visible="false" Click="onSendStatPoints"/>
+    <ImageButton Name="ItemPointsCancel" Picture="Btn_Cancel_1" Position="213,423" Visible="false" Click="onCancelStatPoints"/>
+    <DrawingArea Name="ItemTips" Bounds="0,0,386,461">
+      <!-- the tooltips: box fill (light blue, translucent), label tooltip border (blue), exp and figure tooltip border (dark blue) -->
+      <Spot Name="ItemTipFill" Color="#C83D8BF9"/>
+      <Spot Name="ItemTipBorder" Color="#0000FF"/>
+      <Spot Name="ItemExpTipBorder" Color="#000080"/>
+    </DrawingArea>
+  </Window>
+</Panel>

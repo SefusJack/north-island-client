@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The sign-up page of the qol client (the login form's Sign Up; the original opened a web page); view model:
+     viewmodels/login/SignUpForm.cpp.  Made of the game's pictures: the white form frame (form_module_1), the login form's
+     fields (Panel26) and its Sign Up and Previous buttons.  The server makes an account the first time it is logged in to
+     (AutoRegister), so Sign Up logs in with the new name. -->
+<Panel Name="SignUpForm" Bounds="0,0,800,600" Visible="false">
+  <!-- form_module_1: Borders keep the ornaments whole (top 122, bottom 45) and repeat only the picture's steady rows 122..177;
+       an odd height keeps its two-row stripes in step where the repeats meet the bottom -->
+  <Panel Name="SignUpFrame" Bounds="267,128,266,345" Skin="form_module_1" SkinSource="0,0,223,223" Borders="64,122,80,45"/>
+  <Label Name="SignUpTitle" Position="300,150" Text="Create an account" FontColor="#1E3C78" Effect="Plain"/>
+  <ImageButton Name="SignUpCloseSmall" Picture="Btn_Close_s_1" Position="483,154" Size="18,18" Click="onSignUpBack"
+               ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+
+  <Label Name="SignUpAccountText" Position="296,195" Text="Account" FontColor="#1E3C78" Effect="Plain"/>
+  <TextBox Name="SignUpAccount" Bounds="376,195,127,12" Skin="Panel26" SkinSource="0,0,103,21" Borders="1,1,1,1"
+           FontColor="#0000FF" MaxLength="14" AllowPaste="true" Enter="onSignUpNext" Tab="onSignUpNext"/>
+  <Label Name="SignUpPasswordText" Position="296,223" Text="Password" FontColor="#1E3C78" Effect="Plain"/>
+  <TextBox Name="SignUpPassword" Bounds="376,223,127,12" Skin="Panel26" SkinSource="0,0,103,21" Borders="1,1,1,1"
+           FontColor="#0000FF" MaxLength="14" Password="true" AllowPaste="true" Enter="onSignUpNext" Tab="onSignUpNext"/>
+  <Label Name="SignUpAgainText" Position="296,251" Text="Again" FontColor="#1E3C78" Effect="Plain"/>
+  <TextBox Name="SignUpAgain" Bounds="376,251,127,12" Skin="Panel26" SkinSource="0,0,103,21" Borders="1,1,1,1"
+           FontColor="#0000FF" MaxLength="14" Password="true" AllowPaste="true" Enter="onSignUp" Tab="onSignUpNext"/>
+
+  <Label Name="SignUpRule1" Bounds="296,278,205,30" WordWrap="true" Text="Account:" FontColor="#50648C" Effect="Plain"/>
+  <Label Name="SignUpRule4" Bounds="296,292,215,30" WordWrap="true" Text="4 to 14 letters or digits" FontColor="#50648C" Effect="Plain"/>
+  <Label Name="SignUpRule2" Bounds="296,310,207,30" WordWrap="false" Text="Password:" FontColor="#50648C" Effect="Plain"/>
+
+  <Label Name="SignUpRule3" Bounds="297,325,207,30" WordWrap="false" Text="4 to 14 characters" FontColor="#50648C" Effect="Plain"/>
+  <ImageButton Name="SignUpCreate" Picture="Btn_applyID_1" Bounds="328,392,143,20" Click="onSignUp"/>
+  <ImageButton Name="SignUpPrevious" Picture="Btn_Prev_L" Bounds="328,418,143,20" Click="onSignUpBack"/>
+</Panel>

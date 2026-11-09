@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What an item is, next to the item under the mouse (TSe_PopInfoForm), and beside it what is
+     worn in its place (TEquipCompareForm); view model: viewmodels/ItemInfoPopup.cpp. -->
+<Panel Name="ItemInfoLayer" Bounds="0,0,800,600" Topmost="true">
+  <Panel Name="ItemInfo" Skin="panel4" SkinSource="0,0,50,50" Borders="15,15,15,15" Bounds="0,0,188,150" Visible="false">
+    <DrawingArea Name="ItemInfoLines" Bounds="0,0,188,150">
+      <!-- the description lines: text box width (the height is not used), yellow (RGB565 65504) -->
+      <Spot Name="ItemInfoLine" Size="176,0" Color="#FFFF00"/>
+      <!-- the header line: text box width (the height is not used), red (RGB565 63488) -->
+      <Spot Name="ItemInfoHeader" Size="184,0" Color="#FF0000"/>
+    </DrawingArea>
+  </Panel>
+  <Panel Name="ItemCompare" Skin="panel4" SkinSource="0,0,50,50" Borders="15,15,15,15" Bounds="0,0,188,150" Visible="false">
+    <DrawingArea Name="ItemCompareLines" Bounds="0,0,188,150"/>
+  </Panel>
+</Panel>

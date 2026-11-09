@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The world screen; view model: viewmodels/WorldScene.cpp.  WorldView shows the map (and
+     takes the clicks that walk).  While the map loads (until server 1/11) the login backdrop
+     stays up. -->
+<Screen Name="WorldScene" Bounds="0,0,800,600">
+  <DrawingArea Name="WorldView" Bounds="0,0,800,600" Anchor="Fill" HitTest="true"
+               MouseDown="onMapMouseDown" MouseDrag="onMapMouseDrag" MouseUp="onMapMouseUp"
+               RightMouseDown="onMapRightMouseDown" DoubleClick="onMapDoubleClick"/>
+  <Panel Name="WorldBackdrop" Bounds="0,0,800,600">
+    <Image Name="WorldBackdropPicture" Source="pic/LogPic1.jpg" Position="0,0"/>
+    <Image Name="WorldBackdropLogo" Picture="Icon_LoginLogo_1" Position="617,0"/>
+  </Panel>
+</Screen>

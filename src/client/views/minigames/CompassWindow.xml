@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Golden Compass's overlay (TWaterMelonGame, 57/10): the world shows and the game adds the player's lives at the bottom right and the
+     players' names at the left, which the view model paints; the mouse passes through.  View model: viewmodels/CompassWindow.cpp. -->
+<Panel Name="CompassLayer" Bounds="0,0,800,600">
+  <DrawingArea Name="CompassPage" Bounds="0,0,800,600" Visible="false">
+    <!-- own face icon -->
+    <Spot Name="CompassAvatar" Position="730,488"/>
+    <!-- the x between the face and the lives count, white (RGB565 65535) -->
+    <Spot Name="CompassMultiply" Position="747,504" Color="#FFFFFF"/>
+    <!-- the lives number -->
+    <Spot Name="CompassLives" Position="773,500"/>
+    <!-- the participants list: first name's place, 18 px between rows, white (RGB565 65535) -->
+    <Spot Name="CompassParticipants" Position="16,80" Pitch="0,18" Color="#FFFFFF"/>
+    <!-- the own place's name colour: yellow (RGB565 65504) -->
+    <Spot Name="CompassOwnPlace" Color="#FFFF00"/>
+  </DrawingArea>
+</Panel>

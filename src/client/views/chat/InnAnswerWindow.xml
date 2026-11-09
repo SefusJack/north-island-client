@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The inn's answer (TINNAnsForm): what the innkeeper says, here that the gold does not do;
+     view model: viewmodels/InnAnswerWindow.cpp.  Closing it lets the event go on.  The game
+     draws a form's controls from the last created to the first: the controls here are in
+     drawing order, the reverse of TINNAnsForm.Create. -->
+<Panel Name="InnAnswerLayer" Bounds="0,0,800,600">
+  <Window Name="InnAnswer" Position="286,223" Size="228,154" Visible="false">
+    <Panel Name="InnAnswerFrame" Bounds="0,0,228,154" Skin="form_module" SkinSource="0,0,200,180" Borders="64,38,44,14"/>
+    <Image Name="InnAnswerIcon" Picture="icon_inn" Position="10,7"/>
+    <ImageButton Name="InnAnswerCloseSmall" Picture="Btn_Close_s_1" Position="205,5" Size="17,17" Click="onInnAnswerClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="InnAnswerClose" Picture="Btn_Close_1" Position="79,117" Size="70,25" Click="onInnAnswerClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <Panel Name="InnAnswerPanel" Bounds="20,42,188,68" Skin="panel10" SkinSource="0,0,50,50" Borders="7,7,7,7">
+      <Memo Name="InnAnswerText" Bounds="4,4,192,60" FontColor="#FFFFFF" Effect="Plain" ReadOnly="true"/>
+    </Panel>
+  </Window>
+</Panel>

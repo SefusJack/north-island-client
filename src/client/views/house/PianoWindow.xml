@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Piano's form (TPianoForm, opened by a click on a Piano 39110 in a house); view model: viewmodels/PianoWindow.cpp.  Made in the middle of the screen
+     (the view model places it from its picture's size) with the close button 8 pixels in from the right edge, which lies partly outside it.  The press and
+     release on the form itself play the keys.  The game draws a form's controls from the last created to the first: the controls here are in drawing
+     order, the reverse of TPianoForm.Create. -->
+<Panel Name="PianoLayer" Bounds="0,0,800,600">
+  <Window Name="Piano" Picture="Piano" Position="0,0" Visible="false" MouseDown="onPianoMouseDown" MouseUp="onPianoMouseUp"
+          Escape="onPianoEscape">
+    <!-- DrawControl: the key that is down -->
+    <DrawingArea Name="PianoPaint" Bounds="0,0,400,300"/>
+    <ImageButton Name="PianoClose" Picture="Btn_Close_S_1" Position="0,5" Size="18,18" Click="onPianoClose"/>
+  </Window>
+</Panel>

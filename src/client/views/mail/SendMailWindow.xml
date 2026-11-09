@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Writing mail (TSe_SendMailForm, the mail icon of a friend's row or Send Mail for the ticked
+     friends); view model: viewmodels/SendMailWindow.cpp.  The friend's name and face, the text
+     (152 characters at most), Send (14/1), Clear, Old Mail (the mail box) and Close.  The game
+     draws a form's controls from the last created to the first: the controls here are in drawing
+     order, the reverse of TSe_SendMailForm.Create. -->
+<Panel Name="SendMailLayer" Bounds="0,0,800,600">
+  <Window Name="SendMail" Escape="onSendMailHide" Picture="Form_MailSend_1" Position="10,50" Visible="false">
+    <!-- DrawControl: DrawMailTargetPreview -->
+    <DrawingArea Name="SendMailPaint" Bounds="0,0,249,355">
+      <!-- where the receiver's name is written; the receiver's face -->
+      <Spot Name="SendMailName" Position="50,67"/>
+      <Spot Name="SendMailFace" Position="188,244"/>
+      <!-- the notice board picture, shown for a notice author -->
+      <Spot Name="SendMailNotice" Position="160,210"/>
+      <!-- the colour of the name (RGB565 2113) -->
+      <Spot Name="SendMailNameColor" Color="#080808"/>
+    </DrawingArea>
+    <ImageButton Name="SendMailClear" Picture="btn_Clear_1" Position="104,282" Click="onSendMailClear"/>
+    <ImageButton Name="SendMailClose" Picture="Btn_Close_1" Position="104,315" Hint="[ESC]" Click="onSendMailClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="SendMailOldMail" Picture="btn_PastMail_1" Position="42,282" Click="onSendMailOldMail"/>
+    <ImageButton Name="SendMailSend" Picture="Btn_sendMail_2" Position="167,282" Click="onSendMailSend"/>
+    <Memo Name="SendMailText" Bounds="30,90,200,190" FontColor="#080808" Effect="Plain" MaxChars="152"/>
+    <ImageButton Name="SendMailCloseSmall" Picture="Btn_Close_s_1" Position="200,23" Size="17,17" Click="onSendMailHide"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

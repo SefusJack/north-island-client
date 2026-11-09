@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The places a vehicle of the trips goes to (TWS_TransmiForm, a click on the own player riding the village robot, the submarine or the landing
+     craft): a double click on a place sets out; the form shows the submarine or the landing craft over its title.  The game draws a form's
+     controls from the last created to the first: the controls here are in drawing order, the reverse of TWS_TransmiForm.Create.  View model:
+     viewmodels/TransportWindow.cpp. -->
+<Panel Name="TransportLayer" Bounds="0,0,800,600">
+  <Window Name="TransportWindow" Escape="onTransportClose" Picture="From_Transmi" Position="500,30" Size="290,459" Hint="spell [Ctrl+S]" Visible="false">
+    <!-- DrawControl: the vehicle's picture -->
+    <DrawingArea Name="TransportPage" Bounds="0,0,290,459">
+      <!-- the vehicle picture: top-left -->
+      <Spot Name="TransportPicture" Position="57,11"/>
+    </DrawingArea>
+    <ImageButton Name="TransportDown" Picture="Btn_ArrowDn_1" Position="217,349" Size="17,17" Click="onTransportDown"/>
+    <ImageButton Name="TransportUp" Picture="Btn_ArrowUp_1" Position="217,61" Size="17,17" Click="onTransportUp"/>
+    <ListBox Name="TransportPlaces" Bounds="28,74,180,300" RowHeight="26" FontColor="#FFFFFF" HighlightColor="#89BFF5" FocusFrame="false"
+             TextShadow="false" TextOffset="20,3" ScrollBar="TransportScroll" DoubleClick="onTransportPick"/>
+    <ScrollBar Name="TransportScroll" Bounds="217,78,17,270" Track="Rail_H5" TrackCap="16" Thumb="bar_H4" ThumbSource="0,0,9,21" ThumbCap="7"
+               ThumbInset="3"/>
+    <ImageButton Name="TransportClose" Picture="btn_Close_1" Position="105,380" Size="56,20" Hint="[ESC]" Click="onTransportClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="TransportCloseSmall" Picture="Btn_Close_s_1" Position="215,24" Size="18,18" Click="onTransportClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

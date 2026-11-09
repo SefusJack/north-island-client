@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The house's blackboard (TH_BlackBoardForm, opened by the owner's click on a Blackboard 39073; the server's 72/1 fills it); view model: viewmodels/BlackBoardWindow.cpp.
+     Made in the middle of the screen: five rows of a message each, the writing field over the row being written, OK / Cancel / Delete under them (shown as a row is
+     picked) and Close.  The game draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of
+     TH_BlackBoardForm.Create. -->
+<Panel Name="BlackBoardLayer" Bounds="0,0,800,600">
+  <Window Name="BlackBoard" Escape="onBlackBoardClose" Picture="Form_BlackBoard_1" Position="191,136" Visible="false" MouseUp="onBlackBoardMouseUp">
+    <!-- DrawControl: the row under the mouse and the messages -->
+    <DrawingArea Name="BlackBoardPaint" Bounds="0,0,418,328">
+      <!-- the first message row: the hover highlight's box and colour (light cyan, alpha 80), and the step down to the next row's text -->
+      <Spot Name="BlackBoardRow" Bounds="15,58,383,45" Pitch="0,46" Color="#509EFAFE"/>
+      <!-- the text colour of a recent message and of an old one (RGB565 65504 and 63488) -->
+      <Spot Name="BlackBoardRecent" Color="#FFFF00"/>
+      <Spot Name="BlackBoardOld" Color="#FF0000"/>
+    </DrawingArea>
+    <TextBox Name="BlackBoardEdit" Position="87,81" Size="180,23" Visible="false" HitTest="true" MaxLength="20" FontColor="#FFFF00"/>
+    <ImageButton Name="BlackBoardCancel" Picture="Btn_Cancel_3" Position="141,293" Size="43,20" Visible="false" Click="onBlackBoardCancel"/>
+    <ImageButton Name="BlackBoardDelete" Picture="Btn_Delete_1" Position="289,293" Size="43,20" Visible="false" Click="onBlackBoardDelete"/>
+    <ImageButton Name="BlackBoardOk" Picture="Btn_OK_2" Position="93,293" Size="43,20" Visible="false" Click="onBlackBoardOk"/>
+    <ImageButton Name="BlackBoardClose" Picture="Btn_Close_2" Position="187,293" Size="43,20" Click="onBlackBoardClose"/>
+    <ImageButton Name="BlackBoardCloseSmall" Picture="Btn_Close_S_1" Position="368,24" Size="18,18" Click="onBlackBoardClose"/>
+  </Window>
+</Panel>

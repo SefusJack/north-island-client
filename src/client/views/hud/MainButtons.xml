@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The button row at the bottom right of the world (RE_MainBtnForm); view model:
+     viewmodels/MainButtons.cpp. -->
+<Panel Name="MainButtons" Bounds="0,0,800,600" Anchor="BottomRight" HudScale="true" Visible="false">
+  <!-- RE_MainBtnForm.FButtons[2]: shown while the owner has furniture waiting in the pick-up area -->
+  <ImageButton Name="MainRetained" Picture="Btn_BringUpFur_1" Position="763,507" Hint="Pick up the furniture" Click="onMainRetained" Visible="false"/>
+  <Image Name="MainButtonsBackground" Picture="Btn_BackGround_2" Position="531,563"/>
+  <!-- the blinking Item button: how far it moves (right, down) and the size of its blinking strip frame -->
+  <Spot Name="MainItemAlert" Bounds="2,8,39,43"/>
+  <ImageButton Name="MainItem" Picture="Btn_11" Position="531,547" Hint="Item" Click="onMainItem" Animation="Btn_11_1" AnimationFrames="4" AnimationInterval="100"/>
+  <ImageButton Name="MainSkill" Picture="Btn_12" Position="571,547" Hint="Skill" Click="onMainSkill"/>
+  <ImageButton Name="MainCompound" Picture="Btn_13" Position="620,546" Hint="Compound" Click="onMainCompound"/>
+  <ImageButton Name="MainGroup" Picture="Btn_14" Position="663,549" Hint="Group" Click="onMainGroup"/>
+  <ImageButton Name="MainSocial" Picture="Btn_15" Position="706,544" Hint="Social" Click="onMainSocial"/>
+  <ImageButton Name="MainSystem" Picture="Btn_16" Position="751,549" Hint="System" Click="onMainSystem"/>
+</Panel>

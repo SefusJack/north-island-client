@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Locker of a house (THL_PledgeBoxForm); view model: viewmodels/PledgeBoxWindow.cpp.  Twenty-five places in five rows of five, pledge items
+     dropped on one go in, the right button takes one back.  The game draws a form's controls from the last created to the first: the controls here
+     are in drawing order, the reverse of THL_PledgeBoxForm.Create. -->
+<Panel Name="PledgeBoxLayer" Bounds="0,0,800,600">
+  <Window Name="PledgeBoxWindow" Escape="onPledgeBoxClose" AbovePopups="true" Picture="Form_Pledge_1" Position="292,175" Visible="false">
+    <IconGrid Name="PledgeBoxCells" Position="24,43" Columns="5" Rows="5" Pitch="34" HoverColor="#00000000" RightClick="onPledgeBoxTake"/>
+    <ImageButton Name="PledgeBoxClose" Picture="btn_close_1" Position="80,220" Size="56,20" Hint="[ESC]" Click="onPledgeBoxClose"/>
+  </Window>
+</Panel>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The F1-F8 shortcut bar on the right edge of the world (TSe_HotKeyForm, upright layout);
+     view model: viewmodels/HotKeyBar.cpp.  The F1-F8 labels are part of the picture; the page
+     number (DrawControl) comes over it, then the controls from the last created to the first:
+     the page arrows, the eight places, the minimize button.  The view model places them: the bar is dragged by its
+     frame and lies down along the top or bottom edge (SetHotKeyLayout); the minimize button folds it
+     into a small box and back (ToggleHotKeyMinimize). -->
+<Panel Name="HotKeyBar" Bounds="0,0,800,600" Anchor="Right" HudScale="true" Visible="false">
+  <Image Name="HotKeyBackground" Picture="Form_HotKey_V" Position="744,163"/>
+  <!-- the form takes the clicks on its frame (FPixelHitTest 0) -->
+  <DrawingArea Name="HotKeyFrame" Bounds="744,163,56,274" HitTest="true" Hint="Shortcut Bar" MouseDown="onHotKeyFramePress"
+               MouseDrag="onHotKeyFrameDrag" MouseUp="onHotKeyFrameRelease"/>
+  <Image Name="HotKeyPage" Picture="HotKeyPage_1" Position="767,408"/>
+  <ImageButton Name="HotKeyPageNext" Picture="Btn_ArrowR_3" Position="780,411" Click="onHotKeyPageNext"/>
+  <ImageButton Name="HotKeyPagePrevious" Picture="Btn_ArrowL_3" Position="756,411" Click="onHotKeyPagePrevious"/>
+  <IconGrid Name="HotKeySlots" Position="767,192" Columns="1" Rows="8" Pitch="27" CellSize="24" HoverColor="#00000000"
+            Draggable="true" Drop="onHotKeyDrop" RightClick="onHotKeyClear" Click="onHotKeyUse"/>
+  <ImageButton Name="HotKeyMinimize" Picture="Btn_Minimize_1" Position="781,163" Hint="zoom the window" Click="onHotKeyMinimize"/>
+</Panel>

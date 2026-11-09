@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Remote Control Plus (THL_AutoPlayFormPlus, the Level-up Setting button of the Remote Control 34128): what the battle's auto button does for the player
+     (tab 1) and for his pet (tab 2): named skills, a rotation of three, heal HP and SP, an enemy under or over a value and the party's death; tab 3 only
+     describes it.  The game draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of
+     THL_AutoPlayFormPlus.Create (the small close button and the fourth tick are hidden in the game and left out).
+     View model: viewmodels/RemotePlusWindow.cpp. -->
+<Panel Name="RemotePlusLayer" Bounds="0,0,800,600">
+  <Window Name="RemotePlusWindow" Escape="onPlusClose" Picture="Form_AutoPlayerPlus_1" Position="280,55" Size="240,489" Visible="false">
+    <!-- DrawControl: the arrows from a skill to its target and the panel of the target menu, under the controls -->
+    <DrawingArea Name="PlusOverlay" Bounds="0,0,240,489"/>
+    <DrawingArea Name="PlusKey9" Bounds="92,375,30,30" HitTest="true" DoubleClick="onPlusKeyDouble" RightMouseUp="onPlusKeyClear"/>
+    <DrawingArea Name="PlusKey8" Bounds="162,410,30,30" HitTest="true" DoubleClick="onPlusKeyDouble" RightMouseUp="onPlusKeyClear"/>
+    <DrawingArea Name="PlusKey7" Bounds="187,305,30,30" HitTest="true" DoubleClick="onPlusKeyDouble" RightMouseUp="onPlusKeyClear"/>
+    <DrawingArea Name="PlusKey6" Bounds="187,269,30,30" HitTest="true" DoubleClick="onPlusKeyDouble" RightMouseUp="onPlusKeyClear"/>
+    <DrawingArea Name="PlusKey5" Bounds="114,243,30,30" HitTest="true" DoubleClick="onPlusKeyDouble" RightMouseUp="onPlusKeyClear"/>
+    <DrawingArea Name="PlusKey4" Bounds="114,210,30,30" HitTest="true" DoubleClick="onPlusKeyDouble" RightMouseUp="onPlusKeyClear"/>
+    <DrawingArea Name="PlusKey3" Bounds="114,177,30,30" HitTest="true" DoubleClick="onPlusKeyDouble" RightMouseUp="onPlusKeyClear"/>
+    <DrawingArea Name="PlusKey2" Bounds="162,123,30,30" HitTest="true" DoubleClick="onPlusKeyDouble" RightMouseUp="onPlusKeyClear"/>
+    <DrawingArea Name="PlusKey1" Bounds="162,91,30,30" HitTest="true" DoubleClick="onPlusKeyDouble" RightMouseUp="onPlusKeyClear"/>
+    <ImageButton Name="PlusCompare" Picture="Btn_Smaller" Position="89,344" Size="43,20" Click="onPlusCompare"/>
+    <ImageButton Name="PlusHealMenu3" Picture="Btn_Role_3" Position="0,0" Size="43,20" Visible="false" Click="onPlusTarget"/>
+    <ImageButton Name="PlusHealMenu2" Picture="Btn_Role_2" Position="0,0" Size="43,20" Visible="false" Click="onPlusTarget"/>
+    <ImageButton Name="PlusHealMenu1" Picture="Btn_Role_4" Position="0,0" Size="43,20" Visible="false" Click="onPlusTarget"/>
+    <ImageButton Name="PlusSkillMenu3" Picture="Btn_Role_3" Position="0,0" Size="43,20" Visible="false" Click="onPlusTarget"/>
+    <ImageButton Name="PlusSkillMenu2" Picture="Btn_Role_2" Position="0,0" Size="43,20" Visible="false" Click="onPlusTarget"/>
+    <ImageButton Name="PlusSkillMenu1" Picture="Btn_Role_1" Position="0,0" Size="43,20" Visible="false" Click="onPlusTarget"/>
+    <ImageButton Name="PlusHealRole2" Picture="Btn_Role_4" Position="47,327" Size="43,20" Click="onPlusHealRole"/>
+    <ImageButton Name="PlusHealRole1" Picture="Btn_Role_4" Position="47,292" Size="43,20" Click="onPlusHealRole"/>
+    <ImageButton Name="PlusSkillRole4" Picture="Btn_Role_1" Position="166,380" Size="43,20" Click="onPlusSkillRole"/>
+    <ImageButton Name="PlusSkillRole3" Picture="Btn_Role_1" Position="166,243" Size="43,20" Click="onPlusSkillRole"/>
+    <ImageButton Name="PlusSkillRole2" Picture="Btn_Role_1" Position="166,213" Size="43,20" Click="onPlusSkillRole"/>
+    <ImageButton Name="PlusSkillRole1" Picture="Btn_Role_1" Position="166,183" Size="43,20" Click="onPlusSkillRole"/>
+    <TextBox Name="PlusValue3" Bounds="137,346,52,18" HitTest="true" CharFilter="Digits" MaxLength="5" AllowPaste="true" FontColor="#080808"/>
+    <CheckBox Name="PlusCheck6" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="27,418" Size="16,16" Click="onPlusCheck"/>
+    <CheckBox Name="PlusCheck5" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="27,347" Size="16,16" Click="onPlusCheck"/>
+    <CheckBox Name="PlusCheck3" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="27,277" Size="16,16" Click="onPlusCheck"/>
+    <CheckBox Name="PlusCheck2" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="27,156" Size="16,16" Click="onPlusCheck"/>
+    <CheckBox Name="PlusCheck1" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="27,73" Size="16,16" Click="onPlusCheck"/>
+    <TextBox Name="PlusValue2" Bounds="137,311,52,18" HitTest="true" CharFilter="Digits" MaxLength="5" AllowPaste="true" FontColor="#080808"/>
+    <TextBox Name="PlusValue1" Bounds="137,276,52,18" HitTest="true" CharFilter="Digits" MaxLength="5" AllowPaste="true" FontColor="#080808"/>
+    <ImageButton Name="PlusTab3" Picture="Icon_AutoTab_3" Position="151,41" Size="66,21" Click="onPlusTab"/>
+    <ImageButton Name="PlusTab2" Picture="Icon_AutoTab_2" Position="85,41" Size="66,21" Click="onPlusTab"/>
+    <ImageButton Name="PlusTab1" Picture="Icon_AutoTab_1" Position="19,41" Size="66,21" Click="onPlusTab"/>
+    <ImageButton Name="PlusCancel" Picture="Btn_Cancel_3" Position="100,453" Size="39,20" Visible="false" Click="onPlusCancel"/>
+    <ImageButton Name="PlusOk" Picture="Btn_OK_2" Position="51,453" Size="39,20" Click="onPlusOk"/>
+    <ImageButton Name="PlusClose" Picture="Btn_Close_2" Position="149,453" Size="39,20" Click="onPlusClose"/>
+  </Window>
+</Panel>

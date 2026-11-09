@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Character select (TSe_SelectCharacter); view model: viewmodels/CharacterSelectForm.cpp.
+     Two slots, each drawn from origin 40,135 (slot 1) or 420,135 (slot 2). -->
+<Panel Name="CharacterSelectForm" Bounds="0,0,800,600" Visible="false">
+  <Image Name="CharacterSelectTitle" Picture="Icon_SelectRole_1" Position="282,80"/>
+
+  <!-- slot 1 -->
+  <Image Name="Slot1Empty" Source="Menu/Skins/White/Form_SelectRole_Empty_R.jpg" Position="40,135"/>
+  <Image Name="Slot1Info" Source="Menu/Skins/White/Form_SelectRole_Info_R.jpg" Position="40,135" Visible="false"/>
+  <Image Name="Slot1EmptyIcon" Picture="Icon_Empty" Position="166,296"/>
+  <Panel Name="Slot1Details" Bounds="0,0,800,600" Visible="false">
+    <DrawingArea Name="Slot1Portrait" Position="145,205"/>
+    <DrawingArea Name="Slot1Figure" Position="210,425"/>
+    <Image Name="Slot1Element" Bounds="263,154,25,25" HitTest="true"/>
+    <Label Name="Slot1Name" Position="95,243" Size="100,15" FontColor="#FFFFFF" Effect="Shadow"/>
+    <DigitText Name="Slot1Level" Position="95,270" Picture="Num_White3_1" Rows="10" Spacing="-1"/>
+    <Image Name="Slot1Career" Picture="Icon_Career_2" Position="212,180" Visible="false"/>
+    <Image Name="Slot1Job" Position="267,183" Size="16,16"/>
+    <DigitText Name="Slot1Hp" Position="257,207" Picture="Num_MainInfo" Rows="12" Glyphs="0123456789%/" Spacing="-3"/>
+    <DigitText Name="Slot1Sp" Position="257,222" Picture="Num_MainInfo" Rows="12" Glyphs="0123456789%/" Spacing="-3"/>
+    <Image Name="Slot1ExpFrame" Picture="Panel37" Position="255,239"/>
+    <ProgressBar Name="Slot1ExpBar" Picture="Panel38" Position="257,241"/>
+    <DigitText Name="Slot1ExpPercent" Position="306,239" Picture="Num_MainInfo" Rows="12" Glyphs="0123456789%/" Spacing="-3"/>
+    <DigitText Name="Slot1Gold" Position="257,256" Picture="Num_MainInfo" Rows="12" Glyphs="0123456789%/" Spacing="-3"/>
+    <ImageButton Name="Slot1TurnLeft" Picture="Btn_ArrowL_1" Bounds="152,395,18,17" Click="onTurnLeft1"/>
+    <ImageButton Name="Slot1TurnRight" Picture="Btn_ArrowR_1" Bounds="249,395,18,17" Click="onTurnRight1"/>
+    <ImageButton Name="Slot1Enter" Picture="Btn_Login" Bounds="311,435,56,20" Click="onEnter1"/>
+  </Panel>
+  <ImageButton Name="Slot1CreateOrDelete" Picture="Btn_CreateCharacter" Bounds="311,458,56,20" Click="onCreateOrDelete1"/>
+
+  <!-- slot 2 -->
+  <Image Name="Slot2Empty" Source="Menu/Skins/White/Form_SelectRole_Empty_R.jpg" Position="420,135"/>
+  <Image Name="Slot2Info" Source="Menu/Skins/White/Form_SelectRole_Info_R.jpg" Position="420,135" Visible="false"/>
+  <Image Name="Slot2EmptyIcon" Picture="Icon_Empty" Position="546,296"/>
+  <Panel Name="Slot2Details" Bounds="0,0,800,600" Visible="false">
+    <DrawingArea Name="Slot2Portrait" Position="525,205"/>
+    <DrawingArea Name="Slot2Figure" Position="590,425"/>
+    <Image Name="Slot2Element" Bounds="643,154,25,25" HitTest="true"/>
+    <Label Name="Slot2Name" Position="475,243" Size="100,15" FontColor="#FFFFFF" Effect="Shadow"/>
+    <DigitText Name="Slot2Level" Position="475,270" Picture="Num_White3_1" Rows="10" Spacing="-1"/>
+    <Image Name="Slot2Career" Picture="Icon_Career_2" Position="592,180" Visible="false"/>
+    <Image Name="Slot2Job" Position="647,183" Size="16,16"/>
+    <DigitText Name="Slot2Hp" Position="637,207" Picture="Num_MainInfo" Rows="12" Glyphs="0123456789%/" Spacing="-3"/>
+    <DigitText Name="Slot2Sp" Position="637,222" Picture="Num_MainInfo" Rows="12" Glyphs="0123456789%/" Spacing="-3"/>
+    <Image Name="Slot2ExpFrame" Picture="Panel37" Position="635,239"/>
+    <ProgressBar Name="Slot2ExpBar" Picture="Panel38" Position="637,241"/>
+    <DigitText Name="Slot2ExpPercent" Position="686,239" Picture="Num_MainInfo" Rows="12" Glyphs="0123456789%/" Spacing="-3"/>
+    <DigitText Name="Slot2Gold" Position="637,256" Picture="Num_MainInfo" Rows="12" Glyphs="0123456789%/" Spacing="-3"/>
+    <ImageButton Name="Slot2TurnLeft" Picture="Btn_ArrowL_1" Bounds="532,395,18,17" Click="onTurnLeft2"/>
+    <ImageButton Name="Slot2TurnRight" Picture="Btn_ArrowR_1" Bounds="629,395,18,17" Click="onTurnRight2"/>
+    <ImageButton Name="Slot2Enter" Picture="Btn_Login" Bounds="691,435,56,20" Click="onEnter2"/>
+  </Panel>
+  <ImageButton Name="Slot2CreateOrDelete" Picture="Btn_CreateCharacter" Bounds="691,458,56,20" Click="onCreateOrDelete2"/>
+
+  <ImageButton Name="CharacterSelectPrevious" Picture="Btn_Prev_1" Bounds="370,500,56,20" Click="onCharacterSelectPrevious"/>
+</Panel>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The catching game "Luckey" (kind 13; MK_MiniGame.pas TLuckeyForm): the pictures behind, the figures, the hearts, the falling coins and bombs, the score and the
+     time are painted by the view model; over them the form's Quit button.  The form of the game is 832 x 640 at 230, 30 and is kept on the screen (and above the
+     input bar), which puts it at -32, -65: its Quit button (700, 600 on it) sits at 668, 535.  The page takes every press: while a sport is on
+     DXDraw1MouseDown gives the press to HandleSportMouseDown and no further (DZ_Game.pas:2344-2348), so none reaches the map, where it would move a running
+     event on (20/6) before the game has reported its result.  View model: viewmodels/LuckyWindow.cpp. -->
+<Panel Name="LuckyLayer" Bounds="0,0,800,600">
+  <Panel Name="LuckyForm" Bounds="0,0,800,600" Visible="false">
+    <DrawingArea Name="LuckyPage" Bounds="0,0,800,600" HitTest="true">
+      <!-- the background, top and bottom pictures -->
+      <Spot Name="LuckyBackground" Position="0,-50"/>
+      <Spot Name="LuckyTop" Position="0,0"/>
+      <Spot Name="LuckyBottom" Position="0,420"/>
+      <!-- the life, score and time labels, and the score and time digits -->
+      <Spot Name="LuckyLife" Position="15,10"/>
+      <Spot Name="LuckyScore" Position="630,10"/>
+      <Spot Name="LuckyScoreNumber" Position="740,13"/>
+      <Spot Name="LuckyTime" Position="330,10"/>
+      <Spot Name="LuckyTimeNumber" Position="430,13"/>
+      <!-- the big message letters and the countdown: centred on this point, 80 px between letters -->
+      <Spot Name="LuckyMessage" Position="400,300" Pitch="80,0"/>
+      <!-- the life hearts: heart 0's x, every heart's y and size, 40 px between hearts (heart j is j steps to the right) -->
+      <Spot Name="LuckyHeart" Bounds="50,10,30,25" Pitch="40,0"/>
+    </DrawingArea>
+    <ImageButton Name="LuckyQuit" Picture="Hunting_Exit_Btn" Position="668,535" Size="74,40" Hint="Quit" Visible="false" Press="onLuckyQuit"/>
+  </Panel>
+</Panel>

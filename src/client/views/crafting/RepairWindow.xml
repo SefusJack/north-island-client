@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The form of the Repairing Spanner and the Repairing Potion (TMZ_RepairForm, opened by using one); view model: viewmodels/RepairWindow.cpp.  A piece of worn gear of the
+     bag is dropped on the place (the right button takes it off), OK repairs it (23/84).  A TSe_Form (kept on the screen); the view model places it beside the item
+     window.  The game draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of TMZ_RepairForm.Create. -->
+<Panel Name="RepairLayer" Bounds="0,0,800,600">
+  <Window Name="RepairWindow" Escape="onRepairClose" Picture="Form_Repair" Position="200,30" Size="175,183" ScreenFit="true" Visible="false">
+    <IconGrid Name="RepairCells" Position="70,71" Columns="1" Rows="1" Pitch="34" HoverColor="#00000000" RightClick="onRepairTake"/>
+    <ImageButton Name="RepairCancel" Picture="Btn_Cancel_3" Position="93,142" Size="39,20" Click="onRepairClose" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="RepairOk" Picture="Btn_OK_2" Position="37,142" Size="39,20" Click="onRepairOk"/>
+  </Window>
+</Panel>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The button row at the top right of the world (RE_FuncBtnForm); view model:
+     viewmodels/FunctionButtons.cpp. -->
+<Panel Name="FunctionButtons" Bounds="0,0,800,600" Anchor="TopRight" HudScale="true" Visible="false">
+  <Image Name="FunctionBackground" Picture="Btn_BackGround_1" Position="469,0"/>
+  <ImageButton Name="FunctionPk" Picture="Btn_1" Position="467,1" Hint="PK" Click="onFunctionPk"/>
+  <ImageButton Name="FunctionJoinCombat" Picture="Btn_2" Bounds="504,0,33,34" FrameHeight="33" Hint="Join Combat" Click="onFunctionJoinCombat"/>
+  <ImageButton Name="FunctionWatchCombat" Picture="Btn_3" Position="541,1" Hint="Watch Combat" Click="onFunctionWatchCombat"/>
+  <ImageButton Name="FunctionTeam" Picture="Btn_4" Position="578,1" Hint="join the team" Click="onFunctionTeam"/>
+  <ImageButton Name="FunctionFriends" Picture="Btn_5" Position="615,1" Hint="Make Friends" Click="onFunctionFriends"/>
+  <ImageButton Name="FunctionMoney" Picture="Btn_6" Position="652,1" Click="onFunctionMoney"/>
+  <ImageButton Name="FunctionGuildInvite" Picture="Btn_7" Position="652,1" Hint="Invite to a guild" Visible="false"
+               Click="onFunctionGuildInvite"/>
+  <ImageButton Name="FunctionSchedule" Picture="Btn_8" Position="689,1" Hint="Event Schedule" Click="onFunctionSchedule"
+               Animation="Btn_8" AnimationFirst="1" AnimationFrames="2" AnimationInterval="304"/>
+  <ImageButton Name="FunctionDraw" Picture="Btn_9" Position="726,1" Hint="Online draw" Click="onFunctionDraw"
+               Animation="Btn_9" AnimationFirst="1" AnimationFrames="2" AnimationInterval="304"/>
+  <ImageButton Name="FunctionMall" Picture="Btn_711" Bounds="763,1,37,34" Hint="Item Mall" Click="onFunctionMall"/>
+</Panel>

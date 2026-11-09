@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The chat channels (TTH_channelForm, Set Up beside "channel on-off" in the system window);
+     view model: viewmodels/ChannelWindow.cpp.  Local, whisper, team, party and world on or off;
+     OK hands them to the server (33/3).  The game draws a form's controls from the last created
+     to the first: the controls here are in drawing order, the reverse of TTH_channelForm.Create. -->
+<Panel Name="ChannelLayer" Bounds="0,0,800,600">
+  <Window Name="Channels" Escape="onChannelClose" Picture="Form_channel_1" Position="150,100" Visible="false">
+    <ImageButton Name="ChannelClose" Picture="Btn_Close_2" Position="86,199" Hint="[ESC]" Click="onChannelClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="ChannelOk" Picture="Btn_OK_2" Position="41,199" Click="onChannelOk"/>
+    <ImageButton Name="Channel5" Picture="Btn_On_1" Position="111,167" Size="39,20" Click="onChannelToggle"/>
+    <ImageButton Name="Channel4" Picture="Btn_On_1" Position="111,137" Size="39,20" Click="onChannelToggle"/>
+    <ImageButton Name="Channel3" Picture="Btn_On_1" Position="111,107" Size="39,20" Click="onChannelToggle"/>
+    <ImageButton Name="Channel2" Picture="Btn_On_1" Position="111,77" Size="39,20" Click="onChannelToggle"/>
+    <ImageButton Name="Channel1" Picture="Btn_On_1" Position="111,47" Size="39,20" Click="onChannelToggle"/>
+  </Window>
+</Panel>

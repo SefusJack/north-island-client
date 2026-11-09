@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The fish tank's instructions (TFishAnnotate, opened by the tank's "?" button); view model: viewmodels/FishAnnotateWindow.cpp.  Made in the middle of the
+     screen.  The game draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of
+     TFishAnnotate.Create. -->
+<Panel Name="FishAnnotateLayer" Bounds="0,0,800,600">
+  <Window Name="FishAnnotate" Picture="Fishbowl_Explan_Form" Position="0,0" Visible="false">
+    <ImageButton Name="FishAnnotateClose" Picture="Btn_Close_1" Position="145,456" Size="56,20" Click="onFishAnnotateClose"/>
+    <ImageButton Name="FishAnnotateCloseSmall" Picture="Btn_Close_S_1" Position="299,26" Size="18,18" Click="onFishAnnotateClose"/>
+  </Window>
+</Panel>

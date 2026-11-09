@@ -1,0 +1,35 @@
+// The program icon: Manapple's chat head.  Resource 1 is also the window icon
+// (SDL_HINT_WINDOWS_INTRESOURCE_ICON).
+1 ICON "north-island-client.ico"
+
+#include <winver.h>
+#include "AppVersion.h"
+
+// The version Explorer shows in the program's properties (set in CMakeLists.txt).
+1 VERSIONINFO
+FILEVERSION APP_VERSION_NUMBERS
+PRODUCTVERSION APP_VERSION_NUMBERS
+FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+FILEFLAGS 0
+FILEOS VOS_NT_WINDOWS32
+FILETYPE VFT_APP
+FILESUBTYPE VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "FileDescription", "North Island Client"
+            VALUE "FileVersion", APP_VERSION_TEXT
+            VALUE "InternalName", "north-island-client"
+            VALUE "LegalCopyright", "Copyright (C) north-island-client contributors"
+            VALUE "OriginalFilename", "north-island-client.exe"
+            VALUE "ProductName", "North Island Client"
+            VALUE "ProductVersion", APP_VERSION_TEXT
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

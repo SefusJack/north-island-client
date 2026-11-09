@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The manufacture tree (TRe_MakeThingForm); view model: viewmodels/MakeThingWindow.cpp.
+     A piece of furniture clicked in the house opens it: the recipes made at the piece (and at the
+     tools linked to a bench) as a tree, a group for each piece with its recipes under it.  A recipe
+     clicked opens the manufacture window (MakeThingInfoWindow).  The game draws a form's controls
+     from the last created to the first: the controls here are in drawing order, the reverse of
+     TRe_MakeThingForm.Create. -->
+<Panel Name="MakeThingLayer" Bounds="0,0,800,600">
+  <Window Name="MakeThingWindow" Escape="onMakeThingClose" Picture="Form_MakeThing_1" Position="256,75" ScreenFit="true" Visible="false">
+    <!-- TRe_TreeList: rows of 32 with 2 between, 10 shown -->
+    <DrawingArea Name="MakeThingTree" Bounds="19,63,225,338" HitTest="true" MouseUp="onMakeThingTreeClick">
+      <!-- one tree row: 225 x 32 (the hover highlight), and the step down to the next row -->
+      <Spot Name="MakeThingRow" Bounds="0,0,225,32" Pitch="0,34"/>
+      <!-- the indent of a recipe under its group, also the width of the fold icon column -->
+      <Spot Name="MakeThingIndent" Position="20,0"/>
+      <!-- the product icon's area -->
+      <Spot Name="MakeThingIcon" Size="32,32"/>
+      <!-- the text colour of a recipe, in RGB565 2113 -->
+      <Spot Name="MakeThingText" Color="#080808"/>
+      <!-- the text colour of a group name, in RGB565 31 (blue) -->
+      <Spot Name="MakeThingGroup" Color="#0000FF"/>
+    </DrawingArea>
+    <ScrollBar Name="MakeThingScroll" Bounds="249,77,17,310" Track="Rail_H5" Thumb="bar_H4" ThumbSource="0,0,9,21"
+               ThumbCap="7" TrackCap="16" ThumbInset="3" Scroll="onMakeThingScrolled"/>
+    <ImageButton Name="MakeThingDown" Picture="Btn_ArrowDn_3" Position="249,387" Click="onMakeThingDown"/>
+    <ImageButton Name="MakeThingUp" Picture="Btn_ArrowUp_3" Position="249,60" Click="onMakeThingUp"/>
+    <ImageButton Name="MakeThingCloseSmall" Picture="Btn_Close_S_1" Position="238,24" Click="onMakeThingClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MakeThingClose" Picture="Btn_Close_1" Position="116,412" Click="onMakeThingClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

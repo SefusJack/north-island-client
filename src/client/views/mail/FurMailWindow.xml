@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Writing mail to a player by his name (TFurMailBoxForm: the mail box furniture, a mail box message
+     of the server, Reply on a mail of someone who is no friend, and a mail sent seen again from
+     the mail box's Sent tab); view model: viewmodels/FurMailWindow.cpp.  The name and the text
+     (152 characters at most), Send (14/6), Clear, Old Mail (the mail box) and Close.  The game
+     draws a form's controls from the last created to the first: the controls here are in drawing
+     order, the reverse of TFurMailBoxForm.Create; the partner's picture or the mail box's icon is
+     drawn over them (DrawControl). -->
+<Panel Name="FurMailLayer" Bounds="0,0,800,600">
+  <Window Name="FurMail" Escape="onFurMailHide" Picture="Form_MailBox" Position="230,30" Visible="false">
+    <ImageButton Name="FurMailClear" Picture="btn_Clear_1" Position="97,303" Click="onFurMailClear"/>
+    <ImageButton Name="FurMailClose" Picture="Btn_Close_1" Position="97,333" Hint="[ESC]" Click="onFurMailClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="FurMailOldMail" Picture="btn_PastMail_1" Position="35,303" Click="onFurMailOldMail"/>
+    <ImageButton Name="FurMailSend" Picture="Btn_sendMail_2" Position="162,303" Click="onFurMailSend"/>
+    <Memo Name="FurMailText" Bounds="30,93,200,200" FontColor="#080808" Effect="Plain" MaxChars="152"/>
+    <TextBox Name="FurMailName" Bounds="51,61,160,25" HitTest="true" FontColor="#0000FF" MaxLength="10" AllowPaste="true"/>
+    <ImageButton Name="FurMailCloseSmall" Picture="Btn_Close_s_1" Position="203,25" Size="17,17" Click="onFurMailHide"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <!-- DrawControl: the partner's picture or the icon of the mail box -->
+    <DrawingArea Name="FurMailPaint" Bounds="0,0,253,371">
+      <!-- the mailbox picture, shown when there is no partner; the partner's portrait -->
+      <Spot Name="FurMailMailbox" Position="165,208"/>
+      <Spot Name="FurMailPartner" Position="193,249"/>
+    </DrawingArea>
+  </Window>
+</Panel>

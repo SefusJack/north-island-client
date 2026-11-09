@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What an event of the schedule is (TShowActionInfoForm, the arrow beside its row): its start and end, where it is held, the level it asks
+     for and its introduction, on a panel next to the arrow; the panel's height follows the lines of the texts.  View model:
+     viewmodels/ActivityInfoWindow.cpp. -->
+<Panel Name="ActivityInfoLayer" Bounds="0,0,800,600">
+  <Window Name="ActivityInfoWindow" Escape="onActivityInfoClose" ScreenFit="true" Position="0,0" Size="180,110" Visible="false">
+    <Panel Name="ActivityInfoSkin" Skin="panel21" SkinSource="0,0,50,50" Borders="15,15,15,15" Bounds="0,0,180,110"/>
+    <DrawingArea Name="ActivityInfoText" Bounds="0,0,180,110">
+      <!-- the window width and the height of one text line -->
+      <Spot Name="ActivityInfoLine" Size="180,18"/>
+      <!-- the text colour (blue, in RGB565 31) -->
+      <Spot Name="ActivityInfoTextColor" Color="#0000FF"/>
+    </DrawingArea>
+    <ImageButton Name="ActivityInfoClose" Picture="btn_close_s_3" Position="162,-7" Size="18,18" Click="onActivityInfoClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

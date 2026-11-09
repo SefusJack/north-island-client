@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The quest window (Tjo_TaskView, Ctrl+M with a notebook in the bag, or the notebook's Quest
+     Log); view model: viewmodels/QuestWindow.cpp.  The quests done (a tick) and going on (an
+     exclamation mark), ten a page; a click shows the quest's name and where it stands.  The game
+     draws a form's controls from the last created to the first: the controls here are in drawing
+     order, the reverse of Tjo_TaskView.Create (its Delete and Finish buttons are never shown, its
+     hidden memo, id list and scroll bars draw nothing: all left out); the page label and the
+     row marks (DrawControl) come last. -->
+<Panel Name="QuestLayer" Bounds="0,0,800,600">
+  <Window Name="Quests" Picture="form_taskview_1" Position="80,60" Visible="false">
+    <ImageButton Name="QuestsClose" Picture="Btn_Close_1" Bounds="115,332,56,20" Hint="Cancel" Click="onQuestsClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="QuestsCloseSmall" Picture="Btn_Close_s_1" Bounds="382,24,18,18" Hint="Cancel" Click="onQuestsClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="QuestsPageDown" Picture="Arrow_R3" Bounds="137,298,21,21" Click="onQuestsPageDown"/>
+    <ImageButton Name="QuestsPageUp" Picture="Arrow_L3" Bounds="74,298,21,21" Click="onQuestsPageUp"/>
+    <ListBox Name="QuestsDetail" Bounds="219,85,190,238" RowHeight="20" TextShadow="false"/>
+    <ListBox Name="QuestsList" Bounds="40,57,170,240" RowHeight="24" HighlightColor="#FFFF00" FocusFrame="false" Wheel="false"
+             TextShadow="false" WrapColumns="21" HoverBarTrim="1,3" Select="onQuestsPick"/>
+    <Memo Name="QuestsTitle" Bounds="235,54,180,20" FontColor="#0000AD" Effect="Plain" ReadOnly="true"/>
+    <DrawingArea Name="QuestsMarks" Bounds="0,0,432,367">
+      <!-- the list colours: finished quests, grey (RGB565 21130), quests in progress, dark blue (RGB565 21) -->
+      <Spot Name="QuestsDoneColor" Color="#525152"/>
+      <Spot Name="QuestsGoingOnColor" Color="#0000AD"/>
+      <!-- the detail text, near-black (RGB565 2113), and the page number, blue (RGB565 31) -->
+      <Spot Name="QuestsDetailColor" Color="#080808"/>
+      <Spot Name="QuestsPageColor" Color="#0000FF"/>
+    </DrawingArea>
+  </Window>
+</Panel>

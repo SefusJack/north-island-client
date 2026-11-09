@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Memory Card's form for the one who has someone play for him (TInsteadEcisForm, opened by using a Memory Card 34232 or from the status icon while the training runs):
+     the card's exp and size, a friend or guild member to ask (typed or picked, a double click on a row types it; OK sends 23/104 option 1), and once he plays his portrait with
+     the buttons to check the time, to write to him and to stop; Use spends the exp, Expand makes the card bigger.  A TSe_FixedForm (it is not kept on the screen); the view
+     model places it beside the item window.  The game draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of
+     TInsteadEcisForm.Create; DrawControl's bar, numbers and portrait are over them.  View model: viewmodels/InsteadEcisWindow.cpp. -->
+<Panel Name="InsteadEcisLayer" Bounds="0,0,800,600">
+  <Window Name="InsteadEcis" Escape="onInsteadEcisClose" Picture="Form_InsteadEcis" Position="286,109" Size="228,381" Visible="false">
+    <ImageButton Name="InsteadEcisClose" Picture="Btn_Close_2" Position="111,346" Size="39,20" Hint="[ESC]" Click="onInsteadEcisClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="InsteadEcisOk" Picture="Btn_OK_2" Position="66,346" Size="39,20" Hint="Use" Click="onInsteadEcisOk"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="InsteadEcisDown" Picture="Btn_ArrowDn_1" Position="192,328" Size="17,17" Click="onInsteadEcisDown"/>
+    <ImageButton Name="InsteadEcisUp" Picture="Btn_ArrowUp_1" Position="192,208" Size="17,17" Click="onInsteadEcisUp"/>
+    <ListBox Name="InsteadEcisNames" Bounds="21,210,166,128" RowHeight="26" FontColor="#FFFFFF" HighlightColor="#89BFF5"
+             FocusFrame="false" TextShadow="false" TextOffset="10,3" ScrollBar="InsteadEcisScroll" DoubleClick="onInsteadEcisPick"/>
+    <ScrollBar Name="InsteadEcisScroll" Bounds="192,225,17,103" Track="Rail_H5" TrackCap="16" Thumb="bar_H4" ThumbSource="0,0,9,21" ThumbCap="7"/>
+    <CheckBox Name="InsteadEcisGuild" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Checked="true" Position="76,189" Size="16,16" Click="onInsteadEcisFilter"/>
+    <CheckBox Name="InsteadEcisFriends" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Checked="true" Position="20,189" Size="16,16" Click="onInsteadEcisFilter"/>
+    <TextBox Name="InsteadEcisName" Bounds="80,166,101,20" Skin="Panel26" SkinSource="0,0,104,14" Borders="1,1,1,1" HitTest="true" MaxLength="14"
+             AllowPaste="true" FontColor="#080808" Enter="onInsteadEcisOk"/>
+    <ImageButton Name="InsteadEcisMail" Picture="icon_mail_1" Frames="1" Position="83,143" Size="20,15" Visible="false" Click="onInsteadEcisMail"/>
+    <ImageButton Name="InsteadEcisCancel" Picture="Btn_UnCachet_2" Position="167,142" Size="56,20" Visible="false" Click="onInsteadEcisCancel"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="InsteadEcisUse" Picture="Btn_Use" Position="162,82" Size="56,20" Click="onInsteadEcisUse"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="InsteadEcisExpand" Picture="Btn_Expand" Position="162,59" Size="56,20" Click="onInsteadEcisExpand"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="InsteadEcisTime" Picture="icon_Time_1" Position="135,68" Size="21,21" Hint="Check out the time" Click="onInsteadEcisTime"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="InsteadEcisCloseSmall" Picture="Btn_Close_s_1" Position="178,24" Size="18,18" Hint="[ESC]" Click="onInsteadEcisClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <!-- HandleDblClick: a double click on the partner's portrait whispers to him -->
+    <DrawingArea Name="InsteadEcisFace" Bounds="17,102,60,60" HitTest="true" DoubleClick="onInsteadEcisFace"/>
+    <!-- DrawControl: the exp bar, the numbers, the partner's name, status and portrait -->
+    <DrawingArea Name="InsteadEcisPaint" Bounds="0,0,228,381">
+      <!-- the exp bar: top-left and full size (the code reads the height; the full width is its 108 units) -->
+      <Spot Name="InsteadEcisBar" Bounds="20,75,108,9"/>
+      <!-- the exp numbers, the partner's name, the online / offline icon and the portrait: top-left -->
+      <Spot Name="InsteadEcisExp" Position="18,85"/>
+      <Spot Name="InsteadEcisPartnerName" Position="83,121"/>
+      <Spot Name="InsteadEcisOnline" Position="120,143"/>
+      <Spot Name="InsteadEcisPortrait" Position="48,130"/>
+      <!-- the text colour, blue (RGB565 31) -->
+      <Spot Name="InsteadEcisText" Color="#0000FF"/>
+    </DrawingArea>
+  </Window>
+</Panel>

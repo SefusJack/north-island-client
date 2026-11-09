@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Golden Glove (kind 9; MZ_BoxingGame.pas TSportBoxing and TBoxingForm): the whole screen is the page, which the view model paints
+     (the ring, the strength bar, the monster and the boxer, the score board, the prize) and which takes the press that punches or
+     asks for the payment; over it the boxing form's Quit button.  The form of the game is 583 x 600 at 230, 30 and is kept on the screen
+     (and above the input bar), which puts it at 217, -25: its Quit button (500, 560 on it) sits at 717, 535.  View model:
+     viewmodels/BoxingWindow.cpp. -->
+<Panel Name="BoxingLayer" Bounds="0,0,800,600">
+  <Panel Name="BoxingForm" Bounds="0,0,800,600" Visible="false">
+    <DrawingArea Name="BoxingPage" Bounds="0,0,800,600" HitTest="true" MouseDown="onBoxingDown">
+      <!-- the ring background picture -->
+      <Spot Name="BoxingBackground" Position="106,30"/>
+      <!-- the strength bar: the frame's place and size, the fill's place and height (its width is the strength) -->
+      <Spot Name="BoxingBarFrame" Bounds="107,511,575,65"/>
+      <Spot Name="BoxingBar" Bounds="256,525,0,19"/>
+      <!-- the monster: x of the picture (plus its shake), y its feet stand on (2 px under the bar frame top), size of one frame -->
+      <Spot Name="BoxingMonster" Bounds="171,513,417,305"/>
+      <!-- the boxer: place and size of one frame -->
+      <Spot Name="BoxingBoxer" Bounds="241,312,339,201"/>
+      <!-- the score board: its x, and the size of a place picture (1st, 2nd, 3rd) -->
+      <Spot Name="BoxingPlace" Bounds="136,0,73,31"/>
+      <!-- the size of the left picture, and of one digit frame with the gap between score digits -->
+      <Spot Name="BoxingLeft" Size="88,30"/>
+      <Spot Name="BoxingDigit" Size="21,31" Pitch="5,0"/>
+    </DrawingArea>
+    <ImageButton Name="BoxingQuit" Picture="Hunting_Exit_Btn" Position="717,535" Size="74,40" Hint="Quit" Visible="false" Press="onBoxingQuit"/>
+  </Panel>
+</Panel>

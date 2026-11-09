@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Tear Pliers' form (TMK_plierForm, opened by using a Tear Plier 34152 or a Small Tear Plier 34155): a piece of gear of the bag with a stone mounted in it is
+     dropped on the place (the right button takes it out), OK asks the server to take the stone out (23/86).  A TSe_Form (it is kept on the screen); the view
+     model places it beside the item window; view model: viewmodels/DismantleWindow.cpp.  The game draws a form's controls from the last created to the first: the
+     controls here are in drawing order, the reverse of TMK_plierForm.Create. -->
+<Panel Name="DismantleLayer" Bounds="0,0,800,600">
+  <Window Name="Dismantle" Escape="onDismantleCancel" Picture="Form_dismantle" Position="200,30" Size="175,183" ScreenFit="true" Visible="false">
+    <!-- DrawControl: the piece in the place -->
+    <DrawingArea Name="DismantleImage" Bounds="70,71,32,32" HitTest="true" RightMouseUp="onDismantleTake">
+      <!-- the count inside the icon cell, in RGB565 2113 -->
+      <Spot Name="DismantleCount" Position="2,20" Color="#080808"/>
+    </DrawingArea>
+    <ImageButton Name="DismantleCancel" Picture="Btn_Cancel_3" Position="93,142" Size="39,20" Click="onDismantleCancel"/>
+    <ImageButton Name="DismantleOk" Picture="Btn_OK_2" Position="37,142" Size="39,20" Click="onDismantleOk"/>
+  </Window>
+</Panel>

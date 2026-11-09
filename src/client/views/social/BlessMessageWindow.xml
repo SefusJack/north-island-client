@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Bliss Lamp's message form (TEnterMsgForm2, opened by OK of the bless balloon's form): the words to send to the player chosen (20 characters), OK sends 23/129.  A TSe_Form (it is
+     kept on the screen), at the middle of the screen's top as it is created.  The game draws a form's controls from the last created to the first: the controls here are in drawing
+     order, the reverse of TEnterMsgForm2.Create.  View model: viewmodels/BlessMessageWindow.cpp. -->
+<Panel Name="BlessMessageLayer" Bounds="0,0,800,600">
+  <Window Name="BlessMessage" AbovePopups="true" Escape="onBlessMessageClose" Picture="Form_DupEnterMsg" Position="400,0" Size="262,224" ScreenFit="true" Visible="false">
+    <Memo Name="BlessMessageText" Bounds="22,68,221,56" FontColor="#000000" Effect="Plain" MaxChars="20"/>
+    <ImageButton Name="BlessMessageCloseSmall" Picture="Btn_Close_s_1" Position="215,24" Size="18,18" Click="onBlessMessageClose" ClickSound=""
+                 ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="BlessMessageOk" Picture="Btn_OK_1" Position="60,130" Size="56,20" Click="onBlessMessageSend"/>
+    <ImageButton Name="BlessMessageCancel" Picture="Btn_Cancel_1" Position="148,130" Size="56,20" Click="onBlessMessageClose" ClickSound=""
+                 ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The question whether an NPC may join the team (TCY_FNpcTeamMenu in its first mode: Join and Close);
+     view model: viewmodels/NpcTeamMenu.cpp.  The captions are the game's Big5 words (Join, No).  The game draws a
+     form's controls from the last created to the first: the controls here are in drawing order, the reverse of
+     TCY_FNpcTeamMenu.Create (the hidden buttons of the pet orders are left out). -->
+<Panel Name="NpcTeamLayer" Bounds="0,0,800,600">
+  <Window Name="NpcTeam" Position="310,245" Size="180,110" Visible="false">
+    <Panel Name="NpcTeamFrame" Bounds="0,0,180,110" Skin="form_module" SkinSource="0,0,200,180" Borders="64,38,44,14"/>
+    <ImageButton Name="NpcTeamClose" Picture="btn_module_1" Position="120,70" Size="50,20" Click="onNpcTeamClose"/>
+    <Label Name="NpcTeamCloseCaption" Position="135,73" Text="" FontColor="#FFFFFF" Effect="Plain"/>
+    <ImageButton Name="NpcTeamJoin" Picture="btn_module_1" Position="10,70" Size="50,20" Click="onNpcTeamJoin"/>
+    <Label Name="NpcTeamJoinCaption" Position="25,73" Text="" FontColor="#FFFFFF" Effect="Plain"/>
+    <Panel Name="NpcTeamTextBack" Bounds="10,40,160,20" Skin="editorBG" SkinSource="0,0,50,20" Borders="2,2,2,2"/>
+    <Label Name="NpcTeamText" Position="12,42" Text="" FontColor="#FFFFFF" Effect="Plain"/>
+  </Window>
+</Panel>

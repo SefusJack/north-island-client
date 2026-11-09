@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Bookcase and the Desk of a house (TTH_UseBookCaseForm and TTH_UseBookDeskForm, the owner's click on the pieces 39054 and 39020); view model:
+     viewmodels/BookShelfWindow.cpp.  Ten places for blueprints on the Cupboard's wide form (Form_Cupboard_2): blueprints dropped on a place go in, the
+     right button takes one back.  The game draws a form's controls from the last created to the first: the controls here are in drawing order, the
+     reverse of the forms' Create; the shelf's icon is DrawControl's, under them. -->
+<Panel Name="BookShelfLayer" Bounds="0,0,800,600">
+  <Window Name="BookCaseWindow" Escape="onBookCaseClose" AbovePopups="true" Picture="Form_Cupboard_2" Position="295,222" Visible="false">
+    <Image Name="BookCaseIcon" Picture="Icon_BookCase_1" Position="46,13"/>
+    <IconGrid Name="BookCaseCells" Position="18,64" Columns="5" Rows="2" Pitch="34" HoverColor="#00000000" RightClick="onBookCaseTake"/>
+    <ImageButton Name="BookCaseClose" Picture="Btn_Close_1" Position="74,145" Click="onBookCaseClose"/>
+    <ImageButton Name="BookCaseCloseSmall" Picture="Btn_Close_S_1" Position="159,26" Size="18,18" Click="onBookCaseClose"/>
+  </Window>
+  <Window Name="BookDeskWindow" Escape="onBookDeskClose" AbovePopups="true" Picture="Form_Cupboard_2" Position="295,222" Visible="false">
+    <Image Name="BookDeskIcon" Picture="Icon_BookDesk_1" Position="53,11"/>
+    <IconGrid Name="BookDeskCells" Position="18,64" Columns="5" Rows="2" Pitch="34" HoverColor="#00000000" RightClick="onBookDeskTake"/>
+    <ImageButton Name="BookDeskClose" Picture="Btn_Close_1" Position="74,145" Click="onBookDeskClose"/>
+    <ImageButton Name="BookDeskCloseSmall" Picture="Btn_Close_S_1" Position="159,26" Size="18,18" Click="onBookDeskClose"/>
+  </Window>
+</Panel>

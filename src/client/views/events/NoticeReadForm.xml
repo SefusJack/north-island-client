@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The form to read a notice (TReadNoticeForm and TOrgReadNoticeForm, opened by 82/2 and 82/12);
+     view model: viewmodels/NoticeReadForm.cpp.  The subject and the text; Delete (the author's,
+     and on the guild's board the first five members'), Send Mail to the author (greyed for the
+     author), Close.  The game draws a form's controls from the last created to the first: the
+     controls here are in drawing order, the reverse of TNoticeForm.Create and
+     TReadNoticeForm.Create.  The game has one form for each board; here one form serves both. -->
+<Panel Name="NoticeReadLayer" Bounds="0,0,800,600">
+  <Window Name="NoticeReadForm" Escape="onNoticeReadClose" Picture="notice2" Position="191,162" Visible="false">
+    <Image Name="NoticeReadSendGray" Picture="btn_Send_B" Position="180,228"/>
+    <ImageButton Name="NoticeReadMail" Picture="Btn_sendMail_2" Position="180,228" Visible="false" Click="onNoticeReadMail"/>
+    <Image Name="NoticeReadDeleteGray" Picture="Btn_Del_B" Position="90,228" Visible="false"/>
+    <ImageButton Name="NoticeReadDelete" Picture="Btn_deleteMail_1" Position="90,228" Click="onNoticeReadDelete"/>
+    <ImageButton Name="NoticeReadClose" Picture="Btn_Close_1" Position="270,228" Click="onNoticeReadClose"/>
+    <ImageButton Name="NoticeReadCloseSmall" Picture="Btn_Close_S_1" Position="368,24" Size="18,18" Click="onNoticeReadClose"/>
+    <Memo Name="NoticeReadText" Bounds="25,105,380,100" FontColor="#FFFFFF" Effect="Plain" MaxChars="152" ReadOnly="true"/>
+    <TextBox Name="NoticeReadSubject" Bounds="76,60,250,20" HitTest="true" ReadOnly="true" FontColor="#FFFFFF"/>
+  </Window>
+</Panel>

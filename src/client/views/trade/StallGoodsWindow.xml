@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Someone's item stall (TRe_BuyItemStallForm, a double click on the plate over their head);
+     view model: viewmodels/StallGoodsWindow.cpp.  The owner and the stall's name, the items on
+     sale with their descriptions and prices; a click puts one into the cart below (Ctrl asks how
+     many), the right button takes it out again; the total and the gold carried; Buy (23/33).
+     The game draws a form's controls from the last created to the first: the controls here are
+     in drawing order, the reverse of TRe_BuyItemStallForm.Create. -->
+<Panel Name="StallGoodsLayer" Bounds="0,0,800,600">
+  <Window Name="StallGoods" Escape="onStallGoodsClose" Picture="Form_BuyItemStall_1" Position="195,37" Visible="false">
+    <!-- DrawControl: the total, the gold carried, the owner and the stall's name -->
+    <DrawingArea Name="StallGoodsPaint" Bounds="0,0,409,525">
+      <!-- the owner and stall name caption: blue (RGB565 31) -->
+      <Spot Name="StallGoodsOwner" Color="#0000FF"/>
+    </DrawingArea>
+    <IconGrid Name="StallGoodsCart" Position="119,402" Columns="5" Rows="1" Pitch="34" RightClick="onStallGoodsTakeBack"/>
+    <BlockList Name="StallGoodsList" Bounds="26,82,353,292" RowHeight="56" RowSpacing="3" HighlightColor="#89BEF5"
+               HoverAlpha="100" FontColor="#080808" Click="onStallGoodsPick"/>
+    <ImageButton Name="StallGoodsCloseSmall" Picture="Btn_Close_s_1" Position="358,25" Size="18,18" Click="onStallGoodsClose"/>
+    <ImageButton Name="StallGoodsClose" Picture="Btn_Close_1" Position="214,489" Click="onStallGoodsClose"/>
+    <ImageButton Name="StallGoodsBuy" Picture="Btn_Buy_1" Position="136,489" Click="onStallGoodsBuy"/>
+  </Window>
+</Panel>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The pet express form (TTH_ExpressForm, the Express button of a pet's page of the item window): the bag's items are put on the five places by a click, a
+     name is typed or picked from the list beside the form, and Send sends the pet with them (25/20); view model: viewmodels/ExpressWindow.cpp.  Made in the
+     middle of the screen; the list panel lies to the right of the form, or to its left when there is no room (the view model places its controls).  The game
+     draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of TTH_ExpressForm.Create (the bag grid
+     comes first, from TRe_ItemGridForm). -->
+<Panel Name="ExpressLayer" Bounds="0,0,800,600">
+  <Window Name="Express" AbovePopups="true" Picture="Form_Express_1" Position="250,70" Visible="false">
+    <!-- DrawControl: the pet and its name -->
+    <DrawingArea Name="ExpressPaint" Bounds="0,0,299,460">
+      <!-- the pet's anchor, and the pet name line: the x it is centred on and its y -->
+      <Spot Name="ExpressPet" Position="240,127"/>
+      <Spot Name="ExpressNameLine" Position="237,69"/>
+      <!-- the text colour (near black, in RGB565 2113) -->
+      <Spot Name="ExpressTextColor" Color="#080808"/>
+    </DrawingArea>
+    <ImageButton Name="ExpressNames" Picture="Btn_nameList_1" Position="140,40" Size="56,20" Click="onExpressNames"/>
+    <TextBox Name="ExpressRecipient" Bounds="48,45,88,18" HitTest="true" MaxLength="14" FontColor="#080808"/>
+    <ImageButton Name="ExpressStop" Picture="Btn_Stop_1" Position="211,172" Size="56,20" Click="onExpressStop"/>
+    <ImageButton Name="ExpressSend" Picture="Btn_SendOut_1" Position="211,146" Size="56,20" Click="onExpressSend"/>
+    <ImageButton Name="ExpressClose" Picture="Btn_Close_1" Position="115,417" Size="56,20" Click="onExpressClose"/>
+    <ImageButton Name="ExpressCloseSmall" Picture="Btn_Close_S_1" Position="249,24" Size="18,18" Click="onExpressClose"/>
+    <!-- the list of names: its panel, buttons and filters (shown by the Name list button) -->
+    <Image Name="ExpressPanel" Picture="Form_Express_2" Position="299,72" Visible="false"/>
+    <ImageButton Name="ExpressListClose" Picture="Btn_Close_1" Position="384,360" Size="56,20" Visible="false" Click="onExpressListClose"/>
+    <ImageButton Name="ExpressListCloseSmall" Picture="Btn_Close_S_1" Position="477,98" Size="18,18" Visible="false" Click="onExpressListClose"/>
+    <CheckBox Name="ExpressFilter3" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Checked="true" Position="432,129" Size="16,16" Visible="false" Click="onExpressFilter"/>
+    <CheckBox Name="ExpressFilter2" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Checked="true" Position="376,129" Size="16,16" Visible="false" Click="onExpressFilter"/>
+    <CheckBox Name="ExpressFilter1" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Checked="true" Position="320,129" Size="16,16" Visible="false" Click="onExpressFilter"/>
+    <ImageButton Name="ExpressListDown" Picture="Btn_ArrowDn_1" Position="479,345" Size="17,17" Visible="false" Click="onExpressListDown"/>
+    <ImageButton Name="ExpressListUp" Picture="Btn_ArrowUp_1" Position="479,149" Size="17,17" Visible="false" Click="onExpressListUp"/>
+    <ScrollBar Name="ExpressListScroll" Bounds="479,165,17,182" Track="Rail_H5" TrackCap="16" Thumb="bar_H4" ThumbSource="0,0,9,182" ThumbCap="7" ThumbInset="3" Visible="false"/>
+    <ListBox Name="ExpressList" Bounds="324,160,140,170" RowHeight="20" FontColor="#080808" HighlightColor="#FFFFFF" FocusFrame="false" TextShadow="false"
+             ScrollBar="ExpressListScroll" Visible="false" DoubleClick="onExpressPick"/>
+    <!-- the side name list: its width, and the x of its controls from the panel's left edge (the filters: the first and the step) -->
+    <Spot Name="ExpressSideWidth" Size="228,0"/>
+    <Spot Name="ExpressSideList" Position="25,0"/>
+    <Spot Name="ExpressSideScroll" Position="180,0"/>
+    <Spot Name="ExpressSideClose" Position="85,0"/>
+    <Spot Name="ExpressSideCloseSmall" Position="178,0"/>
+    <Spot Name="ExpressSideFilter" Position="21,0" Pitch="56,0"/>
+    <!-- the five places of the items to send, and the bag -->
+    <DrawingArea Name="ExpressSlot5" Bounds="206,377,66,32" HitTest="true" RightMouseDown="onExpressSlotClear"/>
+    <DrawingArea Name="ExpressSlot4" Bounds="206,333,66,32" HitTest="true" RightMouseDown="onExpressSlotClear"/>
+    <DrawingArea Name="ExpressSlot3" Bounds="206,289,66,32" HitTest="true" RightMouseDown="onExpressSlotClear"/>
+    <DrawingArea Name="ExpressSlot2" Bounds="206,245,66,32" HitTest="true" RightMouseDown="onExpressSlotClear"/>
+    <DrawingArea Name="ExpressSlot1" Bounds="206,201,66,32" HitTest="true" RightMouseDown="onExpressSlotClear">
+      <!-- in every place: the item icon size, and where the item count goes -->
+      <Spot Name="ExpressIcon" Size="32,32"/>
+      <Spot Name="ExpressCount" Position="44,11"/>
+    </DrawingArea>
+    <IconGrid Name="ExpressBag" Position="24,71" Columns="5" Rows="10" Pitch="34" Press="onExpressPress" Click="onExpressAdd" RightClick="onExpressRemove"/>
+  </Window>
+</Panel>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The own pet stall (TTH_PetStallForm, Sell Pet in the gold menu); view model:
+     viewmodels/PetStallWindow.cpp.  The pet chosen with the arrows on the left (with its gear);
+     the right arrow puts it into the first of three places with a price, a click on a place
+     marks it and the left arrow takes the marked ones out again.  Set a Stall opens it (23/60),
+     End Stall pulls it (23/61); the gold carried and what the sales brought are counted below.
+     The game draws a form's controls from the last created to the first: the controls here are
+     in drawing order, the reverse of TTH_PetStallForm.Create (the places that take clicks come
+     first, under everything). -->
+<Panel Name="PetStallLayer" Bounds="0,0,800,600">
+  <Window Name="PetStall" Picture="Form_KeepPETStall_1" Position="10,30" Visible="false">
+    <!-- DrawControl: the pets, their numbers, the marks over the places -->
+    <DrawingArea Name="PetStallPaint" Bounds="0,0,781,441">
+      <!-- the text colour, in RGB565 2113, and the name colour of a fixed pet, in RGB565 64512 -->
+      <Spot Name="PetStallText" Color="#080808"/>
+      <Spot Name="PetStallFixedName" Color="#FF8200"/>
+    </DrawingArea>
+    <DrawingArea Name="PetStallSlot1" Bounds="221,67,170,280" HitTest="true" MouseDown="onPetStallSlotClick"/>
+    <DrawingArea Name="PetStallSlot2" Bounds="403,67,170,280" HitTest="true" MouseDown="onPetStallSlotClick"/>
+    <DrawingArea Name="PetStallSlot3" Bounds="585,67,170,280" HitTest="true" MouseDown="onPetStallSlotClick"/>
+    <IconGrid Name="PetStallSlot3Gear6" Position="726,281" CellSize="33" FirstIndex="6"/>
+    <IconGrid Name="PetStallSlot2Gear6" Position="544,281" CellSize="33" FirstIndex="6"/>
+    <IconGrid Name="PetStallSlot1Gear6" Position="362,281" CellSize="33" FirstIndex="6"/>
+    <IconGrid Name="PetStallSlot3Gear" Position="586,316" Columns="5" Pitch="35" CellSize="33"/>
+    <IconGrid Name="PetStallSlot2Gear" Position="404,316" Columns="5" Pitch="35" CellSize="33"/>
+    <IconGrid Name="PetStallSlot1Gear" Position="222,316" Columns="5" Pitch="35" CellSize="33"/>
+    <IconGrid Name="PetStallGear6" Position="160,281" CellSize="33" FirstIndex="6"/>
+    <IconGrid Name="PetStallGear" Position="20,316" Columns="5" Pitch="35" CellSize="33"/>
+    <ImageButton Name="PetStallPrevious" Picture="Btn_ArrowL_9" Position="35,194" Click="onPetStallPrevious"/>
+    <ImageButton Name="PetStallNext" Picture="Btn_ArrowR_9" Position="158,194" Click="onPetStallNext"/>
+    <ImageButton Name="PetStallRemove" Picture="Btn_ArrowL_8" Position="196,227" Click="onPetStallRemove"/>
+    <ImageButton Name="PetStallAdd" Picture="Btn_ArrowR_8" Position="199,181" Click="onPetStallAdd"/>
+    <ImageButton Name="PetStallCloseSmall" Picture="btn_close_s_1" Position="731,26" Size="18,18" Click="onPetStallClose"/>
+    <ImageButton Name="PetStallCancel" Picture="Btn_Cancel_1" Position="443,404" Click="onPetStallClose"/>
+    <Image Name="PetStallRevokeIcon" Picture="Icon_RevokeStall_1" Position="373,404" Size="56,20"/>
+    <Image Name="PetStallKeepIcon" Picture="Icon_KeepStall_1" Position="303,404" Size="56,20"/>
+    <ImageButton Name="PetStallRevoke" Picture="Btn_RevokeStall_1" Position="373,404" Visible="false" Click="onPetStallRevoke"/>
+    <ImageButton Name="PetStallKeep" Picture="Btn_KeepStall_1" Position="303,404" Click="onPetStallKeep"/>
+    <TextBox Name="PetStallShopName" Bounds="162,34,196,14" HitTest="true" MaxLength="28" FontColor="#080808"/>
+    <TextBox Name="PetStallPrice3" Bounds="651,294,76,14" HitTest="true" Align="Right" CharFilter="Digits"
+             MaxLength="8" FontColor="#080808"/>
+    <TextBox Name="PetStallPrice2" Bounds="469,294,76,14" HitTest="true" Align="Right" CharFilter="Digits"
+             MaxLength="8" FontColor="#080808"/>
+    <TextBox Name="PetStallPrice1" Bounds="287,294,76,14" HitTest="true" Align="Right" CharFilter="Digits"
+             MaxLength="8" FontColor="#080808"/>
+    <TextBox Name="PetStallName3" Bounds="589,222,225,17" ReadOnly="true" FontColor="#080808"/>
+    <TextBox Name="PetStallName2" Bounds="407,222,225,17" ReadOnly="true" FontColor="#080808"/>
+    <TextBox Name="PetStallName1" Bounds="225,222,225,17" ReadOnly="true" FontColor="#080808"/>
+    <TextBox Name="PetStallPetName" Bounds="24,222,225,17" ReadOnly="true" FontColor="#080808"/>
+    <DigitText Name="PetStallIncome" Position="387,362" Picture="Num_MainInfo" Rows="11" Glyphs="0123456789"/>
+    <DigitText Name="PetStallGold" Position="387,383" Picture="Num_MainInfo" Rows="11" Glyphs="0123456789"/>
+  </Window>
+</Panel>

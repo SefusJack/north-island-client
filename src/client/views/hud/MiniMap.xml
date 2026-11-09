@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The map at the top right of the world (CH_TMiniMapForm_World); view model:
+     viewmodels/MiniMap.cpp.  The view model sets the map's picture and puts the minimize
+     button on its top right corner (the form folds into a small box at the button and back); the marks area paints the
+     signs and the player and keeps the mouse off the map behind; held with the left button it drags the form (a TSe_Form, FDraggable 1).
+     A press on it brings it over the forms made after it (the hot key bar). -->
+<Panel Name="MiniMap" Bounds="0,0,800,600" Anchor="TopRight" HudScale="true" Visible="false" RaisesOnPress="true">
+  <Image Name="MiniMapPicture"/>
+  <DrawingArea Name="MiniMapMarks" Bounds="0,0,800,600" HitTest="true" MouseDown="onMiniMapPress" MouseDrag="onMiniMapDrag"
+               MouseUp="onMiniMapRelease"/>
+  <!-- the map's top edge (only the y is used; the map hugs the right edge) -->
+  <Spot Name="MiniMapTop" Position="0,38"/>
+  <!-- the folded box: where the window button sits inside it (x and y), and the box size -->
+  <Spot Name="MiniMapFolded" Bounds="10,10,39,38"/>
+  <ImageButton Name="MiniMapMinimize" Picture="Btn_Minimize_1" Hint="Minimize map" Click="onMiniMapMinimize"/>
+</Panel>

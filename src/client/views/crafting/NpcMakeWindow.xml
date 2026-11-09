@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The form that asks who makes a thing (TFNPC_MakeForm, "partner": with a Maid in the house a thing that takes time is made by the player or by one
+     of the pets of a human kind); view model: viewmodels/NpcMakeWindow.cpp.  The player's row on top, then the pets, each a small face and a name; a
+     click on a row chooses it.  The game draws a form's controls from the last created to the first: the controls here are in drawing order, the
+     reverse of TFNPC_MakeForm.Create. -->
+<Panel Name="NpcMakeLayer" Bounds="0,0,800,600">
+  <Window Name="NpcMakeWindow" Escape="onNpcMakeClose" Picture="Form_NPCMake" Position="550,70" Visible="false">
+    <BlockList Name="NpcMakeRows" Bounds="20,62,203,184" RowHeight="33" RowSpacing="4" HighlightColor="#89BEF5" HoverAlpha="100"
+               SelectionAlpha="100" FontColor="#080808" Click="onNpcMakeRow"/>
+    <!-- the rows' TRe_MiniPetInfo -->
+    <DrawingArea Name="NpcMakeFaces" Bounds="0,0,247,289">
+      <!-- the first pet's figure, and the step down to each next row (the names are placed from here too) -->
+      <Spot Name="NpcMakeFirstPet" Position="21,100" Pitch="0,37"/>
+    </DrawingArea>
+    <ImageButton Name="NpcMakeClose" Picture="Btn_Close_1" Position="99,251" Click="onNpcMakeClose"/>
+    <ImageButton Name="NpcMakeCloseSmall" Picture="Btn_Close_S_1" Position="200,25" Size="18,18" Click="onNpcMakeClose"/>
+    <!-- RenderWithChildren, after the controls: the player's face and the names -->
+    <DrawingArea Name="NpcMakeNames" Bounds="0,0,247,289">
+      <!-- the player's face, from the first pet's place -->
+      <Spot Name="NpcMakePlayerFace" Position="17,-40"/>
+      <!-- a name's box, from the figure's place -->
+      <Spot Name="NpcMakeName" Bounds="38,10,100,16"/>
+      <!-- the player's name and a tradable pet's, in RGB565 31 (blue) -->
+      <Spot Name="NpcMakePlayerName" Color="#0000FF"/>
+      <!-- an untradable pet's name, in RGB565 63488 (red) -->
+      <Spot Name="NpcMakeUntradableName" Color="#FF0000"/>
+    </DrawingArea>
+  </Window>
+</Panel>

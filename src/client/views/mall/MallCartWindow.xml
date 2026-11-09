@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The item mall's cart (THL_ShoppingCarForm, Shop Cart / Check Out or a row put in it); view
+     model: viewmodels/MallCartWindow.cpp.  Up to seven rows with their price and count (typed
+     for goods, fixed for the others) and Delete, the total, Return to the mall, Pay and Exit.
+     The form's own drawing (the rows, the total) comes first, then its controls from the last
+     created to the first. -->
+<Panel Name="CartLayer" Bounds="0,0,800,600">
+  <Window Name="Cart" Position="126,21" Size="548,534" Visible="false">
+    <Image Name="CartBackground" Source="Menu/Skins/white/Form_ShoppingCar_1.bmp" Position="0,0"/>
+    <DrawingArea Name="CartPaint" Bounds="0,0,548,534" HitTest="true"/>
+    <ImageButton Name="CartExit" Picture="Btn_Exit" Bounds="368,494,71,20" Click="onCartExit"/>
+    <ImageButton Name="CartPay" Picture="Btn_PayOffOK" Bounds="222,494,71,20" Click="onCartPay"/>
+    <ImageButton Name="CartReturn" Picture="Btn_Return" Bounds="80,494,71,20" Click="onCartReturn"/>
+    <TextBox Name="CartCount7" Bounds="400,414,28,14" HitTest="true" Align="Right" CharFilter="Digits" MaxLength="3"
+             FontColor="#080808" Visible="false"/>
+    <TextBox Name="CartCount6" Bounds="400,355,28,14" HitTest="true" Align="Right" CharFilter="Digits" MaxLength="3"
+             FontColor="#080808" Visible="false"/>
+    <TextBox Name="CartCount5" Bounds="400,296,28,14" HitTest="true" Align="Right" CharFilter="Digits" MaxLength="3"
+             FontColor="#080808" Visible="false"/>
+    <TextBox Name="CartCount4" Bounds="400,237,28,14" HitTest="true" Align="Right" CharFilter="Digits" MaxLength="3"
+             FontColor="#080808" Visible="false"/>
+    <TextBox Name="CartCount3" Bounds="400,178,28,14" HitTest="true" Align="Right" CharFilter="Digits" MaxLength="3"
+             FontColor="#080808" Visible="false"/>
+    <TextBox Name="CartCount2" Bounds="400,119,28,14" HitTest="true" Align="Right" CharFilter="Digits" MaxLength="3"
+             FontColor="#080808" Visible="false"/>
+    <TextBox Name="CartCount1" Bounds="400,60,28,14" HitTest="true" Align="Right" CharFilter="Digits" MaxLength="3"
+             FontColor="#080808" Visible="false"/>
+    <ImageButton Name="CartDelete7" Picture="Btn_DelItem" Bounds="445,412,56,20" Visible="false" Click="onCartDelete"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="CartDelete6" Picture="Btn_DelItem" Bounds="445,353,56,20" Visible="false" Click="onCartDelete"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="CartDelete5" Picture="Btn_DelItem" Bounds="445,294,56,20" Visible="false" Click="onCartDelete"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="CartDelete4" Picture="Btn_DelItem" Bounds="445,235,56,20" Visible="false" Click="onCartDelete"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="CartDelete3" Picture="Btn_DelItem" Bounds="445,176,56,20" Visible="false" Click="onCartDelete"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="CartDelete2" Picture="Btn_DelItem" Bounds="445,117,56,20" Visible="false" Click="onCartDelete"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="CartDelete1" Picture="Btn_DelItem" Bounds="445,58,56,20" Visible="false" Click="onCartDelete"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

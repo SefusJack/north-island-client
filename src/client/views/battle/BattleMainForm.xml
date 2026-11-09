@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The battle's panel and command ring (RE_BattleMainForm); view model:
+     viewmodels/BattleMainForm.cpp.  The ring's seven buttons gather round the fighter that
+     commands (the view model places them); over them up to four panels of the own side's players
+     (BattleStatus_1 at 24,21, the next ones 206 further right) come down from above the screen,
+     with the own HP, SP, experience and gold under the first. -->
+<Panel Name="BattleMain" Bounds="0,0,800,600" Visible="false">
+  <!-- FSideButtons[3]: while auto commands, a click stops it for the player and the pet -->
+  <ImageButton Name="BattleAutoCancel" Picture="Btn_Battle_5_1" Position="762,526" Size="28,28" Visible="false"
+               Click="onBattleAutoCancel"/>
+  <!-- the eighth button at the ring's middle: the last command again, in its own picture -->
+  <ImageButton Name="BattleCommand8" Picture="Btn_Battle_6_1" Bounds="0,0,28,28" Visible="false"
+               Click="onBattleCommand8"/>
+  <ImageButton Name="BattleCommand7" Picture="Btn_Battle_7_1" Bounds="0,0,28,28" Visible="false"
+               Click="onBattleCommand7"/>
+  <ImageButton Name="BattleCommand6" Picture="Btn_Battle_6_1" Bounds="0,0,28,28" Visible="false"
+               Click="onBattleCommand6"/>
+  <ImageButton Name="BattleCommand5" Picture="Btn_Battle_5_1" Bounds="0,0,28,28" Visible="false"
+               Click="onBattleCommand5"/>
+  <ImageButton Name="BattleCommand4" Picture="Btn_Battle_4_1" Bounds="0,0,28,28" Visible="false"
+               Click="onBattleCommand4"/>
+  <ImageButton Name="BattleCommand3" Picture="Btn_Battle_3_1" Bounds="0,0,28,28" Visible="false"
+               Click="onBattleCommand3"/>
+  <ImageButton Name="BattleCommand2" Picture="Btn_Battle_2_1" Bounds="0,0,28,28" Visible="false"
+               Click="onBattleCommand2"/>
+  <ImageButton Name="BattleCommand1" Picture="Btn_Battle_1_1" Bounds="0,0,28,28" Visible="false"
+               Click="onBattleCommand1"/>
+  <!-- a member panel: its height (115 body and 21 extra) and the x distance between panels -->
+  <Spot Name="BattleMemberPanel" Size="0,136" Pitch="206,0"/>
+  <!-- where the command wheel starts, from the fighter's feet -->
+  <Spot Name="BattleWheelCentre" Position="-15,-32"/>
+  <!-- the panels keep to the window's top left in a bigger window (the view model places them inside this one) -->
+  <Panel Name="BattleStatusCorner" Bounds="0,0,800,600" Anchor="TopLeft">
+  <!-- DrawBattleMembers: the own numbers at 8,140 under the panels -->
+  <Panel Name="BattleOwnInfo" Bounds="0,0,800,600">
+    <Image Name="BattleHpWord" Picture="Main_Word_Hp" Position="8,140"/>
+    <DigitText Name="BattleHp" Position="43,141" Picture="Num_MainInfo" Rows="12" Glyphs="0123456789%/" Spacing="-3"/>
+    <Image Name="BattleSpWord" Picture="Main_Word_Sp" Position="8,156"/>
+    <DigitText Name="BattleSp" Position="43,157" Picture="Num_MainInfo" Rows="12" Glyphs="0123456789%/" Spacing="-3"/>
+    <Image Name="BattleExpWord" Picture="Main_Word_Exp" Position="8,172"/>
+    <Image Name="BattleExpFrame" Picture="Panel37" Position="41,174"/>
+    <ProgressBar Name="BattleExpBar" Picture="Panel38" Position="43,176"/>
+    <DigitText Name="BattleExpPercent" Position="92,173" Picture="Num_MainInfo" Rows="12" Glyphs="0123456789%/" Spacing="-3"/>
+    <Image Name="BattleGoldWord" Picture="Main_Word_Gold" Position="8,187"/>
+    <DigitText Name="BattleGold" Position="43,188" Picture="Num_MainInfo" Rows="12" Glyphs="0123456789%/" Spacing="-3"/>
+  </Panel>
+  <Panel Name="BattleMember1" Bounds="0,0,800,600" Visible="false">
+    <Image Name="BattleMember1Status" Picture="BattleStatus_1" Position="24,21"/>
+    <Image Name="BattleMember1Element" Bounds="138,27,25,25"/>
+    <DrawingArea Name="BattleMember1Hp" Bounds="56,57,93,38"/>
+    <DrawingArea Name="BattleMember1Sp" Bounds="45,58,110,47"/>
+    <Label Name="BattleMember1Name" Position="3,3" Effect="Outline"/>
+    <DrawingArea Name="BattleMember1Portrait" Position="105,70"/>
+    <Image Name="BattleMember1Job" Bounds="7,43,18,18" Visible="false"/>
+    <Image Name="BattleMember1LevelWord" Picture="Main_Word_Lv" Position="4,23"/>
+    <DigitText Name="BattleMember1Level" Position="34,24" Picture="Num_White3_1" Spacing="-1"/>
+    <!-- DrawCharStatusIcons: the statuses on the member, once the panel is down -->
+    <DrawingArea Name="BattleMember1Icons" Bounds="44,121,80,15"/>
+    <!-- FMemberPetInfos: the member's fighting pet (FMemberPanels + FMemberIconDelta) -->
+    <DrawingArea Name="BattleMember1Pet" Bounds="121,113,60,40"/>
+  </Panel>
+  <Panel Name="BattleMember2" Bounds="0,0,800,600" Visible="false">
+    <Image Name="BattleMember2Status" Picture="BattleStatus_1" Position="24,21"/>
+    <Image Name="BattleMember2Element" Bounds="138,27,25,25"/>
+    <DrawingArea Name="BattleMember2Hp" Bounds="56,57,93,38"/>
+    <DrawingArea Name="BattleMember2Sp" Bounds="45,58,110,47"/>
+    <Label Name="BattleMember2Name" Position="3,3" Effect="Outline"/>
+    <DrawingArea Name="BattleMember2Portrait" Position="105,70"/>
+    <Image Name="BattleMember2Job" Bounds="7,43,18,18" Visible="false"/>
+    <Image Name="BattleMember2LevelWord" Picture="Main_Word_Lv" Position="4,23"/>
+    <DigitText Name="BattleMember2Level" Position="34,24" Picture="Num_White3_1" Spacing="-1"/>
+    <!-- DrawCharStatusIcons: the statuses on the member, once the panel is down -->
+    <DrawingArea Name="BattleMember2Icons" Bounds="44,121,80,15"/>
+    <!-- FMemberPetInfos: the member's fighting pet (FMemberPanels + FMemberIconDelta) -->
+    <DrawingArea Name="BattleMember2Pet" Bounds="121,113,60,40"/>
+  </Panel>
+  <Panel Name="BattleMember3" Bounds="0,0,800,600" Visible="false">
+    <Image Name="BattleMember3Status" Picture="BattleStatus_1" Position="24,21"/>
+    <Image Name="BattleMember3Element" Bounds="138,27,25,25"/>
+    <DrawingArea Name="BattleMember3Hp" Bounds="56,57,93,38"/>
+    <DrawingArea Name="BattleMember3Sp" Bounds="45,58,110,47"/>
+    <Label Name="BattleMember3Name" Position="3,3" Effect="Outline"/>
+    <DrawingArea Name="BattleMember3Portrait" Position="105,70"/>
+    <Image Name="BattleMember3Job" Bounds="7,43,18,18" Visible="false"/>
+    <Image Name="BattleMember3LevelWord" Picture="Main_Word_Lv" Position="4,23"/>
+    <DigitText Name="BattleMember3Level" Position="34,24" Picture="Num_White3_1" Spacing="-1"/>
+    <!-- DrawCharStatusIcons: the statuses on the member, once the panel is down -->
+    <DrawingArea Name="BattleMember3Icons" Bounds="44,121,80,15"/>
+    <!-- FMemberPetInfos: the member's fighting pet (FMemberPanels + FMemberIconDelta) -->
+    <DrawingArea Name="BattleMember3Pet" Bounds="121,113,60,40"/>
+  </Panel>
+  <Panel Name="BattleMember4" Bounds="0,0,800,600" Visible="false">
+    <Image Name="BattleMember4Status" Picture="BattleStatus_1" Position="24,21"/>
+    <Image Name="BattleMember4Element" Bounds="138,27,25,25"/>
+    <DrawingArea Name="BattleMember4Hp" Bounds="56,57,93,38"/>
+    <DrawingArea Name="BattleMember4Sp" Bounds="45,58,110,47"/>
+    <Label Name="BattleMember4Name" Position="3,3" Effect="Outline"/>
+    <DrawingArea Name="BattleMember4Portrait" Position="105,70"/>
+    <Image Name="BattleMember4Job" Bounds="7,43,18,18" Visible="false"/>
+    <Image Name="BattleMember4LevelWord" Picture="Main_Word_Lv" Position="4,23"/>
+    <DigitText Name="BattleMember4Level" Position="34,24" Picture="Num_White3_1" Spacing="-1"/>
+    <!-- DrawCharStatusIcons: the statuses on the member, once the panel is down -->
+    <DrawingArea Name="BattleMember4Icons" Bounds="44,121,80,15"/>
+    <!-- FMemberPetInfos: the member's fighting pet (FMemberPanels + FMemberIconDelta) -->
+    <DrawingArea Name="BattleMember4Pet" Bounds="121,113,60,40"/>
+  </Panel>
+  </Panel>
+</Panel>

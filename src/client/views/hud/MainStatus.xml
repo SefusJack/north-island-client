@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The status panel at the top left of the world (TSe_MainStatus); view model:
+     viewmodels/MainStatus.cpp.  The panel's origin is 2,10. -->
+<Panel Name="MainStatus" Bounds="0,0,800,600" Anchor="TopLeft" HudScale="true" Visible="false">
+  <ImageButton Name="StatusRecovery" Picture="Btn_Allrecovery_1" Bounds="39,106,22,22"
+               Hint="Restore you and your pet by using HP&amp;SP potion"/>
+  <Image Name="StatusPanel" Picture="Main_Status_1" Position="2,10"/>
+  <!-- the fighting pet (TRe_MiniPetInfo at the panel's 150,38; created last, drawn first) -->
+  <DrawingArea Name="StatusPet" Bounds="152,48,100,50">
+    <!-- where the pet's level and bars go inside this control -->
+    <Spot Name="StatusPetParts" Position="25,0"/>
+  </DrawingArea>
+  <Image Name="StatusElement" Bounds="115,17,25,25" HitTest="true"/>
+  <DrawingArea Name="StatusHpGauge" Bounds="34,47,93,38"/>
+  <DrawingArea Name="StatusSpGauge" Bounds="23,48,110,47"/>
+  <DrawingArea Name="StatusPortrait" Position="83,60"/>
+  <Image Name="StatusLevelWord" Picture="Main_Word_Lv" Position="2,4"/>
+  <DigitText Name="StatusLevel" Position="32,5" Picture="Num_White3_1" Spacing="-1"/>
+  <Image Name="StatusJob" Bounds="5,23,18,18" Visible="false"/>
+  <Image Name="StatusHpWord" Picture="Main_Word_Hp" Position="7,133"/>
+  <DigitText Name="StatusHp" Position="42,134" Picture="Num_MainInfo" Rows="12" Glyphs="0123456789%/" Spacing="-3"/>
+  <Image Name="StatusSpWord" Picture="Main_Word_Sp" Position="7,149"/>
+  <DigitText Name="StatusSp" Position="42,150" Picture="Num_MainInfo" Rows="12" Glyphs="0123456789%/" Spacing="-3"/>
+  <Image Name="StatusExpWord" Picture="Main_Word_Exp" Position="7,165"/>
+  <Image Name="StatusExpFrame" Picture="Panel37" Position="40,167"/>
+  <ProgressBar Name="StatusExpBar" Picture="Panel38" Position="42,169"/>
+  <DigitText Name="StatusExpPercent" Position="91,166" Picture="Num_MainInfo" Rows="12" Glyphs="0123456789%/" Spacing="-3"/>
+  <Image Name="StatusGoldWord" Picture="Main_Word_Gold" Position="7,180"/>
+  <DigitText Name="StatusGold" Position="42,181" Picture="Num_MainInfo" Rows="12" Glyphs="0123456789%/" Spacing="-3"/>
+  <DrawingArea Name="StatusVehicle" Bounds="0,195,200,100"/>
+  <!-- RenderWithChildren's hint of a gauge (HitTestStatusBars) and DrawExpHint, over everything of the panel -->
+  <DrawingArea Name="StatusHints" Bounds="0,0,250,230"/>
+</Panel>

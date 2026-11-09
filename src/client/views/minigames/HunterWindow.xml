@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The hunting game (kind 4; TH_Hunter.pas TSport_Hunter): the whole screen is the page, which the view model paints (the forest, the hearts, the score
+     and the time, the animals, the sight) and which takes the left button going down (the shot); over it the Exit button the game's explain form brings
+     when the play starts (CH_GameExplain, SetupExitButton of kind 4: 700, 40).  View model: viewmodels/HunterWindow.cpp. -->
+<Panel Name="HunterLayer" Bounds="0,0,800,600">
+  <Panel Name="HunterForm" Bounds="0,0,800,600" Visible="false">
+    <DrawingArea Name="HunterPage" Bounds="0,0,800,600" HitTest="true" MouseDown="onHunterDown">
+      <!-- the forest and trees pictures, and the front picture -->
+      <Spot Name="HunterForest" Position="-50,-150"/>
+      <Spot Name="HunterFront" Position="-50,230"/>
+      <!-- the score, time and life labels, and the score and time digits -->
+      <Spot Name="HunterScore" Position="630,25"/>
+      <Spot Name="HunterTime" Position="345,25"/>
+      <Spot Name="HunterLife" Position="15,25"/>
+      <Spot Name="HunterScoreDigits" Position="730,25"/>
+      <Spot Name="HunterTimeDigits" Position="445,25"/>
+      <!-- the attack picture -->
+      <Spot Name="HunterAttack" Position="300,300"/>
+      <!-- the You Win / You Lose letters: centred on this point, 65 px between letters -->
+      <Spot Name="HunterMessage" Position="400,200" Pitch="65,0"/>
+      <!-- the row of hearts: heart 0's x, every heart's y and size, 40 px between hearts (heart i is i steps to the right) -->
+      <Spot Name="HunterHeart" Bounds="50,25,30,25" Pitch="40,0"/>
+    </DrawingArea>
+    <ImageButton Name="HunterExit" Picture="Hunting_Exit_Btn" Position="700,40" Visible="false" Press="onHunterExit"/>
+  </Panel>
+</Panel>

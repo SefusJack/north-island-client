@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- An NPC's store (TRe_NpcStoreForm, opened by a map event's store surface); view model:
+     viewmodels/NpcStoreWindow.cpp, which puts on the equipment or goods store picture.  The
+     items with their effects and prices; a click puts one into the purchase list below (in a
+     goods store Ctrl asks how many), the right button takes it out again; the total and the gold
+     carried; Buy (27/1).  Closing answers the event (20/9 Close).  The game draws a form's
+     controls from the last created to the first: the controls here are in drawing order, the
+     reverse of TRe_NpcStoreForm.Create. -->
+<Panel Name="NpcStoreLayer" Bounds="0,0,800,600">
+  <Window Name="NpcStore" Escape="onNpcStoreClose" Picture="Form_ThingStore_1" Position="195,37" Size="409,525" Visible="false">
+    <!-- DrawControl: the total and the gold carried, then the list over them -->
+    <DrawingArea Name="NpcStorePaint" Bounds="0,0,409,525"/>
+    <ImageButton Name="NpcStoreCloseSmall" Picture="Btn_Close_s_1" Position="358,25" Size="18,18" Click="onNpcStoreClose"/>
+    <ImageButton Name="NpcStoreClose" Picture="Btn_Close_1" Position="214,489" Click="onNpcStoreClose"/>
+    <ImageButton Name="NpcStoreBuy" Picture="Btn_Buy_1" Position="136,489" Click="onNpcStoreBuy"/>
+    <IconGrid Name="NpcStoreCart" Position="34,402" Columns="10" Rows="1" Pitch="34" RightClick="onNpcStoreTakeBack"/>
+    <BlockList Name="NpcStoreList" Bounds="26,82,353,292" RowHeight="56" RowSpacing="3" HighlightColor="#89BEF5"
+               HoverAlpha="100" FontColor="#080808" ClickSound="sound/wav0151.wav" Click="onNpcStorePick"/>
+  </Window>
+</Panel>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Passion Bouquet's name form (TLoveFlowerForm, the "love flower": a double click on the Passion Bouquet 34233): the name of the player to send a message to, typed or picked from
+     the friends and guild members that are online (the two ticks filter them; a double click on a row types it), OK goes on to the message form (LoveFlowerMessageWindow).  The game
+     draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of TLoveFlowerForm.Create; DrawControl's flower picture is under
+     them.  View model: viewmodels/LoveFlowerWindow.cpp. -->
+<Panel Name="LoveFlowerLayer" Bounds="0,0,800,600">
+  <Window Name="LoveFlower" AbovePopups="true" Escape="onLoveFlowerClose" Picture="Form_Magnet_1" Position="286,100" Size="228,399" Visible="false">
+    <Image Name="LoveFlowerIcon" Picture="Flower" SourceRect="0,0,76,34" Position="74,11"/>
+    <ImageButton Name="LoveFlowerDown" Picture="Btn_ArrowDn_1" Position="192,348" Size="17,17" Click="onLoveFlowerDown"/>
+    <ImageButton Name="LoveFlowerUp" Picture="Btn_ArrowUp_1" Position="192,106" Size="17,17" Click="onLoveFlowerUp"/>
+    <ImageButton Name="LoveFlowerClose" Picture="Btn_Close_2" Position="113,366" Size="39,20" Hint="[ESC]" Click="onLoveFlowerClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="LoveFlowerCloseSmall" Picture="Btn_Close_s_1" Position="178,26" Size="18,18" Hint="[ESC]" Click="onLoveFlowerClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ListBox Name="LoveFlowerNames" Bounds="22,118,163,236" RowHeight="26" FontColor="#FFFFFF" HighlightColor="#89BFF5"
+             FocusFrame="false" TextShadow="false" TextOffset="10,3" ScrollBar="LoveFlowerScroll" DoubleClick="onLoveFlowerPick"/>
+    <ScrollBar Name="LoveFlowerScroll" Bounds="192,123,17,226" Track="Rail_H5" TrackCap="16" Thumb="bar_H4" ThumbSource="0,0,9,21" ThumbCap="7" ThumbInset="3"/>
+    <CheckBox Name="LoveFlowerGuild" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Checked="true" Position="76,89" Size="16,16" Click="onLoveFlowerFilter"/>
+    <CheckBox Name="LoveFlowerFriends" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Checked="true" Position="20,89" Size="16,16" Click="onLoveFlowerFilter"/>
+    <ImageButton Name="LoveFlowerUse" Picture="Btn_OK_2" Position="68,366" Size="39,20" Hint="Use" Click="onLoveFlowerUse"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <TextBox Name="LoveFlowerName" Bounds="96,64,86,20" Skin="Panel26" SkinSource="0,0,104,14" Borders="1,1,1,1" HitTest="true" MaxLength="14"
+             AllowPaste="true" FontColor="#080808"/>
+  </Window>
+</Panel>

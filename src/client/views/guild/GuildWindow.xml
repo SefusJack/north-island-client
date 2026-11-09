@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The guild tab of the group window (TSe_TeamForm with its guild tab chosen); view model:
+     viewmodels/GuildWindow.cpp.  The game keeps one form and swaps its picture; here the guild
+     tab is a window of its own that opens where the group window was.  Its four pages:
+     Guild Info (the lord, how many members, the rules with End Guild and Edit Rule for the lord),
+     Member (five a page: face, name, level, job, element, state, nickname and title, a mail icon
+     and a tick box, with the buttons that act on the ticked ones), Insignia and Message.  The
+     game draws a form's controls from the last created to the first: the controls here are in
+     drawing order, the reverse of TSe_TeamForm.Create.  The Message page (the guild's notice
+     board) is in viewmodels/GuildNoticePage.cpp, the Insignia page (the badge editor) in
+     viewmodels/GuildEmblemPage.cpp. -->
+<Panel Name="GuildWindowLayer" Bounds="0,0,800,600">
+  <Window Name="GuildWindow" Picture="Form_ArmyGrounpInfo_1" Position="444,0" Visible="false" Hint="Group [Ctrl+T]"
+          DoubleClick="onGuildWindowDoubleClick">
+    <!-- the Insignia page's mouse areas: the form does not drag from them (HandleMouseMove); below the buttons -->
+    <DrawingArea Name="GuildEmblemSamples" Bounds="86,99,140,28" HitTest="true" Visible="false" MouseDown="onGuildEmblemSampleDown"/>
+    <DrawingArea Name="GuildEmblemPalette" Bounds="181,436,120,30" HitTest="true" Visible="false" MouseDown="onGuildEmblemPaletteDown"/>
+    <DrawingArea Name="GuildEmblemGrid" Bounds="62,165,240,240" HitTest="true" Visible="false" MouseDown="onGuildEmblemGridDown"
+                 MouseDrag="onGuildEmblemGridDrag" MouseUp="onGuildEmblemGridUp"/>
+    <!-- the Insignia page's buttons -->
+    <Image Name="GuildEmblemFrame" Picture="icon_portentFram_1" Position="270,101" Visible="false"/>
+    <ImageButton Name="GuildEmblemSamplesRight" Picture="Btn_ArrowR_8" Position="236,105" Visible="false" Click="onGuildEmblemSamplesRight"/>
+    <ImageButton Name="GuildEmblemSamplesLeft" Picture="Btn_ArrowL_8" Position="59,105" Visible="false" Click="onGuildEmblemSamplesLeft"/>
+    <ImageButton Name="GuildEmblemFill" Picture="btn_fillColor_1" Position="59,455" Visible="false" Click="onGuildEmblemFill"/>
+    <ImageButton Name="GuildEmblemPen" Picture="Btn_drawpoint_1" Position="59,427" Visible="false" Click="onGuildEmblemPen"/>
+    <ImageButton Name="GuildEmblemSaveFile" Picture="Btn_saveFile_1" Position="162,133" Visible="false" Click="onGuildEmblemSaveFile"/>
+    <ImageButton Name="GuildEmblemReadFile" Picture="Btn_readFile_1" Position="112,133" Visible="false" Click="onGuildEmblemReadFile"/>
+    <ImageButton Name="GuildEmblemLine" Picture="Btn_drawLine_1" Position="87,427" Visible="false" Click="onGuildEmblemLine"/>
+    <ImageButton Name="GuildEmblemEllipse" Picture="Btn_darwcircle_1" Position="143,427" Visible="false" Click="onGuildEmblemEllipse"/>
+    <ImageButton Name="GuildEmblemRectangle" Picture="Btn_drawsquare_1" Position="115,427" Visible="false" Click="onGuildEmblemRectangle"/>
+    <ImageButton Name="GuildEmblemClear" Picture="Btn_Delete_2" Position="143,455" Visible="false" Click="onGuildEmblemClear"/>
+    <ImageButton Name="GuildEmblemUpload" Picture="Btn_UpLoad_1" Position="262,133" Visible="false" Click="onGuildEmblemUpload"/>
+    <ImageButton Name="GuildEmblemRedo" Picture="Btn_ReDo_1" Position="115,455" Visible="false" Click="onGuildEmblemRedo"/>
+    <ImageButton Name="GuildEmblemUndo" Picture="Btn_Updo_1" Position="87,455" Visible="false" Click="onGuildEmblemUndo"/>
+    <!-- the Message page's buttons -->
+    <ImageButton Name="GuildNoticeUpdate" Picture="Btn_UPdata_1" Position="215,460" Visible="false" Click="onGuildNoticeUpdate"/>
+    <ImageButton Name="GuildNoticeNext" Picture="Btn_ArrowR_5" Position="220,430" Visible="false" Click="onGuildNoticeNext"/>
+    <ImageButton Name="GuildNoticePrevious" Picture="Btn_ArrowL_5" Position="135,430" Visible="false" Click="onGuildNoticePrevious"/>
+    <ImageButton Name="GuildNoticeAdd" Picture="Btn_AddNew_1" Position="100,460" Visible="false" Click="onGuildNoticeAdd"/>
+    <ImageButton Name="GuildCloseSmall" Picture="Btn_Close_s_1" Position="321,24" Click="onGuildWindowClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="GuildClose" Picture="Btn_Close_1" Position="157,500" Hint="[ESC]" Click="onGuildWindowClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <Image Name="GuildMailGray5" Picture="icon_mailGary_1" Position="310,359" Visible="false"/>
+    <Image Name="GuildMailGray4" Picture="icon_mailGary_1" Position="310,293" Visible="false"/>
+    <Image Name="GuildMailGray3" Picture="icon_mailGary_1" Position="310,227" Visible="false"/>
+    <Image Name="GuildMailGray2" Picture="icon_mailGary_1" Position="310,161" Visible="false"/>
+    <Image Name="GuildMailGray1" Picture="icon_mailGary_1" Position="310,95" Visible="false"/>
+    <ImageButton Name="GuildMailIcon5" Picture="icon_mail_1" Frames="1" Position="310,359" Visible="false" Click="onGuildMailMember"/>
+    <ImageButton Name="GuildMailIcon4" Picture="icon_mail_1" Frames="1" Position="310,293" Visible="false" Click="onGuildMailMember"/>
+    <ImageButton Name="GuildMailIcon3" Picture="icon_mail_1" Frames="1" Position="310,227" Visible="false" Click="onGuildMailMember"/>
+    <ImageButton Name="GuildMailIcon2" Picture="icon_mail_1" Frames="1" Position="310,161" Visible="false" Click="onGuildMailMember"/>
+    <ImageButton Name="GuildMailIcon1" Picture="icon_mail_1" Frames="1" Position="310,95" Visible="false" Click="onGuildMailMember"/>
+    <Image Name="GuildSetAuthorityGray" Picture="Btn_setauthority_gary_1" Position="120,462" Visible="false"/>
+    <ImageButton Name="GuildSetAuthority" Picture="Btn_setauthority_1" Position="120,462" Visible="false" Click="onGuildSetAuthority"/>
+    <Image Name="GuildMyAuthorityGray" Picture="Btn_myauthority_gary_1" Position="55,462" Visible="false"/>
+    <ImageButton Name="GuildMyAuthority" Picture="Btn_myauthority_1" Position="55,462" Visible="false" Click="onGuildMyAuthority"/>
+    <Image Name="GuildDelMemberGray" Picture="Btn_fireMember_gary_1" Position="250,438" Visible="false"/>
+    <ImageButton Name="GuildDelMember" Picture="Btn_fireMember_1" Position="250,438" Visible="false" Click="onGuildDelMember"/>
+    <Image Name="GuildAbdicateGray" Picture="Btn_Abdicate_Gray" Position="185,462" Visible="false"/>
+    <ImageButton Name="GuildAbdicate" Picture="Btn_Abdicate" Position="185,462" Visible="false" Click="onGuildAbdicate"/>
+    <Image Name="GuildLeaveGray" Picture="btn_exitgroup_gary_1" Position="185,438" Visible="false"/>
+    <ImageButton Name="GuildLeave" Picture="btn_exitgroup_1" Position="185,438" Visible="false" Click="onGuildLeave"/>
+    <Image Name="GuildInviteGray" Picture="Btn_InviteJoin_gary_1" Position="120,438" Visible="false"/>
+    <ImageButton Name="GuildInvite" Picture="Btn_InviteJoin_1" Position="120,438" Visible="false" Click="onGuildInvite"/>
+    <Image Name="GuildMailGroupGray" Picture="Btn_groupMail_gary_1" Position="55,438" Visible="false"/>
+    <ImageButton Name="GuildMailGroup" Picture="Btn_groupMail_1" Position="55,438" Visible="false" Click="onGuildMailGroup"/>
+    <TextBox Name="GuildRank5" Bounds="135,395,130,10" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="GuildRank4" Bounds="135,330,130,10" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="GuildRank3" Bounds="135,265,130,10" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="GuildRank2" Bounds="135,200,130,10" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="GuildRank1" Bounds="135,135,130,10" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="GuildNickname5" Bounds="135,377,130,10" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="GuildNickname4" Bounds="135,312,130,10" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="GuildNickname3" Bounds="135,247,130,10" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="GuildNickname2" Bounds="135,182,130,10" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="GuildNickname1" Bounds="135,117,130,10" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <ImageButton Name="GuildNextPage" Picture="Btn_ArrowR_8" Position="214,414" Visible="false" Click="onGuildNextPage"/>
+    <ImageButton Name="GuildPreviousPage" Picture="Btn_ArrowL_8" Position="133,414" Visible="false" Click="onGuildPreviousPage"/>
+    <TextBox Name="GuildName5" Bounds="94,344,90,40" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="GuildName4" Bounds="94,279,90,40" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="GuildName3" Bounds="94,214,90,40" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="GuildName2" Bounds="94,149,90,40" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <TextBox Name="GuildName1" Bounds="94,84,90,40" ReadOnly="true" FontColor="#080808" Visible="false"/>
+    <DrawingArea Name="GuildCareer5" Bounds="247,392,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="GuildCareer4" Bounds="247,327,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="GuildCareer3" Bounds="247,262,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="GuildCareer2" Bounds="247,197,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="GuildCareer1" Bounds="247,132,16,16" HitTest="true" Visible="false"/>
+    <Image Name="GuildLeaderLabel" Picture="OrgLeader" Position="33,85" Visible="false"/>
+    <Image Name="GuildEditRuleGray" Picture="Btn_edit_Rule_gary_1" Position="195,463" Visible="false"/>
+    <Image Name="GuildEndGuildGray" Picture="Btn_dismiss_gary_1" Position="115,463" Visible="false"/>
+    <ImageButton Name="GuildEditRule" Picture="Btn_edit_Rule_1" Position="195,463" Visible="false" Click="onGuildEditRule"/>
+    <ImageButton Name="GuildEndGuild" Picture="Btn_dismiss_1" Position="115,463" Visible="false" Click="onGuildEndGuild"/>
+    <ImageButton Name="GuildCastle" Picture="Btn_Transmi" Position="276,123" Visible="false" Click="onGuildCastle"/>
+    <ImageButton Name="GuildRulesDown" Picture="Btn_ArrowDn_1" Position="312,439" Visible="false" Click="onGuildRulesDown"/>
+    <ImageButton Name="GuildRulesUp" Picture="Btn_ArrowUp_1" Position="312,148" Visible="false" Click="onGuildRulesUp"/>
+    <ScrollBar Name="GuildRulesScroll" Bounds="313,169,15,265" Thumb="bar_H4" ThumbSource="0,0,9,21" ThumbCap="10" TrackCap="16"
+               Visible="false"/>
+    <Memo Name="GuildRules" Bounds="40,150,250,310" FontColor="#FFFFFF" Effect="Plain" ReadOnly="true" Visible="false"/>
+    <ImageButton Name="GuildCheck5" Picture="btn_UnCheck_1" Position="311,389" Visible="false" Click="onGuildCheck"/>
+    <ImageButton Name="GuildCheck4" Picture="btn_UnCheck_1" Position="311,324" Visible="false" Click="onGuildCheck"/>
+    <ImageButton Name="GuildCheck3" Picture="btn_UnCheck_1" Position="311,259" Visible="false" Click="onGuildCheck"/>
+    <ImageButton Name="GuildCheck2" Picture="btn_UnCheck_1" Position="311,194" Visible="false" Click="onGuildCheck"/>
+    <ImageButton Name="GuildCheck1" Picture="btn_UnCheck_1" Position="311,129" Visible="false" Click="onGuildCheck"/>
+    <ImageButton Name="GuildPageMessage" Picture="Btn_OrgNotice" Position="158,65" Click="onGuildPageMessage"/>
+    <ImageButton Name="GuildPageMembers" Picture="Btn_ArmyGrounpHum_1" Position="70,65" Click="onGuildPageMembers"/>
+    <ImageButton Name="GuildPageInfo" Picture="Btn_ArmyGrounpinfo_1" Position="26,65" Click="onGuildPageInfo"/>
+    <ImageButton Name="GuildPageInsignia" Picture="Btn_Emblem_1" Position="114,65" Click="onGuildPageInsignia"/>
+    <ImageButton Name="GuildTabInstances" Picture="Btn_DupMis" Position="150,41" Click="onGuildInstances"/>
+    <ImageButton Name="GuildTabGuild" Picture="Btn_ArmyGrounp_1" Position="85,41"/>
+    <ImageButton Name="GuildTabParty" Picture="Btn_Team_1" Position="20,41" Click="onGuildTabParty"/>
+    <!-- DrawGuildInfoPage / DrawOrgMemberPage: the texts, faces, levels, icons and page numbers -->
+    <DrawingArea Name="GuildPage" Bounds="0,0,356,539">
+      <!-- the Info page: the colour of its texts (RGB565 2113); the guild badge -->
+      <Spot Name="GuildInfoText" Color="#080808"/>
+      <Spot Name="GuildBadge" Position="306,94"/>
+      <!-- the Member page: the top left of the first row, one row down each step -->
+      <Spot Name="GuildMemberRow" Position="27,100" Pitch="0,65"/>
+      <!-- inside a row: the portrait, the level digits and the "Career" word picture -->
+      <Spot Name="GuildMemberFace" Position="35,19"/>
+      <Spot Name="GuildMemberLevel" Position="177,-5"/>
+      <Spot Name="GuildMemberCareer" Position="177,29"/>
+      <!-- in the first row: the element icon, the online state icon (and the part cut from its picture), the position label -->
+      <Spot Name="GuildMemberElement" Position="278,95"/>
+      <Spot Name="GuildMemberState" Position="273,132"/>
+      <Spot Name="GuildMemberStateArea" Bounds="0,0,32,16"/>
+      <Spot Name="GuildMemberTitle" Position="93,131"/>
+      <!-- the page numbers: their right edge x and their y -->
+      <Spot Name="GuildMemberPageNumbers" Position="180,418"/>
+      <!-- the Message page: the top left of the first row's face area, and the portrait inside it -->
+      <Spot Name="GuildNoticeRow" Position="27,100"/>
+      <Spot Name="GuildNoticeFace" Position="35,19"/>
+      <!-- the sender name, the subject and the date of a row -->
+      <Spot Name="GuildNoticeSender" Position="155,95"/>
+      <Spot Name="GuildNoticeSubject" Position="95,132"/>
+      <Spot Name="GuildNoticeDate" Position="245,95"/>
+      <!-- the "page / count" text, blue (RGB565 31); the colour of the row texts, yellow (RGB565 65504); the hover bar, light cyan (alpha 80) -->
+      <Spot Name="GuildNoticePageNumbers" Position="160,430" Color="#0000FF"/>
+      <Spot Name="GuildNoticeText" Color="#FFFF00"/>
+      <Spot Name="GuildNoticeBar" Color="#509EFAFE"/>
+      <!-- the Insignia page: the drafting board picture, the palette picture and its cursor colour, yellow -->
+      <Spot Name="GuildEmblemBoard" Position="59,162"/>
+      <Spot Name="GuildEmblemPaletteAt" Position="181,436"/>
+      <Spot Name="GuildEmblemCursor" Color="#FFFF00"/>
+      <!-- the drawing grid: its box, and one cell's step -->
+      <Spot Name="GuildEmblemGridAt" Bounds="62,165,240,240" Pitch="10,10"/>
+      <!-- the finished badge preview; the first sample badge: its size, and the step to the next one -->
+      <Spot Name="GuildEmblemBadge" Position="272,103"/>
+      <Spot Name="GuildEmblemSamplesAt" Bounds="90,103,24,24" Pitch="28,0"/>
+    </DrawingArea>
+  </Window>
+</Panel>

@@ -1,0 +1,12 @@
+[submodule "thirdparty/SDL3"]
+	path = thirdparty/SDL3
+	url = https://github.com/libsdl-org/SDL.git
+[submodule "thirdparty/SDL3_mixer"]
+	path = thirdparty/SDL3_mixer
+	url = https://github.com/libsdl-org/SDL_mixer.git
+[submodule "thirdparty/nlohmann"]
+	path = thirdparty/nlohmann
+	url = https://github.com/nlohmann/json.git
+[submodule "thirdparty/stb"]
+	path = thirdparty/stb
+	url = https://github.com/nothings/stb.git

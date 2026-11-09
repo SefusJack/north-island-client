@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What the sale net holds for the player (TCY_SaleNetMenu, 23/63, opened over the sale menu); view model:
+     viewmodels/SaleNetWindow.cpp.  The value of the list, an amount of gold to ask for, and ten items of the
+     web store: a check under each (not for one already on sale, marked with the For Sale icon; the Compete icon
+     marks one being competed for); Get asks for the checked ones and the amount (23/43).  The game draws a form's
+     controls from the last created to the first: the controls here are in drawing order, the reverse of
+     TCY_SaleNetMenu.Create. -->
+<Panel Name="SaleNetLayer" Bounds="0,0,800,600">
+  <Window Name="SaleNet" Escape="onSaleNetClose" Picture="Form_SaleNet" Position="191,78" Size="234,387" Visible="false">
+    <!-- DrawControl: the value of the list -->
+    <DrawingArea Name="SaleNetPaint" Bounds="0,0,234,387">
+      <!-- the value text: colour in RGB565 2113 -->
+      <Spot Name="SaleNetValue" Color="#080808"/>
+    </DrawingArea>
+    <!-- the grids are boxes: the checks lie over the lower half of the items' box, so they come last -->
+    <IconGrid Name="SaleNetItems" Position="30,212" Columns="5" Rows="2" Pitch="35" PitchY="59"/>
+    <IconGrid Name="SaleNetChecks" Position="30,244" Columns="5" Rows="2" Pitch="35" PitchY="59" CellSize="23" Press="onSaleNetCheckPress"/>
+    <ImageButton Name="SaleNetGet" Picture="icon_Get" Position="32,344" Size="70,25" Click="onSaleNetGet"/>
+    <TextBox Name="SaleNetAmount" Bounds="73,118,96,24" HitTest="true" CharFilter="Digits" MaxLength="7" Align="Right"
+             FontColor="#FFFFFF"/>
+    <ImageButton Name="SaleNetAmountDown" Picture="arrow_dw1" Position="61,133" Size="9,10" Click="onSaleNetAmountDown"/>
+    <ImageButton Name="SaleNetAmountUp" Picture="arrow_up1" Position="61,119" Size="9,10" Click="onSaleNetAmountUp"/>
+    <ImageButton Name="SaleNetClose" Picture="Btn_Close_1" Position="133,344" Size="70,25" Hint="[ESC]" Click="onSaleNetClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="SaleNetCloseSmall" Picture="Btn_Close_s_1" Position="211,5" Size="17,17" Click="onSaleNetClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <!-- RenderWithChildren: the For Sale / Compete icons over the items -->
+    <DrawingArea Name="SaleNetMarks" Bounds="0,0,234,387"/>
+  </Window>
+</Panel>

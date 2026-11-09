@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Parking Clerk's parking lot (TParkForm): four places for vehicles, a vehicle of the bag dropped on one is parked (23/92), the right
+     button on a parked vehicle takes it back into the bag (23/93).  The game draws a form's controls from the last created to the first:
+     the controls here are in drawing order, the reverse of TParkForm.Create (the places are numbered down the columns).  View model:
+     viewmodels/ParkingWindow.cpp. -->
+<Panel Name="ParkingLayer" Bounds="0,0,800,600">
+  <Window Name="ParkingWindow" AbovePopups="true" Escape="onParkingClose" Picture="Form_CarCase" Position="210,74" Size="380,451" Visible="false">
+    <!-- DrawControl: the title picture -->
+    <DrawingArea Name="ParkingPage" Bounds="0,0,380,451">
+      <!-- the title picture: top-left and size -->
+      <Spot Name="ParkingTitle" Bounds="135,11,109,38"/>
+    </DrawingArea>
+    <DrawingArea Name="ParkingCell4" Bounds="190,235,167,167" HitTest="true" MouseDown="onParkingPress" RightMouseDown="onParkingTake"/>
+    <DrawingArea Name="ParkingCell3" Bounds="190,64,167,167" HitTest="true" MouseDown="onParkingPress" RightMouseDown="onParkingTake"/>
+    <DrawingArea Name="ParkingCell2" Bounds="19,235,167,167" HitTest="true" MouseDown="onParkingPress" RightMouseDown="onParkingTake"/>
+    <DrawingArea Name="ParkingCell1" Bounds="19,64,167,167" HitTest="true" MouseDown="onParkingPress" RightMouseDown="onParkingTake"/>
+    <ImageButton Name="ParkingClose" Picture="Btn_Close_1" Position="162,415" Size="56,20" Click="onParkingClose"/>
+    <ImageButton Name="ParkingCloseSmall" Picture="Btn_Close_S_1" Position="330,26" Size="18,18" Click="onParkingClose"/>
+  </Window>
+</Panel>

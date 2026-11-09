@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Someone's stall of large items (TTH_BuyUtensilForm, a double click on the plate over their head); view model:
+     viewmodels/BuyUtensilWindow.cpp.  One, two or three pieces (the form's picture and its buttons follow how many) with their
+     descriptions and prices; a click marks a piece to buy, Buy asks for the marked ones (23/68).  The game draws a form's controls
+     from the last created to the first: the controls here are in drawing order, the reverse of TTH_BuyUtensilForm.Create. -->
+<Panel Name="BuyUtensilLayer" Bounds="0,0,800,600">
+  <Window Name="BuyUtensil" Escape="onBuyUtensilClose" Picture="Form_Buy3Utensil_1" Position="15,75" Visible="false">
+    <!-- DrawControl: the memos of the pieces, the total and the gold carried -->
+    <DrawingArea Name="BuyUtensilPaint" Bounds="0,0,655,489">
+      <!-- the piece memos: text area width and line height, blue (RGB565 31) -->
+      <Spot Name="BuyUtensilMemo" Size="140,18" Color="#0000FF"/>
+    </DrawingArea>
+    <ImageButton Name="BuyUtensilCloseSmall" Picture="btn_close_s_1" Position="605,26" Size="18,18" Click="onBuyUtensilClose"/>
+    <ImageButton Name="BuyUtensilClose" Picture="Btn_CLose_1" Position="335,453" Click="onBuyUtensilClose"/>
+    <ImageButton Name="BuyUtensilBuy" Picture="Btn_Buy_1" Position="260,453" Click="onBuyUtensilBuy"/>
+    <TextBox Name="BuyUtensilMoney" Bounds="322,426,80,15" ReadOnly="true" Align="Right" FontColor="#080808"/>
+    <TextBox Name="BuyUtensilTotal" Bounds="322,404,80,15" ReadOnly="true" Align="Right" FontColor="#080808"/>
+    <TextBox Name="BuyUtensilPrice3" Bounds="496,369,70,15" ReadOnly="true" Align="Right" FontColor="#080808"/>
+    <TextBox Name="BuyUtensilPrice2" Bounds="292,369,70,15" ReadOnly="true" Align="Right" FontColor="#080808"/>
+    <TextBox Name="BuyUtensilPrice1" Bounds="88,369,70,15" ReadOnly="true" Align="Right" FontColor="#080808"/>
+    <IconGrid Name="BuyUtensilSlot3" Position="528,146" Click="onBuyUtensilSlotClick"/>
+    <IconGrid Name="BuyUtensilSlot2" Position="324,146" Click="onBuyUtensilSlotClick"/>
+    <IconGrid Name="BuyUtensilSlot1" Position="120,146" Click="onBuyUtensilSlotClick"/>
+  </Window>
+</Panel>

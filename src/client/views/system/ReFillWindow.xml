@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The prepaid card form (TSe_ReFillForm, opened by the server's 35/6 and closed by 35/11); view model: viewmodels/ReFillWindow.cpp.  A card number and a password
+     (the picture has their labels and the title); OK asks "Please reserve enough space for gifts" and then sends 35/3, Tab or Enter goes from field to field and past
+     the last one OKs.  Until the server has been answered (35/6 .. 35/11 or an OK) the form does not close.  Made in the middle of the screen.  The links of the card
+     shops are made for GetClientRegion = 1 only; this 2014 build is region 9 (RE_PubFunc.pas:2282).  The game draws a form's controls from the last created to the first: the controls
+     here are in drawing order, the reverse of TSe_ReFillForm.Create. -->
+<Panel Name="ReFillLayer" Bounds="0,0,800,600">
+  <Window Name="ReFill" Escape="onReFillClose" Picture="Form_ReFill_1" Position="244,176" Visible="false">
+    <TextBox Name="ReFillPassword" Bounds="146,141,136,14" HitTest="true" CharFilter="Alphanumeric" MaxLength="16" AllowPaste="true" FontColor="#080808"
+             Enter="onReFillNext" Tab="onReFillNext"/>
+    <TextBox Name="ReFillCard" Bounds="146,97,136,14" HitTest="true" CharFilter="Alphanumeric" MaxLength="16" AllowPaste="true" FontColor="#080808"
+             Enter="onReFillNext" Tab="onReFillNext"/>
+    <ImageButton Name="ReFillCloseSmall" Picture="Btn_Close_s_1" Position="262,26" Size="17,17" Click="onReFillClose"/>
+    <ImageButton Name="ReFillCancel" Picture="Btn_Cancel_1" Position="166,204" Size="56,20" Click="onReFillCancel"/>
+    <ImageButton Name="ReFillOk" Picture="Btn_Ok_1" Position="78,204" Size="56,20" Click="onReFillOk"/>
+  </Window>
+</Panel>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A vending machine (TTH_VendingmachineForm, a click on the machine); view model: viewmodels/VendingWindow.cpp.
+     Its five places with what lies in them (name, description, price); a buyer clicks one to buy it, the owner
+     right-clicks one to stop selling it and drops items of the bag on it to put them in (the price form).  The
+     game draws a form's controls from the last created to the first: the controls here are in drawing order, the
+     reverse of TTH_VendingmachineForm.Create. -->
+<Panel Name="VendingLayer" Bounds="0,0,800,600">
+  <Window Name="VendingWindow" Escape="onVendingClose" AbovePopups="true" Picture="Form_Vendingmachine_1" Position="196,87" Visible="false">
+    <!-- the place the owner's bag items are dropped on -->
+    <DrawingArea Name="VendingDrop" Bounds="0,0,408,425" HitTest="true"/>
+    <!-- the first item row: its top in the window (the left is not used) and the row height, which is also the step to the next row -->
+    <Spot Name="VendingPlace" Position="0,80" Pitch="0,60"/>
+    <!-- the name and description text colour (RGB565 2113) -->
+    <Spot Name="VendingText" Color="#080808"/>
+    <ImageButton Name="VendingCloseSmall" Picture="Btn_Close_S_1" Position="359,26" Size="18,18" Click="onVendingClose"/>
+    <ImageButton Name="VendingClose" Picture="Btn_Close_1" Position="177,385" Click="onVendingClose"/>
+    <BlockList Name="VendingList" Bounds="26,82,353,292" RowHeight="56" RowSpacing="3" HighlightColor="#89BFF5" HoverAlpha="100"
+               FontColor="#080808" Click="onVendingPick" RightClick="onVendingStop"/>
+  </Window>
+</Panel>

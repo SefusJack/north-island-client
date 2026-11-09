@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The internet cafe's number form (TSe_CafeIDForm, opened by the server's 55/1 and again by a failed 55/2 2); view model: viewmodels/CafeIdWindow.cpp.  "Please enter cafe
+     number" over a field; OK sends it (55/1), Cancel closes the form and the connection.  The game clears FCloseOnEsc: Escape does not close it.  The game draws a
+     form's controls from the last created to the first: the controls here are in drawing order, the reverse of TSe_CafeIDForm.Create.  The form's frame is the picture
+     'form_module' (SetPicAndBounds in Create, borders 64, 38, 44, 14); no picture of that name is loaded (the data has form_module_1 in the white skin only, and a name
+     is looked up as it is: GetPicIndex gives -1 and DrawControl draws nothing for a picture of -1), so the original shows the question, the field and the buttons on
+     the bare screen and so does this. -->
+<Panel Name="CafeIdLayer" Bounds="0,0,800,600">
+  <Window Name="CafeId" Position="276,177" Size="250,140" Visible="false">
+    <!-- DrawControl: the question -->
+    <DrawingArea Name="CafeIdPaint" Bounds="0,0,250,140"/>
+    <ImageButton Name="CafeIdCancel" Picture="Btn_Cancel_1" Position="147,102" Size="56,20" Click="onCafeIdCancel"/>
+    <ImageButton Name="CafeIdOk" Picture="btn_ok_1" Position="47,102" Size="56,20" Click="onCafeIdOk"/>
+    <TextBox Name="CafeIdNumber" Skin="editorBG" SkinSource="0,0,50,20" Borders="5,5,5,5" Bounds="50,66,150,22" HitTest="true" AllowPaste="true" FontColor="#FFFFFF"
+             Enter="onCafeIdOk"/>
+  </Window>
+</Panel>

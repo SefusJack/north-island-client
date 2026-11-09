@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The point store (TEightTwelveForm, opened by the rows of 80/1 for an event's point store); view model: viewmodels/PointStoreWindow.cpp.  The items with their effects
+     and their price in IM points (a pack is one line at its price); a click puts one into the purchase list below (Ctrl asks how many of a stackable item), the right
+     button takes it out again; what the list costs and the points the account has; Buy asks and sends 80/1.  Closing lets the event go on.  Made in the middle of the
+     screen.  The game draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of TEightTwelveForm.Create. -->
+<Panel Name="PointStoreLayer" Bounds="0,0,800,600">
+  <Window Name="PointStore" Escape="onPointStoreClose" Picture="Form_EightTwelve" Position="195,37" Size="409,525" Visible="false">
+    <!-- DrawControl: what the list costs and the points, then the list over them -->
+    <DrawingArea Name="PointStorePaint" Bounds="0,0,409,525">
+      <!-- the cart total number and the player's points number -->
+      <Spot Name="PointStoreTotal" Position="240,445"/>
+      <Spot Name="PointStorePoints" Position="240,466"/>
+      <!-- the text colour, in RGB565 2113 -->
+      <Spot Name="PointStoreTextColor" Color="#080808"/>
+    </DrawingArea>
+    <ImageButton Name="PointStoreCloseSmall" Picture="Btn_Close_S_1" Position="358,25" Size="18,18" Click="onPointStoreClose"/>
+    <ImageButton Name="PointStoreClose" Picture="Btn_Close_1" Position="214,489" Size="56,20" Click="onPointStoreClose"/>
+    <ImageButton Name="PointStoreBuy" Picture="Btn_Buy_1" Position="136,489" Size="56,20" Click="onPointStoreBuy"/>
+    <IconGrid Name="PointStoreCart" Position="34,402" Columns="10" Rows="1" Pitch="34" RightClick="onPointStoreTakeBack"/>
+    <BlockList Name="PointStoreList" Bounds="26,82,353,292" RowHeight="56" RowSpacing="3" HighlightColor="#89BEF5"
+               HoverAlpha="100" FontColor="#080808" Click="onPointStorePick"/>
+  </Window>
+</Panel>

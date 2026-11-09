@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A storage piece of a house (THL_IceBoxForm: the Fridge, the Material Cabinet, the Potion Cabinet, the Medicine Case); view model:
+     viewmodels/IceBoxWindow.cpp.  Ten places, bag items the piece takes dropped on one go in, the right button takes one back.  The view model
+     gives the form its picture and puts the places and the buttons where the piece's form has them (the cooking button only on the Fridge's, the
+     small Close button not on the Medicine Case's).  The game draws a form's controls from the last created to the first: the controls here are in
+     drawing order, the reverse of THL_IceBoxForm.Create. -->
+<Panel Name="IceBoxLayer" Bounds="0,0,800,600">
+  <Window Name="IceBoxWindow" Escape="onIceBoxClose" AbovePopups="true" Picture="Form_IceBox_1" Position="287,200" Visible="false">
+    <IconGrid Name="IceBoxCells" Position="27,64" Columns="5" Rows="2" Pitch="34" HoverColor="#00000000" RightClick="onIceBoxTake"/>
+    <ImageButton Name="IceBoxCooking" Picture="Icon_IceBox_1" Position="84,140" Size="56,20" Click="onIceBoxCook"/>
+    <ImageButton Name="IceBoxClose" Picture="btn_close_1" Position="84,164" Size="56,20" Hint="[ESC]" Click="onIceBoxClose"/>
+    <ImageButton Name="IceBoxCloseSmall" Picture="Btn_Close_s_1" Position="175,26" Size="18,18" Hint="[ESC]" Click="onIceBoxClose"/>
+  </Window>
+</Panel>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The account form (TSe_IDPassored); view model: viewmodels/LoginForm.cpp. -->
+<Panel Name="LoginForm" Bounds="0,0,800,600" Visible="false">
+  <Image Name="LoginFormBackground" Source="Menu/Skins/White/Form_IdPassword_1.jpg" Position="267,135"/>
+  <ImageButton Name="Login" Picture="Btn_Login_L" Bounds="328,335,143,20" Click="onLogin"/>
+  <ImageButton Name="Previous" Picture="Btn_Prev_L" Bounds="328,365,143,20" Click="onPrevious"/>
+  <ImageButton Name="SignUp" Picture="Btn_applyID_1" Bounds="328,395,143,20" Click="onSignUpPage"/>
+  <ImageButton Name="About" Picture="Btn_About_L" Bounds="328,425,143,20" Click="onAbout"/>
+  <Image Name="RememberAccountLabel" Picture="Icon_RecordAccount" Position="327,304"/>
+  <CheckBox Name="RememberAccount" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1"
+            Bounds="328,305,16,16"/>
+  <TextBox Name="Password" Bounds="361,279,127,12" Skin="Panel26" SkinSource="0,0,103,21"
+           Borders="1,1,1,1" FontColor="#0000FF" MaxLength="14" Password="true" AllowPaste="true"
+           Enter="onLogin" Tab="onLogin"/>
+  <ComboBox Name="Account" Bounds="361,247,127,12" Skin="Panel26" SkinSource="0,0,103,21"
+            Borders="1,1,1,1" FontColor="#0000FF" MaxLength="14" AllowPaste="true"
+            DropButton="Btn_ArrowDn_1" DropButtonOffset="0,-3" ListFontColor="#080808"
+            ListHighlightColor="#FFFF00" MaxItems="5"
+            Enter="onAccountEntered" Tab="onAccountEntered" ItemRightClick="onForgetAccount"/>
+</Panel>

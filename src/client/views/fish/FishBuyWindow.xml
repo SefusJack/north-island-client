@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The fish tank's buy and discard form (TFishBuyForm, opened by 23/160 8 and 10); view model: viewmodels/FishBuyWindow.cpp.  Its background is
+     FormBuyFish or FormDelFish by the mode, and the view model places it beside the tank.  The game draws a form's controls from the last created to the
+     first: the controls here are in drawing order, the reverse of TFishBuyForm.Create. -->
+<Panel Name="FishBuyLayer" Bounds="0,0,800,600">
+  <Window Name="FishBuy" Picture="FormBuyFish" Position="278,174" Visible="false">
+    <!-- DrawControl: the fish picked and its price -->
+    <DrawingArea Name="FishBuyPaint" Bounds="0,0,243,252">
+      <!-- the preview fish: where it starts, and its drawing offset -->
+      <Spot Name="FishBuyFish" Position="100,150"/>
+      <Spot Name="FishBuyFishOffset" Position="-5,-30"/>
+      <!-- the gold coin icon: its place and the 30 x 30 of the picture that is drawn -->
+      <Spot Name="FishBuyGold" Bounds="90,160,30,30"/>
+      <!-- the price number, in RGB565 2113 -->
+      <Spot Name="FishBuyPrice" Position="120,170" Color="#080808"/>
+    </DrawingArea>
+    <ImageButton Name="FishBuyNext" Picture="Arrow_R3" Position="191,130" Size="21,21" Click="onFishBuyNext"/>
+    <ImageButton Name="FishBuyPrevious" Picture="Arrow_L3" Position="28,130" Size="21,21" Click="onFishBuyPrevious"/>
+    <ImageButton Name="FishBuyClose" Picture="Btn_Close_1" Position="130,210" Size="56,20" Click="onFishBuyClose"/>
+    <ImageButton Name="FishBuyOk" Picture="Btn_ok_1" Position="54,210" Size="56,20" Click="onFishBuyOk"/>
+    <ImageButton Name="FishBuyCloseSmall" Picture="Btn_Close_S_1" Position="191,26" Size="18,18" Click="onFishBuyClose"/>
+  </Window>
+</Panel>

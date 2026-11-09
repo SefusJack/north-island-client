@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The dream game (kind 5; TH_MiniGame.pas Tsport_SheepDream): the whole screen is the page, which the view model paints (the pictures behind, the hearts,
+     the score and the time, the sleeper and its dream, the hammer, the flash of a hit) and which takes either button going down (the hammer's blow);
+     over it the Exit button the game's explain form brings when the play starts (CH_GameExplain, SetupExitButton of kind 5: 700, 500).  View model:
+     viewmodels/SheepWindow.cpp. -->
+<Panel Name="SheepLayer" Bounds="0,0,800,600">
+  <Panel Name="SheepForm" Bounds="0,0,800,600" Visible="false">
+    <DrawingArea Name="SheepPage" Bounds="0,0,800,600" HitTest="true" MouseDown="onSheepDown" RightMouseDown="onSheepDown">
+      <!-- the pictures behind: sky, hills, clouds, board -->
+      <Spot Name="SheepSky" Position="-50,-50"/>
+      <Spot Name="SheepHills" Position="-50,130"/>
+      <Spot Name="SheepClouds" Position="-50,-100"/>
+      <Spot Name="SheepBoard" Position="200,130"/>
+      <!-- the score, life and time labels, and the digits of the score and the time -->
+      <Spot Name="SheepScore" Position="630,25"/>
+      <Spot Name="SheepLife" Position="15,25"/>
+      <Spot Name="SheepTime" Position="345,25"/>
+      <Spot Name="SheepScoreDigits" Position="730,25"/>
+      <Spot Name="SheepTimeDigits" Position="445,25"/>
+      <!-- a life heart: its y and size, and the step from one to the next -->
+      <Spot Name="SheepHeart" Bounds="0,15,66,62" Pitch="76,0"/>
+      <!-- the blinking eyes in the sheep game and in the pig game -->
+      <Spot Name="SheepBlinkSheep" Position="425,470"/>
+      <Spot Name="SheepBlinkPig" Position="405,480"/>
+      <!-- the feet of the sleeper, where its dream rises from, the hammer, the flash of a hit -->
+      <Spot Name="SheepSleeper" Position="515,500"/>
+      <Spot Name="SheepDream" Position="300,220"/>
+      <Spot Name="SheepHammer" Position="375,200"/>
+      <Spot Name="SheepEffect" Position="350,200"/>
+      <!-- the centre of the big message letters, and the step between letters -->
+      <Spot Name="SheepMessage" Position="400,200" Pitch="65,0"/>
+    </DrawingArea>
+    <ImageButton Name="SheepExit" Picture="MiniGame_Exit_Btn" Position="700,500" Visible="false" Press="onSheepExit"/>
+  </Panel>
+</Panel>

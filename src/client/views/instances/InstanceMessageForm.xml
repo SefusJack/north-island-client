@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The form that asks for a message when an instance is created (TEnterDupMsgForm, opened by the
+     create form's Create button); view model: viewmodels/InstanceMessageForm.cpp.  A message of up
+     to 28 characters; Confirm creates the instance (85/3).  It lies where the create form puts it
+     (60 right and 285 down from it).  The game draws a form's controls from the last created to
+     the first: the controls here are in drawing order, the reverse of TEnterDupMsgForm.Create. -->
+<Panel Name="InstanceMessageLayer" Bounds="0,0,800,600">
+  <Window Name="InstanceMessageForm" Picture="Form_DupEnterMsg" Position="400,0" Size="262,224" ScreenFit="true" Visible="false">
+    <Memo Name="InstanceMessageText" Bounds="22,68,221,56" FontColor="#000000" Effect="Plain" MaxChars="28"/>
+    <ImageButton Name="InstanceMessageCloseSmall" Picture="Btn_Close_s_1" Position="212,24" Size="18,18"
+                 Click="onInstanceMessageCancel" ReleaseSound="sound/wav0154.wav" ClickSound=""/>
+    <ImageButton Name="InstanceMessageConfirm" Picture="Btn_OK_1" Position="60,130" Size="56,20" Click="onInstanceMessageConfirm"/>
+    <ImageButton Name="InstanceMessageCancel" Picture="Btn_Cancel_1" Position="148,130" Size="56,20"
+                 Click="onInstanceMessageCancel" ReleaseSound="sound/wav0154.wav" ClickSound=""/>
+  </Window>
+</Panel>

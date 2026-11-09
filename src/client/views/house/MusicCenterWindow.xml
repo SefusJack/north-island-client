@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Music Center of a house (TMusicCenter, furniture 39115); view model: viewmodels/MusicCenterWindow.cpp.  The sound folder's songs ten to a page (the first is
+     "Set music"), arrows for the pages, Play, Pause and the previous and next song; a click on a row picks it, a double click or Play sends it to the house.  The game
+     draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of TMusicCenter.Create. -->
+<Panel Name="MusicCenterLayer" Bounds="0,0,800,600">
+  <Window Name="MusicCenterWindow" Escape="onMusicClose" Picture="form_MusicCenter" Position="230,260" Size="242,379" ScreenFit="true" Visible="false">
+    <!-- DrawControl: the song under the mouse and the songs -->
+    <DrawingArea Name="MusicPaint" Bounds="0,0,242,379">
+      <!-- the first song row: its box (the step to the next row is its height) and the hover highlight's colour, cyan with alpha 80 -->
+      <Spot Name="MusicRow" Bounds="41,75,157,19" Color="#5000FFFF"/>
+      <!-- the first song name's text position and colour (RGB565 2113) -->
+      <Spot Name="MusicText" Position="43,78" Color="#080808"/>
+      <!-- the colour of the song that is playing (RGB565 1344) -->
+      <Spot Name="MusicPlaying" Color="#00AA00"/>
+    </DrawingArea>
+    <DrawingArea Name="MusicRows" Bounds="41,75,157,190" HitTest="true" MouseUp="onMusicRowUp" DoubleClick="onMusicRowDouble"/>
+    <ImageButton Name="MusicNextPage" Picture="Btn_ArrowDn_1" Position="112,273" Size="17,17" Hint="Next page" Click="onMusicNextPage"/>
+    <ImageButton Name="MusicPreviousPage" Picture="Btn_ArrowUP_1" Position="112,51" Size="17,17" Hint="Previous page" Click="onMusicPreviousPage"/>
+    <ImageButton Name="MusicNext" Picture="btn_m_Next" Position="150,306" Size="25,25" Hint="Next song" Click="onMusicNext"/>
+    <ImageButton Name="MusicPrevious" Picture="btn_m_Prev" Position="120,306" Size="25,25" Hint="Previous song" Click="onMusicPrevious"/>
+    <ImageButton Name="MusicStop" Picture="btn_m_Stop" Position="90,306" Size="25,25" Hint="Pause" Click="onMusicStop"/>
+    <ImageButton Name="MusicPlay" Picture="btn_m_Play" Position="60,306" Size="25,25" Hint="Play" Click="onMusicPlay"/>
+    <Image Name="MusicPlayIcon" Picture="icon_m_Play" Position="60,306"/>
+    <ImageButton Name="MusicClose" Picture="btn_Close_1" Position="93,344" Size="56,20" Hint="[ESC]" Click="onMusicClose"/>
+    <ImageButton Name="MusicCloseSmall" Picture="Btn_Close_s_1" Position="192,25" Size="17,17" Click="onMusicClose" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

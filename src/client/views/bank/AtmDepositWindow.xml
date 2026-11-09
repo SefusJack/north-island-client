@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The ATM's deposit and withdrawal form (TATMDepositForm, 23/165 1; the Store's ATM and the house ATM); view model: viewmodels/AtmDepositWindow.cpp.  The gold
+     in the ATM (left) and carried (right); how much to take out (left, the right arrow: 29/4) or put in (right, the left arrow: 29/3).  Closing lets the
+     event go on.  The game draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of
+     TATMDepositForm.Create. -->
+<Panel Name="AtmDepositLayer" Bounds="0,0,800,600">
+  <Window Name="AtmDeposit" Escape="onAtmDepositClose" Picture="Form_ATM_Deposit" Position="207,213" Visible="false">
+    <!-- DrawControl: the two amounts of gold -->
+    <DrawingArea Name="AtmDepositPaint" Bounds="0,0,385,173">
+      <!-- the colour of the two amounts of gold (RGB565 2113) -->
+      <Spot Name="AtmDepositText" Color="#080808"/>
+    </DrawingArea>
+    <ImageButton Name="AtmDepositDeposit" Picture="Btn_ArrowL_5" Position="180,62" Size="17,17" Hint="Deposit" Click="onAtmDepositDeposit"/>
+    <TextBox Name="AtmDepositDepositAmount" Bounds="270,100,80,20" HitTest="true" CharFilter="Digits" MaxLength="7" FontColor="#080808"/>
+    <ImageButton Name="AtmDepositWithdraw" Picture="Btn_ArrowR_5" Position="180,95" Size="17,17" Hint="Withdraw" Click="onAtmDepositWithdraw"/>
+    <TextBox Name="AtmDepositWithdrawAmount" Bounds="93,100,80,20" HitTest="true" CharFilter="Digits" MaxLength="7" FontColor="#080808"/>
+    <ImageButton Name="AtmDepositClose" Picture="btn_close_1" Position="161,138" Size="56,20" Click="onAtmDepositClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="AtmDepositCloseSmall" Picture="Btn_Close_S_1" Position="330,24" Size="18,18" Click="onAtmDepositClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

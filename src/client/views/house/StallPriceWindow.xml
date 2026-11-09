@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The price form of the shelves and vending machines (TTH_StallItemInFurForm); view model: viewmodels/StallPriceWindow.cpp.
+     An item of the bag dropped on a shelf or a vending machine asks for its price (the arrows move it one
+     at a time); Confirm sends it (62/21 for a shelf, 62/24 for a vending machine).  The game draws a form's
+     controls from the last created to the first: the controls here are in drawing order, the reverse of
+     TTH_StallItemInFurForm.Create. -->
+<Panel Name="StallPriceLayer" Bounds="0,0,800,600">
+  <Window Name="StallPriceWindow" AbovePopups="true" Picture="Form_setPrice_1" Position="295,256" Visible="false">
+    <!-- DrawControl: it goes with the room, and a price never lies below 0 -->
+    <DrawingArea Name="StallPricePaint" Bounds="0,0,209,87"/>
+    <ImageButton Name="StallPriceLess" Picture="Btn_ArrowL_5" Position="37,32" Size="17,17" Click="onStallPriceLess"/>
+    <ImageButton Name="StallPriceMore" Picture="Btn_ArrowR_5" Position="155,32" Size="17,17" Click="onStallPriceMore"/>
+    <TextBox Name="StallPrice" Bounds="65,34,75,15" HitTest="true" CharFilter="Digits" MaxLength="8" Align="Right" FontColor="#080808"/>
+    <ImageButton Name="StallPriceConfirm" Picture="Btn_confirm_1" Position="34,59" Click="onStallPriceConfirm"/>
+    <ImageButton Name="StallPriceCancel" Picture="Btn_Cancel_1" Position="119,59" Click="onStallPriceCancel"/>
+  </Window>
+</Panel>

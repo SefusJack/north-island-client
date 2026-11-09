@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The owner's view of a stall case on his display case (THL_StallCaseForm, a click on its item); view model:
+     viewmodels/StallCaseWindow.cpp.  The case's stacks (the right button takes one back; bag items dropped on them
+     add to the case), its name and price; Setup changes the price.  The game draws a form's controls from the last
+     created to the first: the controls here are in drawing order, the reverse of THL_StallCaseForm.Create. -->
+<Panel Name="StallCaseLayer" Bounds="0,0,800,600">
+  <Window Name="StallCaseWindow" Escape="onStallCaseClose" Picture="Form_StallCase_1" Position="284,209" Visible="false">
+    <!-- DrawControl: the name and the price of the item -->
+    <DrawingArea Name="StallCasePaint" Bounds="0,0,232,181">
+      <!-- the item name's text position and colour (RGB565 2113) -->
+      <Spot Name="StallCaseName" Position="67,61" Color="#080808"/>
+      <!-- the price's text position -->
+      <Spot Name="StallCasePrice" Position="84,81"/>
+    </DrawingArea>
+    <IconGrid Name="StallCaseCells" Position="32,105" Columns="5" Rows="1" Pitch="34" CellSize="30" HoverColor="#00000000" RightClick="onStallCaseTake"/>
+    <ImageButton Name="StallCaseSetup" Picture="Btn_setup_1" Position="162,78" Click="onStallCaseSetup"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="StallCaseClose" Picture="btn_close_1" Position="87,147" Click="onStallCaseClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="StallCaseCloseSmall" Picture="Btn_Close_s_1" Position="182,26" Size="18,18" Click="onStallCaseClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A Fortune Egg machine seen by its owner (TTH_SellEggMachineForm, a click on the machine); view model:
+     viewmodels/EggSellWindow.cpp.  The ten places of the machine (bag items dropped on one put a stack of at least
+     ten in; the right button takes it back), the price of a play and how many eggs it holds; Setup asks for the
+     price to be set (62/32), Stop stops selling.  The game draws a form's controls from the last created to the
+     first: the controls here are in drawing order, the reverse of TTH_SellEggMachineForm.Create. -->
+<Panel Name="EggSellLayer" Bounds="0,0,800,600">
+  <Window Name="EggSellWindow" Escape="onEggSellClose" Picture="Form_EggMachine_1" Position="288,161" Visible="false">
+    <!-- DrawControl: how many eggs the machine holds -->
+    <DrawingArea Name="EggSellPaint" Bounds="0,0,223,277">
+      <!-- the egg count's text position and colour while selling (RGB565 2113) -->
+      <Spot Name="EggSellCount" Position="126,215" Color="#080808"/>
+      <!-- the "0" egg count's text position and colour while not selling (RGB565 2113) -->
+      <Spot Name="EggSellNoEggs" Position="136,215" Color="#080808"/>
+    </DrawingArea>
+    <TextBox Name="EggSellPrice" Bounds="86,84,85,25" Skin="Panel27" Borders="2,2,2,2" HitTest="true" CharFilter="Digits" MaxLength="7"
+             Align="Right" FontColor="#F8FC00"/>
+    <Image Name="EggSellPanel" Picture="Panel_itemGr_10_1" Position="23,133"/>
+    <IconGrid Name="EggSellCells" Position="25,135" Columns="5" Rows="2" Pitch="34" HoverColor="#00000000" RightClick="onEggSellRetake"/>
+    <ImageButton Name="EggSellStop" Picture="Btn_Stop_2" Position="68,239" Click="onEggSellStop"/>
+    <ImageButton Name="EggSellSetup" Picture="Btn_setup_1" Position="158,110" Click="onEggSellSetup"/>
+    <ImageButton Name="EggSellClose" Picture="Btn_Close_2" Position="117,239" Click="onEggSellClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="EggSellCloseSmall" Picture="Btn_Close_S_1" Position="173,26" Size="18,18" Click="onEggSellClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The count box (TCY_ThrowThingNumMenu) that asks how many: how many to buy from a stall, ...
+     view model: viewmodels/CountBox.cpp.  The left arrow adds one, the right one takes one
+     away; OK hands the number on.  The game draws a form's controls from the last created to
+     the first: the controls here are in drawing order, the reverse of
+     TCY_ThrowThingNumMenu.Create. -->
+<Panel Name="CountBoxLayer" Bounds="0,0,800,600">
+  <Window Name="CountBox" AbovePopups="true" Picture="Form_ThrowThing" Position="295,256" Visible="false">
+    <ImageButton Name="CountLess" Picture="Btn_ArrowR_5" Position="155,32" Size="17,17" Click="onCountLess"/>
+    <ImageButton Name="CountMore" Picture="Btn_ArrowL_5" Position="37,32" Size="17,17" Click="onCountMore"/>
+    <ImageButton Name="CountCancel" Picture="btn_Cancel_1" Position="119,59" Hint="Cancel" Click="onCountCancel"/>
+    <ImageButton Name="CountOk" Picture="btn_ok_1" Position="34,59" Hint="Okay" Click="onCountOk"/>
+    <TextBox Name="CountText" Bounds="64,33,81,15" Skin="Panel26" SkinSource="0,0,104,14" Borders="1,1,1,1" HitTest="true"
+             Align="Right" CharFilter="Digits" FontColor="#080808"/>
+  </Window>
+</Panel>

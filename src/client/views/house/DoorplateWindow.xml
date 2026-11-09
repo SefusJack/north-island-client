@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Doorplate's form (TH_doorplateInPutForm, the owner's click on a Doorplate 39056 in the house); view model: viewmodels/DoorplateWindow.cpp.  A field for the
+     house's name over the tent (14 bytes, no paste); OK sends it, Close leaves.  The form's small close button is hidden (SetCtrlVisible(0)).  The game draws a form's
+     controls from the last created to the first: the controls here are in drawing order, the reverse of TH_doorplateInPutForm.Create. -->
+<Panel Name="DoorplateLayer" Bounds="0,0,800,600">
+  <Window Name="Doorplate" Escape="onDoorplateClose" Picture="Form1_doorplate_1" Position="295,256" Visible="false">
+    <TextBox Name="DoorplateText" Bounds="45,34,117,18" HitTest="true" MaxLength="14" FontColor="#080808"/>
+    <ImageButton Name="DoorplateOk" Picture="Btn_OK_1" Position="34,59" Size="56,20" Click="onDoorplateOk"/>
+    <ImageButton Name="DoorplateClose" Picture="Btn_Close_1" Position="119,59" Size="56,20" Click="onDoorplateClose"/>
+  </Window>
+</Panel>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The rules form of the guild (TSe_ChangeDeclareForm), opened by Edit Rule of the guild tab;
+     view model: viewmodels/GuildRulesForm.cpp.  The lord edits the rules in a memo of up to 200
+     characters; Confirm sends them (39/9).  The game draws a form's controls from the last
+     created to the first: the controls here are in drawing order, the reverse of
+     TSe_ChangeDeclareForm.Create. -->
+<Panel Name="GuildRulesLayer" Bounds="0,0,800,600">
+  <Window Name="GuildRulesForm" Escape="onGuildRulesCancel" Picture="Form_EditRule_1" Position="510,50" Visible="false">
+    <!-- where the form opens: this far from the guild window's tab area -->
+    <Spot Name="GuildRulesFromTab" Position="9,76"/>
+    <ImageButton Name="GuildRulesCancel" Picture="Btn_Cancel_3" Position="185,378" Click="onGuildRulesCancel"/>
+    <ImageButton Name="GuildRulesOk" Picture="btn_ok_2" Position="122,378" Click="onGuildRulesOk"/>
+    <ImageButton Name="GuildRulesCloseSmall" Picture="Btn_Close_s_1" Position="297,24" Click="onGuildRulesCancel"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="GuildRulesFormDown" Picture="Btn_ArrowDn_1" Position="300,350" Click="onGuildRulesFormDown"/>
+    <ImageButton Name="GuildRulesFormUp" Picture="Btn_ArrowUp_1" Position="300,59" Click="onGuildRulesFormUp"/>
+    <ScrollBar Name="GuildRulesFormScroll" Bounds="301,80,15,265" Thumb="bar_H4" ThumbSource="0,0,9,21" ThumbCap="10" TrackCap="16"/>
+    <Memo Name="GuildRulesText" Bounds="29,63,270,310" FontColor="#FFFFFF" Effect="Plain" MaxChars="200" Caret="inputCursor"
+          Typed="onGuildRulesTyped"/>
+  </Window>
+</Panel>

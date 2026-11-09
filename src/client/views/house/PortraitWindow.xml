@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Picture Frame's form (TPortraitForm, a click on the pieces 39153 and 39154 of a house); view model: viewmodels/PortraitWindow.cpp.  227 x 170 in the middle
+     of the screen; the frame is the window's picture (Portrait1a to Portrait4a, set by the view model), the people and the frame's own picture (Portrait1 to
+     Portrait4) over them are PortraitPaint's.  The game draws a form's controls from the last created to the first: the controls here are in drawing order, the
+     reverse of the form's Create. -->
+<Panel Name="PortraitLayer" Bounds="0,0,800,600">
+  <Window Name="PortraitWindow" Escape="onPortraitClose" Picture="Portrait3a" Position="286,215" Visible="false">
+    <DrawingArea Name="PortraitPaint" Bounds="0,0,227,170"/>
+    <ImageButton Name="PortraitMinimize" Picture="Btn_Minimize_1" Position="207,1" Hint="Close" Click="onPortraitClose"/>
+  </Window>
+</Panel>

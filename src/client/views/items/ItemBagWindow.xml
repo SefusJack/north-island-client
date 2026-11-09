@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Item Bag (TRe_MiniThingGridForm, 68/9): a second bag of 5 x 5 cells at the right of the screen, opened with the Space Contract; items are
+     dragged between it and the bag, or within it (68/1-68/3).  The game draws a form's controls from the last created to the first: the controls here
+     are in drawing order, the reverse of TRe_MiniThingGridForm.Create.  View model: viewmodels/ItemBagWindow.cpp. -->
+<Panel Name="ItemBagLayer" Bounds="0,0,800,600">
+  <Window Name="ItemBagWindow" AbovePopups="true" Escape="onItemBagClose" Picture="Form_ThingGrid5x5_1" Position="591,100" Size="209,287" Visible="false">
+    <!-- DrawControl: the title, the panel over the cells while the Space Contract is not in force -->
+    <DrawingArea Name="ItemBagPage" Bounds="0,0,209,287">
+      <!-- the title text: its y, the window width it is centred in (the height is not used) -->
+      <Spot Name="ItemBagTitle" Bounds="0,25,209,0"/>
+    </DrawingArea>
+    <IconGrid Name="ItemBagCells" Position="19,74" Columns="5" Rows="5" Pitch="34" Draggable="true" Drop="onItemBagDrop"/>
+    <ImageButton Name="ItemBagCloseSmall" Picture="Btn_Close_s_1" Position="159,26" Size="18,18" Click="onItemBagClose"/>
+    <ImageButton Name="ItemBagSort" Picture="Btn_Module_2" Position="16,48" Size="32,20" Narrow="true" IconLines="3,0 3,11; 0,3 3,0 6,3; 10,0 10,11; 7,8 10,11 13,8" IconWidth="2" Hint="Sort (qol)" Visible="false" Click="onItemBagSort"/>
+    <ImageButton Name="ItemBagClose" Picture="Btn_Close_1" Position="76,254" Size="56,20" Click="onItemBagClose"/>
+  </Window>
+</Panel>

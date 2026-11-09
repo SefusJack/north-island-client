@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The slot machines of the game hall (kinds 8, 10 and 19; CY_LittleSport.pas): the machine's picture, the ten prizes, the three reels,
+     the banner that slides away and the flash round a prize are painted by the view model; over them the places of the prizes
+     (their hints), the rocker, the Lucky Star and the Exit button.  The game draws a form's controls from the last created to the
+     first: the controls here are in drawing order, the reverse of TTrunEggForm.Create.  View model: viewmodels/SlotMachineWindow.cpp. -->
+<Panel Name="SlotMachineLayer" Bounds="0,0,800,600">
+  <Panel Name="SlotMachineForm" Bounds="0,0,800,600" Visible="false">
+    <DrawingArea Name="SlotMachinePage" Bounds="0,0,800,600" HitTest="true">
+      <!-- the machine's background picture -->
+      <Spot Name="SlotMachineBackground" Position="70,25"/>
+      <!-- the banner that slides away -->
+      <Spot Name="SlotMachineBanner" Position="235,43"/>
+      <!-- the flash round a prize: its offset from the prize's place -->
+      <Spot Name="SlotMachineFlash" Position="-165,-3"/>
+      <!-- where the exit button is put when the machine opens -->
+      <Spot Name="SlotMachineExitAt" Position="720,520"/>
+      <!-- the lucky star's state icon: this far below the lucky star button -->
+      <Spot Name="SlotMachineStarIcon" Position="0,3"/>
+    </DrawingArea>
+    <DrawingArea Name="SlotMachinePrize10" Bounds="491,332,32,32" HitTest="true"/>
+    <DrawingArea Name="SlotMachinePrize9" Bounds="491,277,32,32" HitTest="true"/>
+    <DrawingArea Name="SlotMachinePrize8" Bounds="491,222,32,32" HitTest="true"/>
+    <DrawingArea Name="SlotMachinePrize7" Bounds="491,170,32,32" HitTest="true"/>
+    <DrawingArea Name="SlotMachinePrize6" Bounds="491,112,32,32" HitTest="true"/>
+    <DrawingArea Name="SlotMachinePrize5" Bounds="278,332,32,32" HitTest="true"/>
+    <DrawingArea Name="SlotMachinePrize4" Bounds="278,277,32,32" HitTest="true"/>
+    <DrawingArea Name="SlotMachinePrize3" Bounds="278,222,32,32" HitTest="true"/>
+    <DrawingArea Name="SlotMachinePrize2" Bounds="278,170,32,32" HitTest="true"/>
+    <DrawingArea Name="SlotMachinePrize1" Bounds="278,112,32,32" HitTest="true"/>
+    <ImageButton Name="SlotMachineLuckyStar" Picture="Btn_LuckyStar" Position="680,50" Size="53,54" Hint="Left click to use"
+                 Animation="Btn_LuckyStar" AnimationFirst="0" AnimationFrames="3" AnimationInterval="275" Visible="false"
+                 Click="onSlotMachineLuckyStar"/>
+    <ImageButton Name="SlotMachinePlay" Picture="SlotmachBtnBG" Position="697,265" Visible="false" Click="onSlotMachinePlay"/>
+    <ImageButton Name="SlotMachineExit" Picture="MiniGame_Exit_Btn" Position="720,520" Visible="false" Click="onSlotMachineExit"/>
+  </Panel>
+</Panel>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Dog Bone's form (TForageForm, opened by using a Dog Bone 34017); view model: viewmodels/ForageWindow.cpp.  A TSe_Form (it is kept on the screen).  The
+     view model places it beside the item window.  The pet and its name are drawn on the form; the three targets take items dragged from the bag and are
+     emptied with the right button.  The game draws a form's controls from the last created to the first: the controls here are in drawing order, the
+     reverse of TForageForm.Create. -->
+<Panel Name="ForageLayer" Bounds="0,0,800,600">
+  <Window Name="Forage" Picture="Form_pickup" Position="200,30" ScreenFit="true" Visible="false">
+    <!-- DrawControl: the pet and its name -->
+    <DrawingArea Name="ForagePaint" Bounds="0,0,188,213">
+      <!-- the pet's anchor and its name -->
+      <Spot Name="ForagePet" Position="100,100"/>
+      <Spot Name="ForageName" Position="70,40"/>
+      <!-- the text colour (near black, in RGB565 2113) -->
+      <Spot Name="ForageTextColor" Color="#080808"/>
+    </DrawingArea>
+    <DrawingArea Name="ForageTarget3" Bounds="117,124,30,30" HitTest="true" RightMouseUp="onForageTargetClear"/>
+    <DrawingArea Name="ForageTarget2" Bounds="78,124,30,30" HitTest="true" RightMouseUp="onForageTargetClear"/>
+    <DrawingArea Name="ForageTarget1" Bounds="39,124,30,30" HitTest="true" RightMouseUp="onForageTargetClear"/>
+    <ImageButton Name="ForageClose" Picture="Btn_Close_2" Position="115,172" Size="39,20" Click="onForageClose"/>
+    <ImageButton Name="ForageCancel" Picture="Btn_Cancel_3" Position="75,172" Size="39,20" Click="onForageCancel"/>
+    <ImageButton Name="ForageStart" Picture="Btn_OK_2" Position="35,172" Size="39,20" Click="onForageStart"/>
+  </Window>
+</Panel>

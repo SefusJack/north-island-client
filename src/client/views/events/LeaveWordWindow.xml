@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The guestbook (TBK_LeaveWordForm, opened by the server's 36/3; 36/4, 36/5 and 36/6 fill it); view model: viewmodels/LeaveWordWindow.cpp.  Five messages show at a
+     time in the list (the writer's face, name and time, and the text); under it the field a message is written in with OK and Clear, the field a writer is found by
+     with its button, the page arrows with the page and the page count between them, and Close.  The frame picture form_module is in none of this client's picture
+     files, so no frame is drawn, as for the announcement form; neither are btn_SeekName, btn_clear, Arrow_L2 and Arrow_R2, so those four buttons are
+     invisible but catch the mouse, as buttons without a picture do in the game.  Made in the middle of the screen.  The game draws a form's controls from the last
+     created to the first: the controls here are in drawing order, the reverse of TBK_LeaveWordForm.Create. -->
+<Panel Name="LeaveWordLayer" Bounds="0,0,800,600">
+  <Window Name="LeaveWord" Escape="onLeaveWordClose" Position="205,64" Size="389,471" Visible="false">
+    <Panel Name="LeaveWordFrame" Bounds="0,0,389,471" Skin="form_module" SkinSource="0,0,200,180" Borders="64,38,44,14"/>
+    <!-- DrawControl of the form: the page and the page count -->
+    <DrawingArea Name="LeaveWordPages" Bounds="0,0,389,471">
+      <!-- the slash between the page and the page count, and the text colour (white, in RGB565 65535) -->
+      <Spot Name="LeaveWordPageSlash" Position="190,408"/>
+      <Spot Name="LeaveWordTextColor" Color="#FFFFFF"/>
+      <!-- the page number: right edge of its first digit; the page count: left edge -->
+      <Spot Name="LeaveWordPageIndex" Position="176,408"/>
+      <Spot Name="LeaveWordPageCount" Position="202,408"/>
+      <!-- one digit of a number: its size and the step to the next -->
+      <Spot Name="LeaveWordDigit" Size="10,12" Pitch="10,0"/>
+    </DrawingArea>
+    <ImageButton Name="LeaveWordNext" Picture="Arrow_R2" Position="235,404" Size="27,19" FrameHeight="19" Click="onLeaveWordNext"/>
+    <ImageButton Name="LeaveWordPrevious" Picture="Arrow_L2" Position="123,404" Size="27,19" FrameHeight="19" Click="onLeaveWordPrevious"/>
+    <ImageButton Name="LeaveWordClear" Picture="btn_clear" Position="291,373" Size="70,25" FrameHeight="25" Click="onLeaveWordClear"/>
+    <ImageButton Name="LeaveWordOk" Picture="btn_ok_1" Position="291,341" Size="70,25" FrameHeight="25" Click="onLeaveWordSend"/>
+    <ImageButton Name="LeaveWordClose" Picture="Btn_Close_1" Position="159,434" Size="70,25" FrameHeight="25" Click="onLeaveWordClose" ClickSound="" ReleaseSound="sound/wav0154.wav"
+                 Hint="[ESC]"/>
+    <ImageButton Name="LeaveWordCloseSmall" Picture="Btn_Close_s_1" Position="366,5" Size="17,17" Click="onLeaveWordClose" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="LeaveWordFind" Picture="btn_SeekName" Position="57,372" Size="70,25" FrameHeight="25" Click="onLeaveWordFind"/>
+    <TextBox Name="LeaveWordName" Skin="editorBG" SkinSource="0,0,50,20" Borders="5,5,5,5" Bounds="132,375,120,22" HitTest="true" MaxLength="14" FontColor="#FFFFFF"/>
+    <TextBox Name="LeaveWordMessage" Skin="editorBG" SkinSource="0,0,50,20" Borders="5,5,5,5" Bounds="27,343,260,22" HitTest="true" MaxLength="60" AllowPaste="true"
+             FontColor="#FFFFFF" Enter="onLeaveWordSend"/>
+    <DrawingArea Name="LeaveWordList" Bounds="18,42,337,300" HitTest="true" MouseUp="onLeaveWordSelect" DoubleClick="onLeaveWordWhisper">
+      <!-- a message row: list width and row height -->
+      <Spot Name="LeaveWordRow" Size="337,60"/>
+      <!-- the name and text column: left edge in a row and line height; the time column is this far right of it -->
+      <Spot Name="LeaveWordColumn" Position="52,0" Size="0,20" Pitch="125,0"/>
+      <!-- the writer's face in a row -->
+      <Spot Name="LeaveWordFace" Position="28,24"/>
+      <!-- the name (orange, in RGB565 64512), the time (green, in RGB565 1344) and the text (white, in RGB565 65535) -->
+      <Spot Name="LeaveWordNameColor" Color="#FF8200"/>
+      <Spot Name="LeaveWordTimeColor" Color="#00AA00"/>
+      <Spot Name="LeaveWordRowTextColor" Color="#FFFFFF"/>
+      <!-- the hover bar (red tint) and the selected-row bar (blue), both with alpha -->
+      <Spot Name="LeaveWordHoverColor" Color="#32FF322E"/>
+      <Spot Name="LeaveWordSelectColor" Color="#370101C1"/>
+    </DrawingArea>
+  </Window>
+</Panel>

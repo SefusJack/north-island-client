@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Five in a Row (kind 18; LD_MiniGame.pas TGobang and TGobangForm); view model: viewmodels/GobangWindow.cpp.  The hall (sixteen tables of
+     two seats) and the board are the game's own drawing under everything (GobangPage, which also takes the clicks on the board's cells); the form
+     over it (TGobangForm at 80, 60) has the sixteen table buttons, Quit and Back to Hall, and the texts of the hall and the board, which its
+     view model paints (the game's read-only editors).  The game draws a form's controls from the last created to the first: the controls here are in
+     drawing order, the reverse of TGobangForm.Create. -->
+<Panel Name="GobangLayer" Bounds="0,0,800,600">
+  <DrawingArea Name="GobangPage" Bounds="0,0,800,600" Visible="false" HitTest="true" MouseDown="onGobangDown">
+    <!-- the hall: the title picture, and the step from one table to the next -->
+    <Spot Name="GobangHallTitle" Position="60,2"/>
+    <Spot Name="GobangTableStep" Pitch="173,137"/>
+    <!-- in a table cell: the desk, the feet of the player in each seat, the ante money icon -->
+    <Spot Name="GobangDesk" Position="65,50"/>
+    <Spot Name="GobangFirstSeat" Position="67,86"/>
+    <Spot Name="GobangSecondSeat" Position="166,74"/>
+    <Spot Name="GobangMoney" Position="50,84"/>
+    <!-- the board: the turn marker and the stone colour beside the own (bottom) player and the opponent (top) player -->
+    <Spot Name="GobangTurnBottom" Position="585,260"/>
+    <Spot Name="GobangBottomStone" Position="552,296"/>
+    <Spot Name="GobangTurnTop" Position="586,83"/>
+    <Spot Name="GobangTopStone" Position="552,117"/>
+    <!-- the timer bar, and the first seconds bar with its step to the next -->
+    <Spot Name="GobangTimerBar" Position="547,495"/>
+    <Spot Name="GobangSecondsBar" Position="553,514" Pitch="16,0"/>
+    <!-- the centre of the result letters, and the step between letters -->
+    <Spot Name="GobangResult" Position="311,248" Pitch="60,0"/>
+  </DrawingArea>
+  <Panel Name="GobangForm" Bounds="80,60,640,480" Visible="false">
+    <!-- DrawControl: the portraits of the two players, the texts of the hall and of the board -->
+    <DrawingArea Name="GobangFormPaint" Bounds="0,0,640,480">
+      <!-- the size of a text label box -->
+      <Spot Name="GobangLabel" Size="180,24"/>
+      <!-- in a table cell: the ante, the table number, the two player names -->
+      <Spot Name="GobangAnteBox" Position="0,29"/>
+      <Spot Name="GobangNumberBox" Position="86,29"/>
+      <Spot Name="GobangFirstName" Position="-29,53"/>
+      <Spot Name="GobangSecondName" Position="-29,70"/>
+      <!-- in a table cell: the empty-table text, its box width and line height -->
+      <Spot Name="GobangEmptyText" Bounds="-23,55,120,20"/>
+      <!-- the board: the own name, the opponent name, the status text -->
+      <Spot Name="GobangMyName" Position="514,309"/>
+      <Spot Name="GobangOpponentName" Position="513,133"/>
+      <Spot Name="GobangStatus" Bounds="509,458,240,12"/>
+      <!-- the board: the own portrait and the opponent portrait -->
+      <Spot Name="GobangMyFace" Position="638,315"/>
+      <Spot Name="GobangOpponentFace" Position="638,138"/>
+      <!-- text colours: cyan (RGB565 2047), yellow (RGB565 65504), white (RGB565 65535) -->
+      <Spot Name="GobangCyan" Color="#00FFFF"/>
+      <Spot Name="GobangYellow" Color="#FFFF00"/>
+      <Spot Name="GobangWhite" Color="#FFFFFF"/>
+    </DrawingArea>
+    <ImageButton Name="GobangTable16" Picture="btn_Gobang_T" Position="526,400" Press="onGobangTable"/>
+    <ImageButton Name="GobangTable15" Picture="btn_Gobang_T" Position="352,400" Press="onGobangTable"/>
+    <ImageButton Name="GobangTable14" Picture="btn_Gobang_T" Position="178,400" Press="onGobangTable"/>
+    <ImageButton Name="GobangTable13" Picture="btn_Gobang_T" Position="4,400" Press="onGobangTable"/>
+    <ImageButton Name="GobangTable12" Picture="btn_Gobang_T" Position="526,263" Press="onGobangTable"/>
+    <ImageButton Name="GobangTable11" Picture="btn_Gobang_T" Position="352,263" Press="onGobangTable"/>
+    <ImageButton Name="GobangTable10" Picture="btn_Gobang_T" Position="178,263" Press="onGobangTable"/>
+    <ImageButton Name="GobangTable9" Picture="btn_Gobang_T" Position="4,263" Press="onGobangTable"/>
+    <ImageButton Name="GobangTable8" Picture="btn_Gobang_T" Position="526,126" Press="onGobangTable"/>
+    <ImageButton Name="GobangTable7" Picture="btn_Gobang_T" Position="352,126" Press="onGobangTable"/>
+    <ImageButton Name="GobangTable6" Picture="btn_Gobang_T" Position="178,126" Press="onGobangTable"/>
+    <ImageButton Name="GobangTable5" Picture="btn_Gobang_T" Position="4,126" Press="onGobangTable"/>
+    <ImageButton Name="GobangTable4" Picture="btn_Gobang_T" Position="526,-11" Press="onGobangTable"/>
+    <ImageButton Name="GobangTable3" Picture="btn_Gobang_T" Position="352,-11" Press="onGobangTable"/>
+    <ImageButton Name="GobangTable2" Picture="btn_Gobang_T" Position="178,-11" Press="onGobangTable"/>
+    <ImageButton Name="GobangTable1" Picture="btn_Gobang_T" Position="4,-11" Press="onGobangTable"/>
+    <ImageButton Name="GobangQuit" Picture="btn_Gobang_Exit" Position="633,454" Hint="Quit" Press="onGobangQuit"/>
+    <ImageButton Name="GobangBackToHall" Picture="Btn_ExitGuest_1" Position="643,474" Hint="Go back to Hall" Visible="false"
+                 Press="onGobangBackToHall"/>
+  </Panel>
+</Panel>

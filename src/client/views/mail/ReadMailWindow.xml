@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reading a mail (TSe_ReadMailForm, a row of the mail box); view model:
+     viewmodels/ReadMailWindow.cpp.  When it was sent, the sender's name and face, the text;
+     Reply, Delete, the previous and next mail of the box and Close.  The game draws a form's
+     controls from the last created to the first: the controls here are in drawing order, the
+     reverse of TSe_ReadMailForm.Create. -->
+<Panel Name="ReadMailLayer" Bounds="0,0,800,600">
+  <Window Name="ReadMail" Escape="onReadMailClose" Picture="form_MailReceive_1" Position="10,50" Visible="false">
+    <!-- DrawControl: DrawMailSenderPreview, the invitation card, the arrows under hidden buttons -->
+    <DrawingArea Name="ReadMailPaint" Bounds="0,0,253,371">
+      <!-- where the send date and the sender's name are written; the sender's face -->
+      <Spot Name="ReadMailDate" Position="29,50"/>
+      <Spot Name="ReadMailName" Position="76,67"/>
+      <Spot Name="ReadMailFace" Position="188,244"/>
+      <!-- the invitation picture (form_invitation2) over an invitation -->
+      <Spot Name="ReadMailInvitation" Position="19,56"/>
+      <!-- the colour of the date and the name (RGB565 2113) -->
+      <Spot Name="ReadMailTextColor" Color="#080808"/>
+    </DrawingArea>
+    <Image Name="ReadMailPreviousGray" Picture="btn_PrevMail_Gray_1" Position="36,285"/>
+    <Image Name="ReadMailNextGray" Picture="btn_NextMail_Gray_1" Position="36,310"/>
+    <ImageButton Name="ReadMailPrevious" Picture="btn_PrevMail_1" Position="36,285" Click="onReadMailPrevious"/>
+    <ImageButton Name="ReadMailNext" Picture="btn_NextMail_1" Position="36,310" Click="onReadMailNext"/>
+    <ImageButton Name="ReadMailDelete" Picture="btn_deleteMail_1" Position="164,285" Click="onReadMailDelete"/>
+    <ImageButton Name="ReadMailClose" Picture="Btn_Close_1" Position="101,331" Hint="[ESC]" Click="onReadMailClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="ReadMailReply" Picture="btn_reply_1" Position="101,285" Click="onReadMailReply"/>
+    <Memo Name="ReadMailText" Bounds="28,88,200,190" FontColor="#080808" Effect="Plain" MaxChars="152" ReadOnly="true"/>
+    <ImageButton Name="ReadMailCloseSmall" Picture="Btn_Close_s_1" Position="203,23" Size="17,17" Click="onReadMailClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

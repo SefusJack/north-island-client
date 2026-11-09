@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The battle's skill window (TRe_BattleSkillForm, the command ring's seventh button); view
+     model: viewmodels/BattleSkillWindow.cpp.  Centred on the screen: the last three skills
+     used above, the battle skills below a page at a time (the arrows), Close.  The painter is
+     DrawControl (the icons of the skills that cannot be used turn grey, the description of the
+     skill under the mouse); the game draws a form's controls from the last created to the
+     first, so the controls here are in the reverse of TRe_BattleSkillForm.Create. -->
+<Panel Name="BattleSkillLayer" Bounds="0,0,800,600">
+  <Window Name="BattleSkill" Escape="onBattleSkillClose" Picture="Form_BattleSkill_1" Position="263,123" Size="274,353" Visible="false">
+    <DrawingArea Name="BattleSkillPaint" Bounds="0,0,274,353"/>
+    <!-- the skill name text (near black) and the skill level text (yellow) in a row -->
+    <Spot Name="BattleSkillTextColor" Color="#080808"/>
+    <Spot Name="BattleSkillLevelColor" Color="#FFFF00"/>
+    <BlockList Name="BattleSkillList" Bounds="17,151,242,137" RowHeight="25" HighlightColor="#89BEF5"
+               FontColor="#080808" Click="onBattleSkillPick"/>
+    <BlockList Name="BattleSkillRecent" Bounds="17,42,242,81" RowHeight="25" RowSpacing="3" HighlightColor="#89BEF5"
+               FontColor="#080808" Click="onBattleSkillRecent"/>
+    <ImageButton Name="BattleSkillClose" Picture="Btn_Close_1" Position="111,318" Size="56,20" Click="onBattleSkillClose"/>
+    <ImageButton Name="BattleSkillDown" Picture="Btn_ArrowDn_1" Position="130,292" Size="17,17" Hint="Next page"
+                 Click="onBattleSkillDown"/>
+    <ImageButton Name="BattleSkillUp" Picture="Btn_ArrowUp_1" Position="130,127" Size="17,17" Hint="Previous page"
+                 Click="onBattleSkillUp"/>
+  </Window>
+</Panel>

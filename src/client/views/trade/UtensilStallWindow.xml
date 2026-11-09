@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The own stall of large items (TTH_UtensilStallForm, Sell Large Item in the gold menu); view model:
+     viewmodels/UtensilStallWindow.cpp.  The piece chosen with the arrows on the left (the bag's furniture, instruments and vehicles);
+     the right arrow puts it into the first of three places with a price, a click on a place marks a piece and the left arrow takes
+     the marked one out again.  Set a Stall opens it (23/65), End Stall pulls it (23/66).  The game draws a form's controls from the
+     last created to the first: the controls here are in drawing order, the reverse of TTH_UtensilStallForm.Create. -->
+<Panel Name="UtensilStallLayer" Bounds="0,0,800,600">
+  <Window Name="UtensilStall" Escape="onUtensilStallEscape" Picture="Form_KeepUtensilStall" Position="15,75" Visible="false">
+    <!-- DrawControl: the memos of the chosen piece and of each place -->
+    <DrawingArea Name="UtensilStallPaint" Bounds="0,0,781,461">
+      <!-- the memo text: text box width and line height, blue (RGB565 31) -->
+      <Spot Name="UtensilStallMemo" Size="140,18" Color="#0000FF"/>
+      <!-- the selected item grid: top-left; and where its memo is drawn -->
+      <Spot Name="UtensilStallSelected" Position="106,160"/>
+      <Spot Name="UtensilStallSelectedMemo" Position="40,256"/>
+    </DrawingArea>
+    <TextBox Name="UtensilStallPrice3" Bounds="680,377,70,15" HitTest="true" Align="Right" CharFilter="Digits" MaxLength="8" FontColor="#080808"/>
+    <TextBox Name="UtensilStallPrice2" Bounds="498,377,70,15" HitTest="true" Align="Right" CharFilter="Digits" MaxLength="8" FontColor="#080808"/>
+    <TextBox Name="UtensilStallPrice1" Bounds="316,377,70,15" HitTest="true" Align="Right" CharFilter="Digits" MaxLength="8" FontColor="#080808"/>
+    <IconGrid Name="UtensilStallSlot3" Position="640,160" Click="onUtensilStallSlotClick"/>
+    <IconGrid Name="UtensilStallSlot2" Position="458,160" Click="onUtensilStallSlotClick"/>
+    <IconGrid Name="UtensilStallSlot1" Position="276,160" Click="onUtensilStallSlotClick"/>
+    <IconGrid Name="UtensilStallSelect" Position="90,144" HoverColor="#00000000"/>
+    <ImageButton Name="UtensilStallPrevious" Picture="Btn_ArrowL_1" Position="28,146" Click="onUtensilStallPrevious"/>
+    <ImageButton Name="UtensilStallNext" Picture="Btn_ArrowR_1" Position="168,146" Click="onUtensilStallNext"/>
+    <ImageButton Name="UtensilStallRemove" Picture="Btn_ArrowL_5" Position="198,248" Click="onUtensilStallRemove"/>
+    <ImageButton Name="UtensilStallAdd" Picture="Btn_ArrowR_5" Position="199,201" Click="onUtensilStallAdd"/>
+    <TextBox Name="UtensilStallShopName" Bounds="175,31,196,14" HitTest="true" MaxLength="28" FontColor="#080808"/>
+    <ImageButton Name="UtensilStallCloseSmall" Picture="btn_close_s_1" Position="731,26" Size="18,18" Click="onUtensilStallClose"/>
+    <ImageButton Name="UtensilStallCancel" Picture="Btn_Cancel_1" Position="430,424" Click="onUtensilStallClose"/>
+    <Image Name="UtensilStallRevokeIcon" Picture="Icon_RevokeStall_1" Position="360,424" Size="56,20"/>
+    <Image Name="UtensilStallKeepIcon" Picture="Icon_KeepStall_1" Position="290,424" Size="56,20"/>
+    <ImageButton Name="UtensilStallRevoke" Picture="Btn_RevokeStall_1" Position="360,424" Visible="false" Click="onUtensilStallRevoke"/>
+    <ImageButton Name="UtensilStallKeep" Picture="Btn_KeepStall_1" Position="290,424" Click="onUtensilStallKeep"/>
+  </Window>
+</Panel>

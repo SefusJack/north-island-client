@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The talk box's look (TTH_MsgSkinsForm, Chat Box in the system window); view model:
+     viewmodels/MsgSkinWindow.cpp.  Two ticks, the plain frame or the drawn one; Confirm keeps the
+     choice in user/<player>MsgSkin.txt.  The game draws a form's controls from the last created
+     to the first: the controls here are in drawing order, the reverse of TTH_MsgSkinsForm.Create. -->
+<Panel Name="MsgSkinLayer" Bounds="0,0,800,600">
+  <Window Name="MsgSkin" Picture="Form_SelectMsgForm_1" Position="224,106" Visible="false">
+    <ImageButton Name="MsgSkin2" Picture="btn_UNCheck_1" Position="21,197" Size="16,16" Click="onMsgSkinChoose"/>
+    <ImageButton Name="MsgSkin1" Picture="btn_Check_1" Position="21,60" Size="16,16" Click="onMsgSkinChoose"/>
+    <ImageButton Name="MsgSkinConfirm" Picture="Btn_confirm_1" Position="109,349" Click="onMsgSkinConfirm"/>
+    <ImageButton Name="MsgSkinCancel" Picture="Btn_Cancel_1" Position="189,349" Click="onMsgSkinClose"/>
+    <ImageButton Name="MsgSkinCloseSmall" Picture="Btn_Close_S_1" Position="301,26" Size="18,18" Click="onMsgSkinClose"/>
+  </Window>
+</Panel>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Chaos Crystals' form (TConfuseStoneForm, opened by using a Chaos Crystal 61062, a Shadow Chaos Crystal 61079 or a Pure Chaos Crystal 61080); view model:
+     viewmodels/ConfuseStoneWindow.cpp.  A piece of gear of the bag is dropped on the place on the left (the right button takes it out) and a crystal on the place
+     on the right; Confirm asks the server to raise the stone mounted in the piece by a step (23/127).  A TSe_Form (it is kept on the screen); the view model
+     places it beside the item window.  The game draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of
+     TConfuseStoneForm.Create; DrawControl's flames and Confirm picture are under them. -->
+<Panel Name="ConfuseStoneLayer" Bounds="0,0,800,600">
+  <Window Name="ConfuseStone" Escape="onConfuseStoneClose" Picture="Form_ConfuseStone" Position="200,100" Size="243,360" ScreenFit="true" Visible="false">
+    <DrawingArea Name="ConfuseStoneBelow" Bounds="0,0,243,360"/>
+    <DrawingArea Name="ConfuseStoneStone" Bounds="131,174,32,32" HitTest="true"/>
+    <DrawingArea Name="ConfuseStoneEquip" Bounds="79,176,32,32" HitTest="true" RightMouseUp="onConfuseStoneTake">
+      <!-- an item icon cell's size (both cells), and the count text inside it in RGB565 2113 -->
+      <Spot Name="ConfuseStoneCell" Size="32,32"/>
+      <Spot Name="ConfuseStoneCount" Position="2,20" Color="#080808"/>
+    </DrawingArea>
+    <ImageButton Name="ConfuseStoneCloseSmall" Picture="Btn_Close_S_1" Position="193,25" Size="18,18" Click="onConfuseStoneClose"/>
+    <ImageButton Name="ConfuseStoneCancel" Picture="Btn_Cancel_1" Position="130,315" Size="56,20" Click="onConfuseStoneClose" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="ConfuseStoneConfirm" Picture="Btn_confirm_1" Position="54,315" Size="56,20" Click="onConfuseStoneConfirm"/>
+  </Window>
+</Panel>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The trade of large items (TRe_TradeUtensilForm, 25/40: the money menu's third trade button and a click on a player); view model: viewmodels/UtensilTradeWindow.cpp.
+     The partner's name and goods on the left (5 x 10 cells), the own name and a copy of the bag on the right: a piece clicked there goes into the offer, which is the cells
+     marked in use (a second click takes it back); below the partner's gold and the gold to give.  OK puts the offer up (25/41), Trade agrees (25/42 1), Cancel and the small
+     close button call it off (25/42 2); the window goes when the server ends the trade.  A button not to be pressed is replaced by its icon.  The game draws a form's controls from
+     the last created to the first: the controls here are in drawing order, the reverse of TRe_TradeUtensilForm.Create. -->
+<Panel Name="UtensilTradeLayer" Bounds="0,0,800,600">
+  <Window Name="UtensilTrade" AbovePopups="true" Picture="Form_TradeUtensil_1" Position="195,59" Visible="false">
+    <TextBox Name="UtensilTradeMyName" Bounds="219,43,160,20" ReadOnly="true" FontColor="#080808"/>
+    <TextBox Name="UtensilTradePartnerName" Bounds="33,43,160,20" ReadOnly="true" FontColor="#080808"/>
+    <TextBox Name="UtensilTradePartnerGold" Bounds="91,417,97,16" ReadOnly="true" Align="Right" FontColor="#080808"/>
+    <TextBox Name="UtensilTradeGiveGold" Bounds="290,417,89,16" Skin="Panel26" SkinSource="0,0,104,14" HitTest="true" Align="Right" CharFilter="Digits" MaxLength="9"
+             FontColor="#080808"/>
+    <ImageButton Name="UtensilTradeCloseSmall" Picture="Btn_Close_s_1" Position="349,26" Size="18,18" Click="onUtensilTradeCancel"/>
+    <ImageButton Name="UtensilTradeCancel" Picture="Btn_Cancel_1" Position="250,445" Size="56,20" Click="onUtensilTradeCancel"/>
+    <Image Name="UtensilTradeTradeIcon" Picture="Icon_Trade_1" Position="175,445"/>
+    <ImageButton Name="UtensilTradeTrade" Picture="Btn_Trade_1" Position="175,445" Size="56,20" Click="onUtensilTradeTrade"/>
+    <Image Name="UtensilTradeConfirmIcon" Picture="Icon_Confirm_1" Position="100,445"/>
+    <ImageButton Name="UtensilTradeOk" Picture="Btn_Ok_1" Position="100,445" Size="56,20" Click="onUtensilTradeOk"/>
+    <IconGrid Name="UtensilTradePartner" Position="23,68" Columns="5" Rows="10" Pitch="34"/>
+    <IconGrid Name="UtensilTradeBag" Position="203,68" Columns="5" Rows="10" Pitch="34" Click="onUtensilTradeBagClick"/>
+  </Window>
+</Panel>

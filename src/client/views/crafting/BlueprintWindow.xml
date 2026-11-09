@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The recipe of a blueprint (TTH_blueprintForm, a double click on a blueprint of the bag); view model: viewmodels/BlueprintWindow.cpp.  The form's size, its picture
+     (Form_blueprint_1 to _3) and the places of the buttons follow the number of materials, as DrawControl sets them each frame; the icons and the lines are
+     BlueprintPaint's.  The game draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of the form's
+     Create (the panels of the icons, then the small close button and the close button). -->
+<Panel Name="BlueprintLayer" Bounds="0,0,800,600">
+  <Window Name="BlueprintWindow" Escape="onBlueprintClose" Picture="Form_blueprint_1" Position="150,100" Visible="false">
+    <DrawingArea Name="BlueprintPaint" Bounds="0,0,619,405">
+      <!-- the olive-gold text colour (RGB565 43680) -->
+      <Spot Name="BlueprintText" Color="#AD5500"/>
+      <!-- the title picture's area on the form -->
+      <Spot Name="BlueprintTitle" Bounds="1,11,121,22"/>
+    </DrawingArea>
+    <ImageButton Name="BlueprintCloseSmall" Picture="Btn_Close_s_2" Position="585,15" Size="13,13" Click="onBlueprintClose"/>
+    <ImageButton Name="BlueprintClose" Picture="Btn_Close_3" Position="295,365" Size="34,18" Click="onBlueprintClose"/>
+  </Window>
+</Panel>

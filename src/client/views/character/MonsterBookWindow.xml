@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The monster book (TTH_CellectionForm, the notebook's Monster Information); view model:
+     viewmodels/MonsterBookWindow.cpp.  The monsters met, ten a page by their book number; a
+     click shows the monster, its element and its values on the right.  The game draws a form's
+     controls from the last created to the first: the controls here are in drawing order, the
+     reverse of TTH_CellectionForm.Create; the page, hover bar, texts and the monster
+     (DrawControl) come first. -->
+<Panel Name="MonsterBookLayer" Bounds="0,0,800,600">
+  <Window Name="MonsterBook" Escape="onMonsterBookClose" Picture="Form_Cellection_1" Position="150,100" Visible="false">
+    <DrawingArea Name="MonsterBookPage" Bounds="0,0,463,367">
+      <!-- the hover bar over the first list row: its box, translucent orange, and the step down to the next row -->
+      <Spot Name="MonsterBookHover" Bounds="20,55,188,20" Color="#50FF6C01" Pitch="0,24"/>
+      <!-- the page number display -->
+      <Spot Name="MonsterBookPageNumber" Position="100,302"/>
+      <!-- the monster name: top-left, text box width and line height, colour in RGB565 2113 -->
+      <Spot Name="MonsterBookName" Bounds="222,56,112,15" Color="#080808"/>
+      <!-- the monster figure's feet, and the element icon -->
+      <Spot Name="MonsterBookFeet" Position="350,220"/>
+      <Spot Name="MonsterBookElement" Position="403,65"/>
+      <!-- the digits: bar hp, collection number, strength, constitution, intelligence, wisdom, agility, level -->
+      <Spot Name="MonsterBookBarHp" Position="244,90"/>
+      <Spot Name="MonsterBookNumber" Position="319,90"/>
+      <Spot Name="MonsterBookStrength" Position="251,109"/>
+      <Spot Name="MonsterBookConstitution" Position="251,128"/>
+      <Spot Name="MonsterBookIntelligence" Position="251,148"/>
+      <Spot Name="MonsterBookWisdom" Position="251,168"/>
+      <Spot Name="MonsterBookAgility" Position="251,186"/>
+      <Spot Name="MonsterBookLevel" Position="368,68"/>
+    </DrawingArea>
+    <TextBox Name="MonsterBookRow10" Bounds="19,270,190,22" ReadOnly="true" HitTest="true" FontColor="#080808"
+             Click="onMonsterBookRow"/>
+    <TextBox Name="MonsterBookRow9" Bounds="19,246,190,22" ReadOnly="true" HitTest="true" FontColor="#080808"
+             Click="onMonsterBookRow"/>
+    <TextBox Name="MonsterBookRow8" Bounds="19,222,190,22" ReadOnly="true" HitTest="true" FontColor="#080808"
+             Click="onMonsterBookRow"/>
+    <TextBox Name="MonsterBookRow7" Bounds="19,198,190,22" ReadOnly="true" HitTest="true" FontColor="#080808"
+             Click="onMonsterBookRow"/>
+    <TextBox Name="MonsterBookRow6" Bounds="19,174,190,22" ReadOnly="true" HitTest="true" FontColor="#080808"
+             Click="onMonsterBookRow"/>
+    <TextBox Name="MonsterBookRow5" Bounds="19,150,190,22" ReadOnly="true" HitTest="true" FontColor="#080808"
+             Click="onMonsterBookRow"/>
+    <TextBox Name="MonsterBookRow4" Bounds="19,126,190,22" ReadOnly="true" HitTest="true" FontColor="#080808"
+             Click="onMonsterBookRow"/>
+    <TextBox Name="MonsterBookRow3" Bounds="19,102,190,22" ReadOnly="true" HitTest="true" FontColor="#080808"
+             Click="onMonsterBookRow"/>
+    <TextBox Name="MonsterBookRow2" Bounds="19,78,190,22" ReadOnly="true" HitTest="true" FontColor="#080808"
+             Click="onMonsterBookRow"/>
+    <TextBox Name="MonsterBookRow1" Bounds="19,54,190,22" ReadOnly="true" HitTest="true" FontColor="#080808"
+             Click="onMonsterBookRow"/>
+    <ImageButton Name="MonsterBookPrevious" Picture="Btn_ArrowL_8" Position="69,298" Size="21,21" Click="onMonsterBookPrevious"/>
+    <ImageButton Name="MonsterBookNext" Picture="Btn_ArrowR_8" Position="144,298" Size="21,21" Click="onMonsterBookNext"/>
+    <ImageButton Name="MonsterBookCloseSmall" Picture="Btn_Close_s_1" Position="413,24" Size="18,18" Click="onMonsterBookClose"/>
+    <ImageButton Name="MonsterBookClose" Picture="Btn_Close_1" Position="202,332" Size="56,20" Click="onMonsterBookClose"/>
+  </Window>
+</Panel>

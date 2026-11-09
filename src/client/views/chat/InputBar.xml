@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The chat input bar along the bottom of the world (TSe_InputBar); view model:
+     viewmodels/InputBar.cpp.  The channel picture under the mail envelope and the channel
+     button change with the channel; over the button the frame of the other channels opens.
+     The game draws a form's controls from the last created to the first: the frame lies under
+     its buttons, they under the channel button. -->
+<Panel Name="InputBar" Bounds="0,0,800,600" Anchor="BottomLeft" HudScale="true" Visible="false">
+  <Image Name="InputBackground" Picture="main_input_1" Position="0,575"/>
+  <!-- the size of one frame of the mail icon strip -->
+  <Spot Name="InputMailFrame" Size="23,21"/>
+  <!-- the channel button's hit area, and the open channel pick list's hit area -->
+  <Spot Name="InputChannelButtonArea" Bounds="28,575,40,21"/>
+  <Spot Name="InputChannelFrameArea" Bounds="28,448,40,127"/>
+  <!-- the whisper name field's hit area, and its bounds once a target is chosen -->
+  <Spot Name="InputWhisperFieldArea" Bounds="70,576,86,22"/>
+  <Spot Name="InputWhisperChosenField" Bounds="73,575,88,24"/>
+  <!-- the whisper names panel: x, the top of the input bar, width, and the height of one name row -->
+  <Spot Name="InputWhisperPanel" Bounds="24,575,140,20"/>
+  <!-- the whisper names list inside its panel -->
+  <Spot Name="InputWhisperNamesInPanel" Position="25,8"/>
+  <!-- the typed line's text, where the emote icons are drawn: top-left -->
+  <Spot Name="InputLineEmotes" Position="165,577"/>
+  <Image Name="InputChannelMark" Bounds="6,577,21,19"/>
+  <Image Name="InputMail" Picture="Anim_GotMailS_1" Bounds="4,577,23,21" SourceRect="0,0,23,21"/>
+  <DrawingArea Name="InputMailArea" Bounds="8,576,22,22" HitTest="true" MouseUp="onInputMail"/>
+  <TextBox Name="InputText" Bounds="162,577,328,20" FontColor="#FFFFFF" MaxLength="60" HitTest="true"
+           Hint="Press Ctrl + V to paste conversation information"
+           Enter="onInputSend" Up="onInputPrevious" Down="onInputNext" WheelUp="onInputPrevious"
+           WheelDown="onInputNext" Click="onInputTextClick"/>
+  <TextBox Name="InputWhisperName" Bounds="73,577,88,20" FontColor="#FFFFFF" MaxLength="15" HitTest="true"
+           Visible="false" ReadOnly="true" Enter="onInputWhisperEnter" Click="onInputWhisperClick"/>
+  <ListBox Name="InputWhisperNames" Bounds="49,571,140,0" FontColor="#FFFFFF" Visible="false"
+           Select="onInputWhisperPick"/>
+  <!-- FExitGuestBtn: while watching a battle -->
+  <ImageButton Name="InputQuitViewing" Picture="Btn_ExitGuest_1" Bounds="700,535,28,28" Frames="1" Hint="Quit viewing"
+               Visible="false" Click="onInputQuitViewing"/>
+  <Panel Name="InputChannelFrame" Bounds="28,488,46,87" Skin="icon_Channelframe_1" SkinSource="0,0,46,67" Visible="false"/>
+  <ImageButton Name="InputChannelPick4" Picture="btn_channel_1_1" Bounds="31,492,40,21" DrawHeight="21" Visible="false" Click="onInputChannelPick"/>
+  <ImageButton Name="InputChannelPick3" Picture="btn_channel_1_1" Bounds="31,512,40,21" DrawHeight="21" Visible="false" Click="onInputChannelPick"/>
+  <ImageButton Name="InputChannelPick2" Picture="btn_channel_1_1" Bounds="31,532,40,21" DrawHeight="21" Visible="false" Click="onInputChannelPick"/>
+  <ImageButton Name="InputChannelPick1" Picture="btn_channel_1_1" Bounds="31,552,40,21" DrawHeight="21" Visible="false" Click="onInputChannelPick"/>
+  <ImageButton Name="InputChannel" Picture="btn_channel_2_1" Bounds="31,577,40,21" DrawHeight="21" Hint="switch to chat channel"
+               Click="onInputChannel"/>
+  <!-- DrawInputEmotes: the emotes in the line typed -->
+  <DrawingArea Name="InputTextEmotes" Bounds="0,575,520,25"/>
+  <Image Name="InputEmotePanel" Picture="panel_expression_1" Position="492,506" Visible="false" HitTest="true"/>
+  <ImageButton Name="InputEmote31" Picture="icon_expre_31" Bounds="730,553,16,16" RectHit="true" Animation="icon_expre_31"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote30" Picture="icon_expre_30" Bounds="707,553,16,16" RectHit="true" Animation="icon_expre_30"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote29" Picture="icon_expre_29" Bounds="684,553,16,16" RectHit="true" Animation="icon_expre_29"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote28" Picture="icon_expre_28" Bounds="661,553,16,16" RectHit="true" Animation="icon_expre_28"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote27" Picture="icon_expre_27" Bounds="638,553,16,16" RectHit="true" Animation="icon_expre_27"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote26" Picture="icon_expre_26" Bounds="615,553,16,16" RectHit="true" Animation="icon_expre_26"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote25" Picture="icon_expre_25" Bounds="592,553,16,16" RectHit="true" Animation="icon_expre_25"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote24" Picture="icon_expre_24" Bounds="569,553,16,16" RectHit="true" Animation="icon_expre_24"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote23" Picture="icon_expre_23" Bounds="546,553,16,16" RectHit="true" Animation="icon_expre_23"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote22" Picture="icon_expre_22" Bounds="523,553,16,16" RectHit="true" Animation="icon_expre_22"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote21" Picture="icon_expre_21" Bounds="500,553,16,16" RectHit="true" Animation="icon_expre_21"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote20" Picture="icon_expre_20" Bounds="707,533,16,16" RectHit="true" Animation="icon_expre_20"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote19" Picture="icon_expre_19" Bounds="684,533,16,16" RectHit="true" Animation="icon_expre_19"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote18" Picture="icon_expre_18" Bounds="661,533,16,16" RectHit="true" Animation="icon_expre_18"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote17" Picture="icon_expre_17" Bounds="638,533,16,16" RectHit="true" Animation="icon_expre_17"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote16" Picture="icon_expre_16" Bounds="615,533,16,16" RectHit="true" Animation="icon_expre_16"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote15" Picture="icon_expre_15" Bounds="592,533,16,16" RectHit="true" Animation="icon_expre_15"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote14" Picture="icon_expre_14" Bounds="569,533,16,16" RectHit="true" Animation="icon_expre_14"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote13" Picture="icon_expre_13" Bounds="546,533,16,16" RectHit="true" Animation="icon_expre_13"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote12" Picture="icon_expre_12" Bounds="523,533,16,16" RectHit="true" Animation="icon_expre_12"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote11" Picture="icon_expre_11" Bounds="500,533,16,16" RectHit="true" Animation="icon_expre_11"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote10" Picture="icon_expre_10" Bounds="707,513,16,16" RectHit="true" Animation="icon_expre_10"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote9" Picture="icon_expre_9" Bounds="684,513,16,16" RectHit="true" Animation="icon_expre_9"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote8" Picture="icon_expre_8" Bounds="661,513,16,16" RectHit="true" Animation="icon_expre_8"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote7" Picture="icon_expre_7" Bounds="638,513,16,16" RectHit="true" Animation="icon_expre_7"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote6" Picture="icon_expre_6" Bounds="615,513,16,16" RectHit="true" Animation="icon_expre_6"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote5" Picture="icon_expre_5" Bounds="592,513,16,16" RectHit="true" Animation="icon_expre_5"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote4" Picture="icon_expre_4" Bounds="569,513,16,16" RectHit="true" Animation="icon_expre_4"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote3" Picture="icon_expre_3" Bounds="546,513,16,16" RectHit="true" Animation="icon_expre_3"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote2" Picture="icon_expre_2" Bounds="523,513,16,16" RectHit="true" Animation="icon_expre_2"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmote1" Picture="icon_expre_1" Bounds="500,513,16,16" RectHit="true" Animation="icon_expre_1"
+               AnimationFrames="2" AnimationInterval="500" Visible="false" Press="onInputEmotePick"/>
+  <ImageButton Name="InputEmoteClose" Picture="Btn_Close_s_1" Bounds="733,509,18,18" Visible="false" Click="onInputEmoteClose"/>
+  <ImageButton Name="InputEmote" Picture="Btn_expression_1" Bounds="492,575,26,25" Hint="Channel Emotes" Click="onInputEmotes"/>
+</Panel>

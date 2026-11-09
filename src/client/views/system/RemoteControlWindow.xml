@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Remote Control's settings (TTH_AutoPlayForm, a double click on the Remote Control 34058): the ticks of what the game does for the player, the
+     percents of HP and SP under which it drinks (the four rails), the places of the bag the supply comes from, how many deaths of the player and his pet
+     it stands, the minutes before it leaves and five items it never drinks.  The game draws a form's controls from the last created to the first: the
+     controls here are in drawing order, the reverse of TTH_AutoPlayForm.Create; the buttons that read and
+     save the file by hand are hidden in the game and left out.  View model: viewmodels/RemoteControlWindow.cpp. -->
+<Panel Name="RemoteControlLayer" Bounds="0,0,800,600">
+  <Window Name="RemoteControlWindow" Escape="onRemoteClose" Picture="form_autoPlay_1" Position="286,49" Size="227,501" Visible="false">
+    <!-- DrawControl: the rails with their percents; RenderWithChildren: the hints of the rails over everything -->
+    <DrawingArea Name="RemotePage" Bounds="0,0,227,501"/>
+    <DrawingArea Name="RemoteSlider4" Bounds="106,249,70,10" HitTest="true" MouseDown="onRemoteSliderDown" MouseDrag="onRemoteSliderDrag" MouseUp="onRemoteSliderUp"/>
+    <DrawingArea Name="RemoteSlider3" Bounds="106,227,70,10" HitTest="true" MouseDown="onRemoteSliderDown" MouseDrag="onRemoteSliderDrag" MouseUp="onRemoteSliderUp"/>
+    <DrawingArea Name="RemoteSlider2" Bounds="106,183,70,10" HitTest="true" MouseDown="onRemoteSliderDown" MouseDrag="onRemoteSliderDrag" MouseUp="onRemoteSliderUp"/>
+    <DrawingArea Name="RemoteSlider1" Bounds="106,161,70,10" HitTest="true" MouseDown="onRemoteSliderDown" MouseDrag="onRemoteSliderDrag" MouseUp="onRemoteSliderUp"/>
+    <DrawingArea Name="RemoteItem5" Bounds="156,399,30,30" HitTest="true" RightMouseUp="onRemoteItemClear"/>
+    <DrawingArea Name="RemoteItem4" Bounds="122,399,30,30" HitTest="true" RightMouseUp="onRemoteItemClear"/>
+    <DrawingArea Name="RemoteItem3" Bounds="88,399,30,30" HitTest="true" RightMouseUp="onRemoteItemClear"/>
+    <DrawingArea Name="RemoteItem2" Bounds="54,399,30,30" HitTest="true" RightMouseUp="onRemoteItemClear"/>
+    <DrawingArea Name="RemoteItem1" Bounds="20,399,30,30" HitTest="true" RightMouseUp="onRemoteItemClear"/>
+    <TextBox Name="RemoteTo" Bounds="140,114,30,18" HitTest="true" CharFilter="Digits" MaxLength="2" AllowPaste="true" FontColor="#080808"/>
+    <TextBox Name="RemoteFrom" Bounds="93,114,30,18" HitTest="true" CharFilter="Digits" MaxLength="2" AllowPaste="true" FontColor="#080808"/>
+    <ImageButton Name="RemotePlusSet" Picture="Btn_PlusSet" Position="115,46" Size="61,20" Visible="false" Click="onRemotePlus"/>
+    <TextBox Name="RemoteLeaveMinutes" Bounds="93,333,40,18" HitTest="true" CharFilter="Digits" MaxLength="4" AllowPaste="true" FontColor="#080808"/>
+    <TextBox Name="RemotePetDeathLimit" Bounds="132,311,30,18" HitTest="true" CharFilter="Digits" MaxLength="3" AllowPaste="true" FontColor="#080808"/>
+    <TextBox Name="RemoteDeathLimit" Bounds="132,289,30,18" HitTest="true" CharFilter="Digits" MaxLength="3" AllowPaste="true" FontColor="#080808"/>
+    <CheckBox Name="RemoteCheck11" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="19,438" Size="16,16" Click="onRemoteCheck"/>
+    <CheckBox Name="RemoteCheck10" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="19,378" Size="16,16" Click="onRemoteCheck"/>
+    <CheckBox Name="RemoteCheck9" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="19,356" Size="16,16" Click="onRemoteCheck"/>
+    <CheckBox Name="RemoteCheck8" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="19,334" Size="16,16" Click="onRemoteCheck"/>
+    <CheckBox Name="RemoteCheck7" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="19,334" Size="16,16" Visible="false"/>
+    <CheckBox Name="RemoteCheck6" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="19,312" Size="16,16" Click="onRemoteCheck"/>
+    <CheckBox Name="RemoteCheck5" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="19,290" Size="16,16" Click="onRemoteCheck"/>
+    <CheckBox Name="RemoteCheck4" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="39,267" Size="16,16" Click="onRemoteCheck"/>
+    <CheckBox Name="RemoteCheck3" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="19,92" Size="16,16" Click="onRemoteCheck"/>
+    <CheckBox Name="RemoteCheck2" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="19,70" Size="16,16" Click="onRemoteCheck"/>
+    <CheckBox Name="RemoteCheck1" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="19,48" Size="16,16" Click="onRemoteCheck"/>
+    <ImageButton Name="RemoteStop" Picture="Btn_Stop_2" Position="83,463" Size="39,20" Click="onRemoteStop"/>
+    <ImageButton Name="RemoteOk" Picture="Btn_OK_2" Position="34,463" Size="39,20" Click="onRemoteOk"/>
+    <ImageButton Name="RemoteClose" Picture="Btn_Close_2" Position="132,463" Size="39,20" Click="onRemoteClose"/>
+    <DrawingArea Name="RemoteHints" Bounds="0,0,227,501"/>
+  </Window>
+</Panel>

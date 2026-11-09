@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The tent style chooser (TChangeCampForm): the Tent Palette or the Shape Clay was used; the arrows
+     go through the styles, the tent in that style stands in the middle, OK asks for it (65/12),
+     Close and the small close button put the form away.  It opens beside the item window.  The game
+     draws a form's controls from the last created to the first: the controls here are in drawing
+     order, the reverse of TChangeCampForm.Create.  View model: viewmodels/CampStyleWindow.cpp. -->
+<Panel Name="CampStyleLayer" Bounds="0,0,800,600">
+  <Window Name="CampStyleWindow" Escape="onCampStyleClose" Picture="ChangCamp_Form" Position="0,0" Size="243,343" Visible="false">
+    <!-- DrawControl: the tent -->
+    <DrawingArea Name="CampStylePage" Bounds="0,0,243,343">
+      <!-- the tent: its feet -->
+      <Spot Name="CampStyleTentFeet" Position="125,220"/>
+    </DrawingArea>
+    <ImageButton Name="CampStyleNext" Picture="Arrow_R3" Bounds="191,176,21,21" Click="onCampStyleNext"/>
+    <ImageButton Name="CampStylePrevious" Picture="Arrow_L3" Bounds="28,176,21,21" Click="onCampStylePrevious"/>
+    <ImageButton Name="CampStyleClose" Picture="Btn_Close_1" Position="130,301" Size="56,20" Click="onCampStyleClose"/>
+    <ImageButton Name="CampStyleOk" Picture="Btn_ok_1" Position="54,301" Size="56,20" Click="onCampStyleOk"/>
+    <ImageButton Name="CampStyleCloseSmall" Picture="Btn_Close_S_1" Position="193,26" Size="18,18" Click="onCampStyleClose"/>
+  </Window>
+</Panel>

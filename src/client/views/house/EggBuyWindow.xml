@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A Fortune Egg machine seen by a visitor (TTH_BuyEggMachineForm, a click on the machine); view model:
+     viewmodels/EggBuyWindow.cpp.  The ten places of the machine, the price of a play (in the colour of its
+     digits) and how many eggs it holds; OK asks to play it at that price (62/33).  The game draws a form's
+     controls from the last created to the first: the controls here are in drawing order, the reverse of
+     TTH_BuyEggMachineForm.Create. -->
+<Panel Name="EggBuyLayer" Bounds="0,0,800,600">
+  <Window Name="EggBuyWindow" Escape="onEggBuyClose" Picture="Form_EggMachine_1" Position="288,161" Visible="false">
+    <!-- DrawControl: how many eggs the machine holds -->
+    <DrawingArea Name="EggBuyPaint" Bounds="0,0,223,277">
+      <!-- the egg count's text position and colour (RGB565 2113) -->
+      <Spot Name="EggBuyCount" Position="126,215" Color="#080808"/>
+    </DrawingArea>
+    <TextBox Name="EggBuyPrice" Bounds="86,84,85,25" ReadOnly="true" Align="Right" FontColor="#080808"/>
+    <IconGrid Name="EggBuyCells" Position="25,135" Columns="5" Rows="2" Pitch="34" HoverColor="#00000000"/>
+    <ImageButton Name="EggBuyOk" Picture="Btn_OK_2" Position="68,239" Click="onEggBuyOk"/>
+    <ImageButton Name="EggBuyClose" Picture="Btn_Close_2" Position="117,239" Click="onEggBuyClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="EggBuyCloseSmall" Picture="Btn_Close_S_1" Position="173,26" Size="18,18" Click="onEggBuyClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

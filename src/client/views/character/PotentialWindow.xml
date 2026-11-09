@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The potential form (TPotentialForm, the Potential button of the item window or a Potential Pill); view model:
+     viewmodels/PotentialWindow.cpp.  The player and the pets in rows, the one chosen shown with the wheel of its potential and the abilities
+     the potential adds; OK uses a pill on it.  The game draws a form's controls from the last created to the first: the controls here are in
+     drawing order, the reverse of TPotentialForm.Create. -->
+<Panel Name="PotentialWindowLayer" Bounds="0,0,800,600">
+  <Window Name="PotentialWindow" Escape="onPotentialClose" Picture="Form_Potential_1" Position="250,40" Visible="false">
+    <IconGrid Name="PotentialItem" Position="56,366" Columns="1" Rows="1" Pitch="30" CellSize="30"/>
+    <BlockList Name="PotentialTargets" Bounds="32,79,233,168" RowHeight="33" RowSpacing="1" HighlightColor="#89BEF5" HoverAlpha="80"
+               SelectionAlpha="120" Click="onPotentialTarget"/>
+    <!-- the rows' TRe_MiniPetInfo -->
+    <DrawingArea Name="PotentialFigures" Bounds="0,0,299,520"/>
+    <ImageButton Name="PotentialOk" Picture="btn_ok_1" Position="87,473" Click="onPotentialOk"/>
+    <ImageButton Name="PotentialCancel" Picture="Btn_Cancel_1" Position="163,473" Hint="[ESC]" Click="onPotentialClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="PotentialCloseSmall" Picture="Btn_Close_s_1" Position="249,26" Hint="[ESC]" Click="onPotentialClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <!-- RenderWithChildren, after the controls: the confirm mark, the rows' texts, the figure, the wheel and the abilities -->
+    <DrawingArea Name="PotentialPaint" Bounds="0,0,299,520">
+      <!-- the first row (the player): top-left, and the step down to the next row -->
+      <Spot Name="PotentialRows" Position="32,78" Pitch="0,34"/>
+      <!-- the name inside a row: offset from the row -->
+      <Spot Name="PotentialRowName" Position="38,8"/>
+      <!-- the text colour, near-black (RGB565 2113), and the potential count's colour, red (RGB565 63488) -->
+      <Spot Name="PotentialTextColor" Color="#080808"/>
+      <Spot Name="PotentialHaveColor" Color="#FF0000"/>
+      <!-- the preview figure's feet -->
+      <Spot Name="PotentialPreviewFeet" Position="193,349"/>
+    </DrawingArea>
+  </Window>
+</Panel>

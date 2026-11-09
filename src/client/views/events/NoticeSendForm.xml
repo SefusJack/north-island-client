@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The form to write a notice (TSendNoticeForm and TOrgSendNoticeForm, opened by 82/8); view
+     model: viewmodels/NoticeSendForm.cpp.  A subject of up to 30 characters and a text of up to
+     151; Confirm posts the notice (82/1 on the public board, 82/7 on the guild's).  The game
+     draws a form's controls from the last created to the first: the controls here are in drawing
+     order, the reverse of TNoticeForm.Create and TSendNoticeForm.Create.  The game has one form
+     for each board; here one form serves both. -->
+<Panel Name="NoticeSendLayer" Bounds="0,0,800,600">
+  <Window Name="NoticeSendForm" Escape="onNoticeSendClose" Picture="notice1" Position="191,174" Visible="false">
+    <ImageButton Name="NoticeSendConfirm" Picture="Btn_confirm_1" Position="130,220" Click="onNoticeSendConfirm"/>
+    <ImageButton Name="NoticeSendClose" Picture="Btn_Close_1" Position="220,220" Click="onNoticeSendClose"/>
+    <ImageButton Name="NoticeSendCloseSmall" Picture="Btn_Close_S_1" Position="368,24" Size="18,18" Click="onNoticeSendClose"/>
+    <Memo Name="NoticeSendText" Bounds="25,105,380,100" FontColor="#FFFFFF" Effect="Plain" MaxChars="151" Caret="inputCursor"/>
+    <TextBox Name="NoticeSendSubject" Bounds="76,60,250,20" HitTest="true" MaxLength="30" FontColor="#FFFFFF"/>
+  </Window>
+</Panel>

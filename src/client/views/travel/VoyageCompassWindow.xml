@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Voyage compass (THL_WorldMapForm, item 34004 used on the Voyage maps); view model: viewmodels/VoyageCompassWindow.cpp.  The view model sets the map's
+     picture and size and puts the minimize button on the form's top right corner (the form folds into a small box round the button and back); the paint area
+     draws the player's figure.  A TSe_Form (kept on the screen, closed by Escape).  Controls in drawing order, the reverse of THL_WorldMapForm.Create. -->
+<Panel Name="VoyageCompassLayer" Bounds="0,0,800,600">
+  <Window Name="VoyageCompassWindow" Escape="onVoyageCompassClose" ScreenFit="true" Visible="false">
+    <DrawingArea Name="VoyageCompassPaint" Bounds="0,0,800,600">
+      <!-- the form's place: the gap to the right screen edge, and the drop below the top of the minimize button -->
+      <Spot Name="VoyageCompassPlace" Position="11,45"/>
+      <!-- the form border taken off the form size when scaling the map to it, and the player marker's inset inside it -->
+      <Spot Name="VoyageCompassBorder" Position="4,2"/>
+      <!-- the folded icon box: the button's offset inside it, and its size -->
+      <Spot Name="VoyageCompassFolded" Bounds="10,10,39,38"/>
+      <!-- the minimize / restore button's size -->
+      <Spot Name="VoyageCompassButton" Size="19,18"/>
+    </DrawingArea>
+    <ImageButton Name="VoyageCompassMinimize" Picture="Btn_Minimize_1" Position="0,0" Size="19,18" Click="onVoyageCompassMinimize"/>
+  </Window>
+</Panel>

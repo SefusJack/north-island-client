@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Selling to an NPC (TRe_SaleToNpcForm, 27/3 for goods, 27/4 for equipment); view model:
+     viewmodels/NpcSaleWindow.cpp, which puts on the form's picture and places OK and Close for
+     the kind.  A copy of the bag: a click marks an item to sell or unmarks it, the right button
+     unmarks it; what the marked items bring and the gold carried; OK sells them (27/2).
+     Closing lets the event go on.  The game draws a form's controls from the last created to
+     the first: the controls here are in drawing order, the reverse of TRe_SaleToNpcForm.Create
+     (the bag grid comes first, from TRe_ItemGridForm). -->
+<Panel Name="NpcSaleLayer" Bounds="0,0,800,600">
+  <Window Name="NpcSale" Escape="onNpcSaleClose" Picture="Form_SaleThing_1" Position="279,47" Visible="false">
+    <!-- DrawControl: what the marked items bring, the gold carried -->
+    <DrawingArea Name="NpcSalePaint" Bounds="0,0,241,505"/>
+    <ImageButton Name="NpcSaleCloseSmall" Picture="Btn_Close_s_1" Position="191,26" Size="18,18" Click="onNpcSaleClose"/>
+    <ImageButton Name="NpcSaleClose" Picture="Btn_Close_1" Position="129,461" Click="onNpcSaleClose"/>
+    <ImageButton Name="NpcSaleOk" Picture="Btn_Ok_1" Position="54,461" Click="onNpcSaleOk"/>
+    <IconGrid Name="NpcSaleBag" Position="35,69" Columns="5" Rows="10" Pitch="34" Click="onNpcSaleToggle"
+              RightClick="onNpcSaleUnmark"/>
+  </Window>
+</Panel>

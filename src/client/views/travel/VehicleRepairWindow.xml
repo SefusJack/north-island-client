@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The garage's repair form (THL_FixTrafficForm): a vehicle of the bag is put in the space (dropped from the item window, the right
+     button takes it out), OK asks to repair it for the points shown, 23/95.  The game draws a form's controls from the last created
+     to the first: the controls here are in drawing order, the reverse of THL_FixTrafficForm.Create.  View model:
+     viewmodels/VehicleRepairWindow.cpp. -->
+<Panel Name="VehicleRepairLayer" Bounds="0,0,800,600">
+  <Window Name="VehicleRepairWindow" Escape="onVehicleRepairClose" Picture="Form_FixTraffic" Position="273,143" Size="253,313" Visible="false">
+    <!-- DrawControl: the points it costs; the vehicle in the space -->
+    <DrawingArea Name="VehicleRepairPage" Bounds="0,0,253,313">
+      <!-- the cost text: top-left, text box width and height -->
+      <Spot Name="VehicleRepairCost" Bounds="44,50,230,18"/>
+    </DrawingArea>
+    <DrawingArea Name="VehicleRepairSpace" Bounds="43,68,167,167" HitTest="true" Drop="onVehicleRepairDrop" RightMouseDown="onVehicleRepairTake"/>
+    <ImageButton Name="VehicleRepairOk" Picture="Btn_OK_2" Position="80,264" Size="39,20" Click="onVehicleRepairOk"/>
+    <ImageButton Name="VehicleRepairClose" Picture="Btn_Close_2" Position="138,264" Size="39,20" Click="onVehicleRepairClose"/>
+    <ImageButton Name="VehicleRepairCloseSmall" Picture="Btn_Close_s_1" Position="203,24" Size="18,18" Hint="[ESC]" Click="onVehicleRepairClose"/>
+  </Window>
+</Panel>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The pet rebirth form (TSe_NPCUpgradeForm, opened by the server's 44/2): the own pet of level 30 and friendship 60 that a bag item names, on the left, and the pet it
+     is reborn as, on the right, with arrows between the pets that can be reborn, OK and Cancel; view model: viewmodels/NpcUpgradeWindow.cpp.  Made at the right edge of
+     the screen (378, 0).  The pictures form_NPCUpgrade (the frame), newborn, btn_cancel, Arrow_L2 and Arrow_R2 are in none of this client's picture files, so no frame is
+     drawn and the Cancel and arrow buttons are invisible but catch the mouse, as buttons without a picture do in the game.  The game draws a form's controls from the last
+     created to the first: the controls here are in drawing order, the reverse of TSe_NPCUpgradeForm.Create; DrawControl's rows are under them. -->
+<Panel Name="NpcUpgradeLayer" Bounds="0,0,800,600">
+  <Window Name="NpcUpgrade" Escape="onNpcUpgradeClose" Position="378,0" Size="422,360" Visible="false">
+    <DrawingArea Name="NpcUpgradePaint" Bounds="0,0,422,360">
+      <!-- the left pet figure's feet, and the distance from the left side to the right side -->
+      <Spot Name="NpcUpgradeFigure" Position="113,147" Pitch="202,0"/>
+      <!-- the left pet's name, the distance from the left name and element to the right ones, and the name text box size -->
+      <Spot Name="NpcUpgradeName" Position="21,90" Size="100,20" Pitch="200,0"/>
+      <!-- the left pet's element icon and its size -->
+      <Spot Name="NpcUpgradeElement" Position="170,90" Size="28,28"/>
+      <!-- the left pet's first skill icon, its size, the step between skill icons, and the distance from the left skill row to the right one (x when drawing, y for the hints) -->
+      <Spot Name="NpcUpgradeSkill" Position="93,48" Size="32,32" Pitch="36,0"/>
+      <Spot Name="NpcUpgradeSkillSide" Pitch="201,202"/>
+      <!-- the left pet's level, HP and SP numbers -->
+      <Spot Name="NpcUpgradeLevel" Position="42,66"/>
+      <Spot Name="NpcUpgradeHp" Position="74,204"/>
+      <Spot Name="NpcUpgradeSp" Position="74,220"/>
+      <!-- the left pet's first stat line and the step between stat lines -->
+      <Spot Name="NpcUpgradeStats" Position="150,203" Pitch="0,13"/>
+      <!-- one digit cell of a number -->
+      <Spot Name="NpcUpgradeDigit" Size="10,12"/>
+      <!-- the text colour (white, in RGB565 65535) -->
+      <Spot Name="NpcUpgradeTextColor" Color="#FFFFFF"/>
+    </DrawingArea>
+    <ImageButton Name="NpcUpgradeNext" Picture="Arrow_R2" Position="155,132" Size="27,19" FrameHeight="19" Click="onNpcUpgradeNext"/>
+    <ImageButton Name="NpcUpgradePrevious" Picture="Arrow_L2" Position="42,132" Size="27,19" FrameHeight="19" Click="onNpcUpgradePrevious"/>
+    <ImageButton Name="NpcUpgradeCancel" Picture="btn_cancel" Position="238,314" Size="70,25" FrameHeight="25" Click="onNpcUpgradeClose"/>
+    <ImageButton Name="NpcUpgradeOk" Picture="btn_ok_1" Position="113,314" Size="70,25" FrameHeight="25" Click="onNpcUpgradeOk"/>
+    <ImageButton Name="NpcUpgradeCloseSmall" Picture="Btn_Close_s_1" Position="399,5" Size="17,17" Click="onNpcUpgradeClose" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

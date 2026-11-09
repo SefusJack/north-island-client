@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The mail box (TMailSaveBoxForm, the envelope at the left of the input bar); view model:
+     viewmodels/MailBoxWindow.cpp.  Two tabs, the mail received and the mail sent, ten rows a
+     page (kind, the start of the text, who, when; unread mail yellow); a click on a row opens
+     it, Delete throws the chosen one away, Send Mail opens the by-name form (FurMailWindow.xml).  The game draws a form's controls from the last
+     created to the first: the controls here are in drawing order, the reverse of
+     TMailSaveBoxForm.Create. -->
+<Panel Name="MailBoxLayer" Bounds="0,0,800,600">
+  <Window Name="MailBox" Escape="onMailBoxClose" Picture="Form_MailBox_1" Position="99,104" Visible="false">
+    <!-- DrawControl: the rows, the page numbers and the hover and choice bars -->
+    <DrawingArea Name="MailBoxPaint" Bounds="0,0,602,391">
+      <!-- the Icon_MailBoxTitleMash_1 picture on the first tab -->
+      <Spot Name="MailBoxTitleMask" Position="282,70"/>
+      <!-- the "page / pages" text: its split point, blue (RGB565 31), and red (RGB565 63488) when the box is nearly full -->
+      <Spot Name="MailBoxPageNumbers" Position="298,320" Color="#0000FF"/>
+      <Spot Name="MailBoxPageNumbersFull" Color="#FF0000"/>
+      <!-- the first list row's bar, one row down each step; the hovered row's bar (alpha 50) and the chosen row's bar (alpha 80), pale cyan -->
+      <Spot Name="MailBoxRow" Bounds="19,95,563,20" Pitch="0,20"/>
+      <Spot Name="MailBoxRowHover" Color="#329EFAFE"/>
+      <Spot Name="MailBoxRowChosen" Color="#509EFAFE"/>
+      <!-- the columns of a row's text: kind, start, name and date; they share the first row's text line -->
+      <Spot Name="MailBoxKind" Position="18,98"/>
+      <Spot Name="MailBoxStart" Position="90,98"/>
+      <Spot Name="MailBoxName" Position="270,98"/>
+      <Spot Name="MailBoxDate" Position="400,98"/>
+      <!-- the text colour of an unread mail, yellow (RGB565 65504), and of a read one, dark gold (RGB565 44384) -->
+      <Spot Name="MailBoxUnread" Color="#FFFF00"/>
+      <Spot Name="MailBoxRead" Color="#ADAE00"/>
+    </DrawingArea>
+    <DrawingArea Name="MailBoxRows" Bounds="19,95,563,200" HitTest="true" MouseDown="onMailBoxPress"
+                 MouseUp="onMailBoxRelease"/>
+    <ImageButton Name="MailBoxTab2" Picture="Btn_MailBoxTab_2" Position="79,48" Size="64,21" Click="onMailBoxTab"/>
+    <ImageButton Name="MailBoxTab1" Picture="Btn_MailBoxTab_1" Position="15,48" Size="64,21" Click="onMailBoxTab"/>
+    <ImageButton Name="MailBoxNextPage" Picture="Btn_NextPage_1" Position="365,320" Click="onMailBoxNextPage"/>
+    <ImageButton Name="MailBoxPreviousPage" Picture="Btn_PrePage_1" Position="185,320" Click="onMailBoxPreviousPage"/>
+    <ImageButton Name="MailBoxDelete" Picture="Btn_deleteMail_1" Position="275,350" Click="onMailBoxDelete"/>
+    <ImageButton Name="MailBoxSendMail" Picture="Btn_sendMail_2" Position="185,350" Click="onMailBoxSendMail"/>
+    <ImageButton Name="MailBoxClose" Picture="Btn_Close_1" Position="365,350" Click="onMailBoxClose"/>
+    <ImageButton Name="MailBoxCloseSmall" Picture="Btn_Close_S_1" Position="554,25" Size="18,18" Click="onMailBoxClose"/>
+  </Window>
+</Panel>

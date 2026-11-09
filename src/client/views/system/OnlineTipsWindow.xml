@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Online Info (Tjo_OnLineTip, Readme in the system window); view model:
+     viewmodels/OnlineTipsWindow.cpp.  The topics of txt/hotkeyt.txt eight a page; a click shows
+     the topic's text from txt/hotkeye.txt, paged, with Prev back to the topics.  The game draws a
+     form's controls from the last created to the first: the controls here are in drawing order,
+     the reverse of Tjo_OnLineTip.Create (its two empty panels, hidden memos and scroll bars draw
+     nothing and are left out). -->
+<Panel Name="OnlineTipsLayer" Bounds="0,0,800,600">
+  <Window Name="OnlineTips" Picture="Form_onLineInfo_1" Position="0,0" Visible="false">
+    <!-- where the close button goes while the topic list is shown, and while a topic's text is shown -->
+    <Spot Name="OnlineTipsCloseTopics" Position="276,265"/>
+    <Spot Name="OnlineTipsCloseText" Position="294,265"/>
+    <ImageButton Name="OnlineTipsClose" Picture="Btn_Close_1" Position="276,265" Click="onOnlineTipsClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="OnlineTipsCloseSmall" Picture="Btn_Close_s_1" Position="419,24" Size="17,17" Click="onOnlineTipsClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="OnlineTipsTextUp" Picture="Btn_PrePage_1" Position="114,265" Visible="false" Click="onOnlineTipsTextUp"/>
+    <ImageButton Name="OnlineTipsTextDown" Picture="Btn_NextPage_1" Position="174,265" Visible="false"
+                 Click="onOnlineTipsTextDown"/>
+    <ImageButton Name="OnlineTipsPageDown" Picture="Btn_NextPage_1" Position="211,265" Click="onOnlineTipsPageDown"/>
+    <ImageButton Name="OnlineTipsPageUp" Picture="Btn_PrePage_1" Position="145,265" Click="onOnlineTipsPageUp"/>
+    <ImageButton Name="OnlineTipsBack" Picture="Btn_Prev_1" Position="234,265" Visible="false" Click="onOnlineTipsBack"/>
+    <Memo Name="OnlineTipsText" Bounds="30,70,425,170" FontColor="#FFFF00" Effect="Plain" ReadOnly="true" JoinRows="true"
+          Visible="false"/>
+    <ListBox Name="OnlineTipsTopics" Bounds="23,68,417,170" FontColor="#FFFFAD" TextShadow="false" FocusFrame="false"
+             Wheel="false" Select="onOnlineTipsTopic"/>
+  </Window>
+</Panel>

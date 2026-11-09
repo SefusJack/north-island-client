@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The dig hole game (kind 20; LD_DigHoleGame.pas TDigHole, TDigHoleForm): the whole screen is the page, which the view model paints (the board's picture and
+     the holes, the prize, the finger) and which takes the left button going down and up (DigHoleMouseDown / Up); over it the buttons of the game's form.  The form
+     is 583 x 600 at 230, 30 and is kept on the screen (and above the input bar), which puts it at 217, -25: its Quit button (500, 560 on it) sits at 717, 535 and its
+     Dig button (-112, 575) at 105, 550.  The Dig button plays its own sound (wav0154) when pressed.  View model: viewmodels/DigHoleWindow.cpp. -->
+<Panel Name="DigHoleLayer" Bounds="0,0,800,600">
+  <Panel Name="DigHoleForm" Bounds="0,0,800,600" Visible="false">
+    <DrawingArea Name="DigHolePage" Bounds="0,0,800,600" HitTest="true" MouseDown="onDigHoleDown" MouseUp="onDigHoleUp">
+      <!-- the board's picture -->
+      <Spot Name="DigHoleBoard" Position="25,-3"/>
+      <!-- the first cell's hole picture, and 83 px from one cell to the next both ways -->
+      <Spot Name="DigHoleHole" Position="115,26" Pitch="83,83"/>
+      <!-- the first cell's prize icon before it rises: the hole's place plus 20, 60 -->
+      <Spot Name="DigHolePrize" Position="135,86"/>
+      <!-- the finger picture: its offset from the mouse, and the part drawn raised (64 x 83) and pressed (64 x 84, below the first) -->
+      <Spot Name="DigHoleFinger" Position="-20,-10"/>
+      <Spot Name="DigHoleFingerUp" Bounds="0,0,64,83"/>
+      <Spot Name="DigHoleFingerDown" Bounds="0,83,64,84"/>
+    </DrawingArea>
+    <ImageButton Name="DigHoleDig" Picture="icon_dig_1" Position="105,550" Size="123,33" Visible="false" ClickSound="" Press="onDigHoleDig"/>
+    <ImageButton Name="DigHoleQuit" Picture="Hunting_Exit_Btn" Position="717,535" Size="74,40" Hint="Quit" Visible="false" Press="onDigHoleQuit"/>
+  </Panel>
+</Panel>

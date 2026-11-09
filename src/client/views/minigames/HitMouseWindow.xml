@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The hit-the-mouse game (kind 3; CH_MiniGame.pas CH_THitMouseGame and CH_GameExplain's exit button): the whole screen is the page,
+     which the view model paints (the field, the holes, what comes up out of them, the light of a hit, the time and the score)
+     and which takes the mouse button coming up (the mallet's blow); over it the Exit button, which the instructions' Begin
+     brings.  The game draws a form's controls from the last created to the first: the controls here are in drawing order, the
+     reverse of the creation.  View model: viewmodels/HitMouseWindow.cpp. -->
+<Panel Name="HitMouseLayer" Bounds="0,0,800,600">
+  <Panel Name="HitMouseForm" Bounds="0,0,800,600" Visible="false">
+    <DrawingArea Name="HitMousePage" Bounds="0,0,800,600" HitTest="true" MouseUp="onHitMouseUp" RightMouseUp="onHitMouseUp">
+      <!-- the time label and the time-left number, the score label and the score number -->
+      <Spot Name="HitMouseTime" Position="330,10"/>
+      <Spot Name="HitMouseTimeNumber" Position="430,13"/>
+      <Spot Name="HitMouseScore" Position="630,10"/>
+      <Spot Name="HitMouseScoreNumber" Position="740,13"/>
+      <!-- the Go message and the countdown: centred on this point, 80 px between letters -->
+      <Spot Name="HitMouseMessage" Position="400,300" Pitch="80,0"/>
+    </DrawingArea>
+    <ImageButton Name="HitMouseExit" Picture="HitMouse_Exit_Btn" Position="700,500" Visible="false" Press="onHitMouseLeave"/>
+  </Panel>
+</Panel>

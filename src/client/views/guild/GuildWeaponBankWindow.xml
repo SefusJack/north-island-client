@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The guild's weapon bank (TSe_ArmyWeaponBank, form_Donate); view model: viewmodels/GuildWeaponBankWindow.cpp.  The bag
+     on the left (every item shown; the weapon materials, item type 53, keep their count and can be chosen: a green tint under
+     the icon), the seven kinds of material the guild holds in the middle with a box beside each on the right: the left arrow
+     puts the amounts of the boxes into the bank (39/52), the right one takes the chosen materials of the first 25 bag places
+     out (39/53).  The game draws a form's controls from the last created to the first: the controls here are in drawing
+     order, the reverse of TSe_ArmyWeaponBank.Create. -->
+<Panel Name="GuildWeaponBankLayer" Bounds="0,0,800,600">
+  <Window Name="GuildWeaponBank" Escape="onGuildWeaponBankClose" Picture="form_Donate" Position="378,0" Size="422,325" Visible="false">
+    <!-- DrawControl: the title pictures, the seven kinds of material and how many the guild holds -->
+    <DrawingArea Name="GuildWeaponBankPaint" Bounds="0,0,422,325">
+      <!-- the colour of the texts (RGB565 2113) -->
+      <Spot Name="GuildWeaponBankText" Color="#080808"/>
+    </DrawingArea>
+    <ImageButton Name="GuildWeaponBankWithdraw" Picture="btn_Bank_Gold_R" Position="200,182" Size="27,22" Click="onGuildWeaponBankWithdraw"/>
+    <ImageButton Name="GuildWeaponBankDeposit" Picture="btn_Bank_Gold_L" Position="200,108" Size="27,22" Click="onGuildWeaponBankDeposit"/>
+    <TextBox Name="GuildWeaponBankAmount6" Skin="editorBG" SkinSource="0,0,50,20" Borders="5,5,5,5" Bounds="320,236,74,21" HitTest="true"
+             CharFilter="Digits" MaxLength="10" Align="Right" FontColor="#FFFFFF"/>
+    <TextBox Name="GuildWeaponBankAmount5" Skin="editorBG" SkinSource="0,0,50,20" Borders="5,5,5,5" Bounds="320,206,74,21" HitTest="true"
+             CharFilter="Digits" MaxLength="10" Align="Right" FontColor="#FFFFFF"/>
+    <TextBox Name="GuildWeaponBankAmount4" Skin="editorBG" SkinSource="0,0,50,20" Borders="5,5,5,5" Bounds="320,176,74,21" HitTest="true"
+             CharFilter="Digits" MaxLength="10" Align="Right" FontColor="#FFFFFF"/>
+    <TextBox Name="GuildWeaponBankAmount3" Skin="editorBG" SkinSource="0,0,50,20" Borders="5,5,5,5" Bounds="320,146,74,21" HitTest="true"
+             CharFilter="Digits" MaxLength="10" Align="Right" FontColor="#FFFFFF"/>
+    <TextBox Name="GuildWeaponBankAmount2" Skin="editorBG" SkinSource="0,0,50,20" Borders="5,5,5,5" Bounds="320,116,74,21" HitTest="true"
+             CharFilter="Digits" MaxLength="10" Align="Right" FontColor="#FFFFFF"/>
+    <TextBox Name="GuildWeaponBankAmount1" Skin="editorBG" SkinSource="0,0,50,20" Borders="5,5,5,5" Bounds="320,86,74,21" HitTest="true"
+             CharFilter="Digits" MaxLength="10" Align="Right" FontColor="#FFFFFF"/>
+    <TextBox Name="GuildWeaponBankAmount0" Skin="editorBG" SkinSource="0,0,50,20" Borders="5,5,5,5" Bounds="320,56,74,21" HitTest="true"
+             CharFilter="Digits" MaxLength="10" Align="Right" FontColor="#FFFFFF"/>
+    <!-- TSe_DonateItem.DrawControl: the chosen cells tinted green, under the icons -->
+    <DrawingArea Name="GuildWeaponBankChosen" Bounds="0,0,422,325">
+      <!-- a chosen cell: its size, and the green tint over it (alpha 80) -->
+      <Spot Name="GuildWeaponBankChosenCell" Size="32,32" Color="#5000FF00"/>
+    </DrawingArea>
+    <IconGrid Name="GuildWeaponBankItems" Position="20,70" Columns="5" Rows="10" Pitch="36" Press="onGuildWeaponBankPress"/>
+    <ImageButton Name="GuildWeaponBankClose" Picture="Btn_Close_1" Position="176,281" Size="70,25" Hint="[ESC]" Click="onGuildWeaponBankClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="GuildWeaponBankCloseSmall" Picture="Btn_Close_s_1" Position="399,5" Size="17,17" Click="onGuildWeaponBankClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

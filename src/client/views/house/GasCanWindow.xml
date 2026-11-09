@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The gas storage form of the Big Gas Storage 39122 (CJ_Menu.pas TGasCanForm), opened by the owner's click on the furniture; view model: viewmodels/GasStorageWindow.cpp.  The bag's cells again:
+     a click on a Gas item marks it, the right button lets it go, the Gas button deposits the marked ones, the tank on the right fills up to 6000.  Made in the middle
+     of the screen.  The game draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of TGasCanForm.Create (the bag
+     grid comes first, from TRe_ItemGridForm). -->
+<Panel Name="GasCanLayer" Bounds="0,0,800,600">
+  <Window Name="GasCanWindow" Escape="onGasCanClose" Picture="Form_GasCan2" Position="233,59" Size="333,481" Visible="false">
+    <!-- DrawControl: the fuel and the tank -->
+    <DrawingArea Name="GasCanPaint" Bounds="0,0,333,481">
+      <!-- the fuel text: its right edge and top, the text box size, and the colour of all three texts (RGB565 31) -->
+      <Spot Name="GasCanFuel" Bounds="241,368,160,15" Color="#0000FF"/>
+      <!-- the slash after the fuel -->
+      <Spot Name="GasCanSlash" Bounds="252,368,160,15"/>
+      <!-- the tank's capacity after the slash -->
+      <Spot Name="GasCanCapacity" Bounds="264,368,160,15"/>
+    </DrawingArea>
+    <ImageButton Name="GasCanCloseSmall" Picture="Btn_Close_S_1" Position="282,27" Size="18,18" Click="onGasCanClose" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="GasCanCancel" Picture="Btn_Cancel_2" Position="137,440" Size="56,20" Click="onGasCanClose" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="GasCanFill" Picture="Btn_Gas" Position="223,402" Size="61,20" Click="onGasCanFill" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <IconGrid Name="GasCanCells" Position="22,84" Columns="5" Rows="10" Pitch="34" Click="onGasCanMark" RightClick="onGasCanUnmark"/>
+  </Window>
+</Panel>

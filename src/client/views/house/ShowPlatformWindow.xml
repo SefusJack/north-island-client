@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Show Platform of a house (TUseApronForm, a click on the Show Platform 39001): the four cells of the Garage, a press on one puts its vehicle on show
+     on the platform (62/49), the right button on the cell that is on show takes it down.  The game draws a form's controls from the last created to
+     the first: the controls here are in drawing order, the reverse of TUseApronForm.Create (the cells are numbered down the columns); DrawControl
+     draws over them.  View model: viewmodels/ShowPlatformWindow.cpp. -->
+<Panel Name="ShowPlatformLayer" Bounds="0,0,800,600">
+  <Window Name="ShowPlatformWindow" AbovePopups="true" Escape="onShowPlatformClose" Picture="Form_CarCase" Position="210,74" Size="380,451" Visible="false">
+    <DrawingArea Name="ShowPlatformCell4" Bounds="190,235,167,167" HitTest="true" MouseDown="onShowPlatformPress" RightMouseDown="onShowPlatformRelease"/>
+    <DrawingArea Name="ShowPlatformCell3" Bounds="190,64,167,167" HitTest="true" MouseDown="onShowPlatformPress" RightMouseDown="onShowPlatformRelease"/>
+    <DrawingArea Name="ShowPlatformCell2" Bounds="19,235,167,167" HitTest="true" MouseDown="onShowPlatformPress" RightMouseDown="onShowPlatformRelease"/>
+    <DrawingArea Name="ShowPlatformCell1" Bounds="19,64,167,167" HitTest="true" MouseDown="onShowPlatformPress" RightMouseDown="onShowPlatformRelease"/>
+    <ImageButton Name="ShowPlatformClose" Picture="Btn_Close_1" Position="162,415" Size="56,20" Click="onShowPlatformClose"/>
+    <ImageButton Name="ShowPlatformCloseSmall" Picture="Btn_Close_S_1" Position="330,26" Size="18,18" Click="onShowPlatformClose"/>
+    <!-- DrawControl: the display strip over the title, the picture over the two cells of a restrained Garage -->
+    <DrawingArea Name="ShowPlatformPage" Bounds="0,0,380,451">
+      <!-- the picture over the two cells of a restrained Garage -->
+      <Spot Name="ShowPlatformRestrain" Position="190,64"/>
+      <!-- the display strip over the title: where it goes and the part of the picture shown -->
+      <Spot Name="ShowPlatformDisplay" Bounds="151,11,71,40"/>
+    </DrawingArea>
+  </Window>
+</Panel>

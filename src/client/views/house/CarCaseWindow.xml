@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Garage of a house (TUseCarCaseForm, a click on the Garage 39069): four cells for vehicles, a vehicle of the bag dropped on one is parked
+     (62/47), the right button on a parked vehicle takes it back into the bag (62/48).  The game draws a form's controls from the last created to
+     the first: the controls here are in drawing order, the reverse of TUseCarCaseForm.Create (the cells are numbered down the columns).  View
+     model: viewmodels/CarCaseWindow.cpp. -->
+<Panel Name="CarCaseLayer" Bounds="0,0,800,600">
+  <Window Name="CarCaseWindow" AbovePopups="true" Escape="onCarCaseClose" Picture="Form_CarCase" Position="210,74" Size="380,451" Visible="false">
+    <!-- DrawControl: the picture over the two cells of a restrained Garage -->
+    <DrawingArea Name="CarCasePage" Bounds="0,0,380,451">
+      <!-- the picture over the two cells of a restrained Garage -->
+      <Spot Name="CarCaseRestrain" Position="190,64"/>
+    </DrawingArea>
+    <DrawingArea Name="CarCaseCell4" Bounds="190,235,167,167" HitTest="true" MouseDown="onCarCasePress" RightMouseDown="onCarCaseTake"/>
+    <DrawingArea Name="CarCaseCell3" Bounds="190,64,167,167" HitTest="true" MouseDown="onCarCasePress" RightMouseDown="onCarCaseTake"/>
+    <DrawingArea Name="CarCaseCell2" Bounds="19,235,167,167" HitTest="true" MouseDown="onCarCasePress" RightMouseDown="onCarCaseTake"/>
+    <DrawingArea Name="CarCaseCell1" Bounds="19,64,167,167" HitTest="true" MouseDown="onCarCasePress" RightMouseDown="onCarCaseTake"/>
+    <ImageButton Name="CarCaseClose" Picture="Btn_Close_1" Position="162,415" Size="56,20" Click="onCarCaseClose"/>
+    <ImageButton Name="CarCaseCloseSmall" Picture="Btn_Close_S_1" Position="330,26" Size="18,18" Click="onCarCaseClose"/>
+  </Window>
+</Panel>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The fish tank's form (TFishBoxForm, opened by a click on a Fish Tank 39099 in a house; the owner's click asks the server with 62/56, which opens it with
+     23/160 11); view model: viewmodels/FishTankWindow.cpp.  Made in the middle of the screen (the view model places it from its picture's size) with the
+     leave button 17 pixels in from the right edge.  The fish, grains and bubbles are drawn on the form, under the buttons; the buy and discard buttons are
+     the owner's.  The press on the form itself drops a grain.  The game draws a form's controls from the last created to the first: the controls here are
+     in drawing order, the reverse of TFishBoxForm.Create. -->
+<Panel Name="FishTankLayer" Bounds="0,0,800,600">
+  <Window Name="FishTank" Picture="fishbow" Position="0,0" Visible="false" MouseDown="onFishTankMouseDown"
+          Escape="onFishTankEscape">
+    <!-- DrawControl: the fish, the grains and bubbles, the owner's fish food and the count by the coin -->
+    <DrawingArea Name="FishTankPaint" Bounds="0,0,400,300">
+      <!-- the text colour of the counts, in RGB565 65535 (white), and the food and coin icon size -->
+      <Spot Name="FishTankText" Color="#FFFFFF"/>
+      <Spot Name="FishTankIcon" Size="30,30"/>
+      <!-- the fish food icon and its count -->
+      <Spot Name="FishTankFoodIcon" Position="494,321"/>
+      <Spot Name="FishTankFoodCount" Position="515,340"/>
+      <!-- the coin icon and its count -->
+      <Spot Name="FishTankCoinIcon" Position="452,320"/>
+      <Spot Name="FishTankCoinCount" Position="480,340"/>
+    </DrawingArea>
+    <ImageButton Name="FishTankInstructions" Picture="query" Position="315,323" Size="27,27" Hint="Instructions" Click="onFishTankInstructions"/>
+    <ImageButton Name="FishTankDiscard" Picture="Btn_DelFish" Position="360,323" Size="30,28" Hint="Discard" Click="onFishTankDiscard"/>
+    <ImageButton Name="FishTankBuy" Picture="Btn_AddFish" Position="405,330" Size="30,16" Hint="buy fish" Click="onFishTankBuy"/>
+    <ImageButton Name="FishTankLeave" Picture="Btn_Minimize_1" Position="0,5" Size="18,18" Hint="leave" Click="onFishTankLeave"/>
+  </Window>
+</Panel>

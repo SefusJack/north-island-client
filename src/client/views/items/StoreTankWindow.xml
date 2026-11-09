@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Store Tank (TStoreTankForm, the right click of the item 34399); view model: viewmodels/StoreTankWindow.cpp.  Four rows of five
+     places (34 pixels apart across, 57 down), each row holding one kind of vehicle fuel; fuel dropped on the form or a row goes in, the right
+     button on a place takes it out.  The game draws a form's controls from the last created to the first: the controls here are in drawing
+     order, the reverse of TStoreTankForm.Create.  The layer is topmost: the form opens over the item window and stays there while fuel is dragged
+     from it. -->
+<Panel Name="StoreTankLayer" Bounds="0,0,800,600" Topmost="true">
+  <Window Name="StoreTank" Escape="onStoreTankClose" Picture="Form_StoreTank_1" Position="292,150" Visible="false">
+    <IconGrid Name="StoreTankCells" Position="23,51" Columns="5" Rows="4" Pitch="34" PitchY="57" HoverColor="#00000000" RightClick="onStoreTankTake"/>
+    <ImageButton Name="StoreTankClose" Picture="btn_close_1" Position="79,266" Hint="[ESC]" Click="onStoreTankClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="StoreTankSort" Picture="Btn_Module_2" Position="145,266" Size="32,20" Narrow="true" IconLines="3,0 3,11; 0,3 3,0 6,3; 10,0 10,11; 7,8 10,11 13,8" IconWidth="2" Hint="Sort (qol)" Visible="false" Click="onStoreTankSort"/>
+  </Window>
+</Panel>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What the map shows of characters (TTH_HuminfoForm, Set Up beside "character's information"
+     in the system window); view model: viewmodels/HumInfoWindow.cpp.  Nine boxes: the own pets,
+     others' pets (two), the own nickname and title, others' names, nicknames and titles, camps.
+     OK applies them.  The game draws a form's controls from the last created to the first: the
+     controls here are in drawing order, the reverse of TTH_HuminfoForm.Create. -->
+<Panel Name="HumInfoLayer" Bounds="0,0,800,600">
+  <Window Name="HumInfo" Escape="onHumInfoClose" Picture="Form_Huminfo_1" Position="150,100" Visible="false">
+    <ImageButton Name="HumInfoClose" Picture="Btn_Close_2" Position="97,308" Hint="[ESC]" Click="onHumInfoClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="HumInfoOk" Picture="Btn_OK_2" Position="51,308" Click="onHumInfoOk"/>
+    <ImageButton Name="HumInfoCheck9" Picture="btn_Check_1" Position="19,283" Size="16,16" Click="onHumInfoCheck"/>
+    <ImageButton Name="HumInfoCheck8" Picture="btn_Check_1" Position="19,253" Size="16,16" Click="onHumInfoCheck"/>
+    <ImageButton Name="HumInfoCheck7" Picture="btn_Check_1" Position="19,223" Size="16,16" Click="onHumInfoCheck"/>
+    <ImageButton Name="HumInfoCheck6" Picture="btn_Check_1" Position="19,193" Size="16,16" Click="onHumInfoCheck"/>
+    <ImageButton Name="HumInfoCheck5" Picture="btn_Check_1" Position="19,163" Size="16,16" Click="onHumInfoCheck"/>
+    <ImageButton Name="HumInfoCheck4" Picture="btn_Check_1" Position="19,133" Size="16,16" Click="onHumInfoCheck"/>
+    <ImageButton Name="HumInfoCheck3" Picture="btn_Check_1" Position="19,103" Size="16,16" Click="onHumInfoCheck"/>
+    <ImageButton Name="HumInfoCheck2" Picture="btn_Check_1" Position="19,73" Size="16,16" Click="onHumInfoCheck"/>
+    <ImageButton Name="HumInfoCheck1" Picture="btn_Check_1" Position="19,43" Size="16,16" Click="onHumInfoCheck"/>
+  </Window>
+</Panel>

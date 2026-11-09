@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The form to pick an instance to create (TCreateDupMisForm), opened by the instance window's
+     New Instance button; view model: viewmodels/InstanceCreateForm.cpp.  The instances to choose
+     from, the lowest level first, ten a page; for the one under the mouse (or the chosen one) its
+     name, the players, level, guild and time limits and the description.  Create asks for a
+     message (InstanceMessageForm), then creates the instance (85/3).  The game draws a form's
+     controls from the last created to the first: the controls here are in drawing order, the
+     reverse of TCreateDupMisForm.Create. -->
+<Panel Name="InstanceCreateLayer" Bounds="0,0,800,600">
+  <Window Name="InstanceCreateForm" Picture="Form_CreateDupMis" Position="420,75" Size="377,463" ScreenFit="true" Visible="false">
+    <ImageButton Name="InstanceCreateNext" Picture="Btn_ArrowR_5" Position="130,390" Size="17,17" Click="onInstanceCreateNext"/>
+    <ImageButton Name="InstanceCreatePrevious" Picture="Btn_ArrowL_5" Position="45,390" Size="17,17" Click="onInstanceCreatePrevious"/>
+    <ListBox Name="InstanceCreateList" Bounds="19,94,149,290" RowHeight="29" FontColor="#080808" HighlightColor="#89BFF5"
+             ShowSelection="true" FocusFrame="false" TextShadow="false" WrapColumns="17" TextOffset="10,5"
+             Select="onInstanceCreateSelect" DoubleClick="onInstanceCreateDouble"/>
+    <ImageButton Name="InstanceCreateCloseSmall" Picture="Btn_Close_s_1" Position="327,24" Size="18,18"
+                 Click="onInstanceCreateClose" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="InstanceCreateCreate" Picture="Btn_Create" Position="126,419" Size="56,20" Click="onInstanceCreateCreate"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="InstanceCreateCancel" Picture="Btn_Cancel_1" Position="202,419" Size="56,20" Click="onInstanceCreateClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <!-- RenderWithChildren: the texts of the instance, the page numbers -->
+    <DrawingArea Name="InstanceCreateTexts" Bounds="0,0,377,463">
+      <!-- the instance title: its position, the text box size every text uses, and the text colour (RGB565 2113) -->
+      <Spot Name="InstanceCreateTitle" Bounds="174,62,176,18" Color="#080808"/>
+      <!-- the player count -->
+      <Spot Name="InstanceCreatePlayers" Position="295,95"/>
+      <!-- the level, guild-only and time lines -->
+      <Spot Name="InstanceCreateLevel" Position="255,118"/>
+      <Spot Name="InstanceCreateGuild" Position="255,141"/>
+      <Spot Name="InstanceCreateTime" Position="255,164"/>
+      <!-- the description text -->
+      <Spot Name="InstanceCreateDescription" Position="174,210"/>
+      <!-- the page number digits -->
+      <Spot Name="InstanceCreatePageNumbers" Position="80,394"/>
+      <!-- where the message box goes, from the form's origin -->
+      <Spot Name="InstanceCreateMessage" Position="60,285"/>
+    </DrawingArea>
+  </Window>
+</Panel>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The item trade window (TRe_TradeItemForm); view model: viewmodels/ItemTradeWindow.cpp.
+     The partner's offer and gold above, the own offer and the gold to give below, a copy of
+     the bag on the right: an item clicked there goes into the offer (the right button takes it
+     out).  Confirm puts the offer up (25/2); once the partner's offer has come, Trade agrees
+     (25/3).  The game draws a form's controls from the last created to the first: the controls
+     here are in drawing order, the reverse of TRe_TradeItemForm.Create. -->
+<Panel Name="ItemTradeLayer" Bounds="0,0,800,600">
+  <Window Name="ItemTrade" Picture="Form_TradeItem_1" Position="199,59" Visible="false">
+    <Image Name="TradeConfirmIcon" Picture="icon_Confirm_1" Position="100,445" Size="56,20"/>
+    <ImageButton Name="TradeConfirm" Picture="Btn_confirm_1" Position="100,445" Click="onTradeConfirm"/>
+    <Image Name="TradeTradeIcon" Picture="icon_trade_1" Position="174,445" Size="56,20"/>
+    <ImageButton Name="TradeTrade" Picture="Btn_Trade_2" Position="174,445" Visible="false" Click="onTradeTrade"/>
+    <ImageButton Name="TradeCancel" Picture="Btn_Cancel_1" Position="250,445" Click="onTradeCancel"/>
+    <ImageButton Name="TradeCloseSmall" Picture="Btn_Close_s_1" Position="352,25" Click="onTradeCancel"/>
+    <TextBox Name="TradeGiveGold" Bounds="92,390,100,24" HitTest="true" Align="Right" CharFilter="Digits" MaxLength="9"
+             FontColor="#080808"/>
+    <TextBox Name="TradePartnerGold" Bounds="92,213,100,24" ReadOnly="true" Align="Right" FontColor="#080808"/>
+    <TextBox Name="TradePartnerName" Bounds="92,43,160,20" ReadOnly="true" FontColor="#080808"/>
+    <IconGrid Name="TradeMine" Position="24,250" Columns="5" Rows="4" Pitch="34" RightClick="onTradeTakeBack"/>
+    <IconGrid Name="TradePartner" Position="24,69" Columns="5" Rows="4" Pitch="34"/>
+    <IconGrid Name="TradeBag" Position="206,68" Columns="5" Rows="10" Pitch="34" Click="onTradeBagClick"/>
+  </Window>
+</Panel>

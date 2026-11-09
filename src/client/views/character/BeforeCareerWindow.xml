@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The first choice of the class (TBeforeCareerForm), for a player whose strength equals his
+     intelligence: the soldier or the mage.  The two models, the player above them; the one under
+     the mouse faces another way and is described below, a click chooses it.  OK goes on to the
+     class form of that line, Cancel and the small close button put the form away and let the
+     event go on.  View model: viewmodels/BeforeCareerWindow.cpp. -->
+<Panel Name="BeforeCareerLayer" Bounds="0,0,800,600">
+  <Window Name="BeforeCareerWindow" Picture="Form_BeforeCareer" Position="238,30" Size="323,539" ScreenFit="true" Visible="false">
+    <!-- DrawBeforeCareerForm: the frame, the text, the models -->
+    <DrawingArea Name="BeforeCareerPage" Bounds="0,0,323,539" HitTest="true" MouseDown="onBeforeCareerDown" RightMouseDown="onBeforeCareerRightDown">
+      <!-- the fill over the chosen model, translucent orange -->
+      <Spot Name="BeforeCareerChosen" Color="#50FF6C01"/>
+      <!-- the player's own figure: its feet -->
+      <Spot Name="BeforeCareerSelfFeet" Position="160,150"/>
+      <!-- the description text: top-left, box width and line height, blue (RGB565 31) -->
+      <Spot Name="BeforeCareerDescription" Bounds="48,333,224,18" Color="#0000FF"/>
+    </DrawingArea>
+    <ImageButton Name="BeforeCareerCloseSmall" Picture="Btn_Close_S_1" Position="273,24" Size="18,18" Click="onBeforeCareerCancel"/>
+    <ImageButton Name="BeforeCareerCancel" Picture="Btn_Cancel_1" Position="179,503" Size="56,20" Click="onBeforeCareerCancel"/>
+    <ImageButton Name="BeforeCareerOk" Picture="Btn_OK_1" Position="83,503" Size="56,20" Click="onBeforeCareerOk"/>
+  </Window>
+</Panel>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Fortune Egg (kind 6; CY_LittleSport.pas TTrunEggGame and TTrunEggForm): the machine's picture, the ten prizes with their names,
+     the button that turns and the egg that drops are painted by the view model; over them the places of the prizes (their hints), the
+     round button and the Exit button.  The game draws a form's controls from the last created to the first: the controls here are in
+     drawing order, the reverse of TTrunEggForm.Create.  View model: viewmodels/FortuneEggWindow.cpp. -->
+<Panel Name="FortuneEggLayer" Bounds="0,0,800,600">
+  <Panel Name="FortuneEggForm" Bounds="0,0,800,600" Visible="false">
+    <DrawingArea Name="FortuneEggPage" Bounds="0,0,800,600" HitTest="true">
+      <!-- the machine's background picture -->
+      <Spot Name="FortuneEggBackground" Position="100,15"/>
+      <!-- the button's animation, and the egg's -->
+      <Spot Name="FortuneEggButtonAt" Position="410,382"/>
+      <Spot Name="FortuneEggEgg" Position="160,421"/>
+      <!-- a prize's item icon: this far from its frame's corner -->
+      <Spot Name="FortuneEggIcon" Position="6,6"/>
+      <!-- a prize's item name: its offset from the frame's corner, and the text box (14 characters of 8 px, 8 px spare) -->
+      <Spot Name="FortuneEggName" Bounds="50,12,120,15"/>
+    </DrawingArea>
+    <DrawingArea Name="FortuneEggPrize10" Bounds="166,86,32,32" HitTest="true"/>
+    <DrawingArea Name="FortuneEggPrize9" Bounds="166,136,32,32" HitTest="true"/>
+    <DrawingArea Name="FortuneEggPrize8" Bounds="166,186,32,32" HitTest="true"/>
+    <DrawingArea Name="FortuneEggPrize7" Bounds="166,236,32,32" HitTest="true"/>
+    <DrawingArea Name="FortuneEggPrize6" Bounds="166,286,32,32" HitTest="true"/>
+    <DrawingArea Name="FortuneEggPrize5" Bounds="446,86,32,32" HitTest="true"/>
+    <DrawingArea Name="FortuneEggPrize4" Bounds="446,136,32,32" HitTest="true"/>
+    <DrawingArea Name="FortuneEggPrize3" Bounds="446,186,32,32" HitTest="true"/>
+    <DrawingArea Name="FortuneEggPrize2" Bounds="446,236,32,32" HitTest="true"/>
+    <DrawingArea Name="FortuneEggPrize1" Bounds="446,286,32,32" HitTest="true"/>
+    <ImageButton Name="FortuneEggPlay" Picture="TrunEggButton" Frames="3" FrameHeight="125" Position="410,385" Visible="false" Click="onFortuneEggPlay"/>
+    <ImageButton Name="FortuneEggExit" Picture="MiniGame_Exit_Btn" Position="700,500" Visible="false" Click="onFortuneEggExit"/>
+  </Panel>
+</Panel>

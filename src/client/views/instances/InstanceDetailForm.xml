@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The detail of an open instance (TDupDetailForm), opened by 85/4 when a row of the list or its
+     Join button is pressed; view model: viewmodels/InstanceDetailForm.cpp.  Its name, the level,
+     players, guild and time limits, the description and who is in it; Join asks to join (85/5).
+     The game draws a form's controls from the last created to the first: the controls here are
+     in drawing order, the reverse of TDupDetailForm.Create. -->
+<Panel Name="InstanceDetailLayer" Bounds="0,0,800,600">
+  <Window Name="InstanceDetailForm" Picture="Form_DupDetail" Position="447,67" Size="326,473" ScreenFit="true" Visible="false">
+    <ImageButton Name="InstanceDetailDown" Picture="Btn_ArrowDn_3" Position="289,390" Size="17,17" Click="onInstanceDetailDown"/>
+    <ImageButton Name="InstanceDetailUp" Picture="Btn_ArrowUp_3" Position="289,333" Size="17,17" Click="onInstanceDetailUp"/>
+    <ListBox Name="InstanceDetailMembers" Bounds="17,338,272,72" RowHeight="24" FontColor="#080808" HighlightColor="#89BFF5"
+             ToggleSelect="true" FocusFrame="false" TextShadow="false" TextOffset="6,3" ScrollBar="InstanceDetailScroll"/>
+    <ScrollBar Name="InstanceDetailScroll" Bounds="289,350,17,40" Track="Rail_H5" TrackCap="16" Thumb="bar_H4"
+               ThumbSource="0,0,9,21" ThumbCap="7" ThumbInset="3"/>
+    <ImageButton Name="InstanceDetailCloseSmall" Picture="Btn_Close_s_1" Position="276,24" Size="18,18"
+                 Click="onInstanceDetailClose" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="InstanceDetailJoin" Picture="Btn_Join" Position="88,434" Size="56,20" Click="onInstanceDetailJoin"/>
+    <ImageButton Name="InstanceDetailClose" Picture="Btn_Close_1" Position="160,434" Size="56,20" Click="onInstanceDetailClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <!-- RenderWithChildren: the texts of the instance -->
+    <DrawingArea Name="InstanceDetailTexts" Bounds="0,0,326,473">
+      <!-- the first info line (the minimum level): its position, the text box size, the step down to the next line, and the text colour (RGB565 2113) -->
+      <Spot Name="InstanceDetailInfo" Bounds="105,84,272,18" Pitch="0,28" Color="#080808"/>
+      <!-- the title is centred on this x, at this y -->
+      <Spot Name="InstanceDetailTitle" Position="157,55"/>
+    </DrawingArea>
+  </Window>
+</Panel>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Lucky Cards (TPokeForm, sport 16): the whole screen is the table, which the view model paints (the picture of the
+     table, the eight cards and their faces, the picture that says to click, the sign of a pair or a miss) and which takes the
+     clicks on the cards and on the table; over it the Exit button.  The game draws a form's controls from the last created to
+     the first: the controls here are in drawing order, the reverse of TPokeForm.Create.  View model:
+     viewmodels/LuckyCardsWindow.cpp. -->
+<Panel Name="LuckyCardsLayer" Bounds="0,0,800,600">
+  <Panel Name="LuckyCardsForm" Bounds="0,0,800,600" Visible="false">
+    <DrawingArea Name="LuckyCardsPage" Bounds="0,0,800,600" HitTest="true" MouseDown="onLuckyCardsDown">
+      <!-- the first card's back: its place and size, and 176 px between columns and 246 px between rows -->
+      <Spot Name="LuckyCardsCard" Bounds="56,35,160,230" Pitch="176,246"/>
+      <!-- a card's face: its place from the card's corner and its size -->
+      <Spot Name="LuckyCardsFace" Bounds="7,7,145,215"/>
+      <!-- the sign of a pair or a miss, and the hint picture -->
+      <Spot Name="LuckyCardsResult" Position="308,250"/>
+      <Spot Name="LuckyCardsHint" Position="70,520"/>
+    </DrawingArea>
+    <ImageButton Name="LuckyCardsExit" Picture="Poke_Exit_Btn" Position="696,532" Hint="Quit" Press="onLuckyCardsQuit"/>
+  </Panel>
+</Panel>

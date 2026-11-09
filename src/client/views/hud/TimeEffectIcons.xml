@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The icons of what is going on with the player, above the buttons at the bottom right
+     (TTimeEffectStatusForm); view model: viewmodels/TimeEffectIcons.cpp.  Built are the Dreaming Pill's, the Remote Control's,
+     the exp potion's, Lucky Grass's, Spa Buns's, the Training Island item's, the Riceball's and the stat buffs', the Memory Card's and the instance's two: Enter the instance (the instance has started and the player is not in it) and Quit
+     the instance (the player has one).  They stay when the windows step aside for a question. -->
+<Panel Name="TimeEffectLayer" Bounds="0,0,800,600" Anchor="BottomRight" HudScale="true">
+  <!-- RenderWithChildren: which icons show and where -->
+  <DrawingArea Name="TimeEffectLayout" Bounds="0,0,800,600"/>
+  <!-- the Remote Control while it runs (tag 1): a click opens its settings again, a right click stops it -->
+  <DrawingArea Name="TimeEffectRemote" Bounds="0,0,49,49" HitTest="true" Visible="false" MouseUp="onTimeEffectRemoteClick"
+               RightMouseUp="onTimeEffectRemoteStop"/>
+  <!-- the Memory Card while puppet training runs (tag 13): a click opens the card's form -->
+  <DrawingArea Name="TimeEffectPuppet" Bounds="0,0,49,49" HitTest="true" Visible="false" MouseUp="onTimeEffectPuppetClick"/>
+  <!-- the exp icon (tag 2), Lucky Grass (tag 3) and Spa Buns (tag 4): a click asks the server for the time left (5/14, 5/15, 5/16) -->
+  <DrawingArea Name="TimeEffectExp" Bounds="0,0,49,49" HitTest="true" Visible="false" MouseUp="onTimeEffectExpClick"/>
+  <DrawingArea Name="TimeEffectLucky" Bounds="0,0,49,49" HitTest="true" Visible="false" MouseUp="onTimeEffectLuckyClick"/>
+  <DrawingArea Name="TimeEffectSpa" Bounds="0,0,49,49" HitTest="true" Visible="false" MouseUp="onTimeEffectSpaClick"/>
+  <!-- the Magic Sandglass (tag 5) while a flag of it is set: a click says which things are made under it -->
+  <DrawingArea Name="TimeEffectSandglass" Bounds="0,0,49,49" HitTest="true" Visible="false" MouseUp="onTimeEffectSandglassClick"/>
+  <!-- the Dreaming Pill (tag 9): a click asks the server about it (74/3) -->
+  <DrawingArea Name="TimeEffectDream" Bounds="0,0,49,49" HitTest="true" Visible="false" MouseUp="onTimeEffectDreamClick"/>
+  <!-- the Training Island item (tag 12): a click asks the server for its state (23/111); Transferred Riceball (tag 14): a click asks the time left (23/114 2); Strength Ability (tag 16): a click asks the minutes left (23/119) -->
+  <DrawingArea Name="TimeEffectTraining" Bounds="0,0,49,49" HitTest="true" Visible="false" MouseUp="onTimeEffectTrainingClick"/>
+  <DrawingArea Name="TimeEffectBody" Bounds="0,0,49,49" HitTest="true" Visible="false" MouseUp="onTimeEffectBodyClick"/>
+  <DrawingArea Name="TimeEffectStrength" Bounds="0,0,49,49" HitTest="true" Visible="false" MouseUp="onTimeEffectStrengthClick"/>
+  <ImageButton Name="TimeEffectEnterInstance" Picture="Btn_GoToDup" Size="28,28" Hint="Enter the instance" Visible="false"
+               Click="onTimeEffectEnterInstance"/>
+  <ImageButton Name="TimeEffectQuitInstance" Picture="Btn_ExitGuest_1" Size="28,28" Hint="Quit the instance" Visible="false"
+               Click="onTimeEffectQuitInstance"/>
+  <ImageButton Name="TimeEffectLeaveWar" Picture="Btn_ExitGuest_1" Size="28,28" Hint="Leave battle" Visible="false" Click="onTimeEffectLeaveWar"/>
+</Panel>

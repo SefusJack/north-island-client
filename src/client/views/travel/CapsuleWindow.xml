@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Space Capsule's form (TCapsuleForm, the double click of the item 34270): a vehicle of the bag is dropped on the place (the right
+     button takes it out), OK asks the server to store it as its capsule (23/125).  It opens beside the item window.  The game draws a
+     form's controls from the last created to the first: the controls here are in drawing order, the reverse of TCapsuleForm.Create.
+     View model: viewmodels/CapsuleWindow.cpp. -->
+<Panel Name="CapsuleLayer" Bounds="0,0,800,600">
+  <Window Name="CapsuleWindow" AbovePopups="true" Escape="onCapsuleClose" Picture="Form_Capsulem" Position="0,0" Size="243,343" Visible="false">
+    <!-- DrawControl: the vehicle in the place -->
+    <DrawingArea Name="CapsuleImage" Bounds="40,100,167,167" HitTest="true" MouseDown="onCapsulePress" RightMouseDown="onCapsuleTake"/>
+    <ImageButton Name="CapsuleCancel" Picture="Btn_Cancel_1" Position="130,301" Size="56,20" Click="onCapsuleClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="CapsuleOk" Picture="Btn_OK_1" Position="54,301" Size="56,20" Click="onCapsuleOk"/>
+    <ImageButton Name="CapsuleCloseSmall" Picture="Btn_Close_s_3" Position="193,26" Size="18,18" Click="onCapsuleClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

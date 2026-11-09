@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The system window of the qol client (the System button; it replaces TSe_SystemForm's Form_System_2, whose words are
+     painted into its picture); view model: viewmodels/system/SettingsWindow.cpp.  Made of the game's own pictures: the
+     white form frame (form_module), blank buttons with captions as tabs (Btn_Module_2), the blue box (panel10), the
+     original's switches, arrows, volume bars and menu buttons.  Four tabs: Game (the server's switches, the camera, the
+     sort buttons, more accounts, the character information, the black list, the online tips), Sound (music and sound effects), Chat (the channels, the chat
+     box, the channels' colours) and Video (extra-settings.json); below them what the menu did: back to a spot, the password,
+     the balance, Log Out and Exit. -->
+<Panel Name="SettingsWindowLayer" Bounds="0,0,800,600">
+  <Window Name="SettingsWindow" Escape="onSettingsWindowEscape" Position="195,106" Size="410,388" Hint="System" Visible="false">
+    <!-- form_module_1: Borders keep the ornaments whole (top 122, bottom 45) and repeat only the picture's steady rows 122..177;
+         an odd height keeps its two-row stripes in step where the repeats meet the bottom -->
+    <Panel Name="SettingsFrame" Bounds="0,0,410,387" Skin="form_module_1" SkinSource="0,0,223,223" Borders="64,122,80,45"/>
+    <Label Name="SettingsTitle" Position="34,22" Text="System" FontColor="#1E3C78" Effect="Plain"/>
+    <ImageButton Name="SettingsCloseSmall" Picture="Btn_Close_s_1" Position="360,26" Size="18,18" Click="onSettingsWindowClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+
+    <ImageButton Name="SettingsTab1" Picture="Btn_Module_2" Position="20,44" Text="Game" Click="onSettingsTab"/>
+    <ImageButton Name="SettingsTab2" Picture="Btn_Module_2" Position="95,44" Text="Sound" Click="onSettingsTab"/>
+    <ImageButton Name="SettingsTab3" Picture="Btn_Module_2" Position="170,44" Text="Chat" Click="onSettingsTab"/>
+    <ImageButton Name="SettingsTab4" Picture="Btn_Module_2" Position="245,44" Text="Video" Click="onSettingsTab"/>
+
+    <Panel Name="SettingsBox" Bounds="18,66,370,250" Skin="panel10" SkinSource="0,0,50,50" Borders="7,7,7,7">
+      <!-- Game: more rows than the box holds, scrolled in it (the wheel over them or the bar) -->
+      <Panel Name="SettingsGame" Bounds="0,0,372,250" ClipChildren="true">
+        <Panel Name="SettingsGameRows" Bounds="0,0,346,304">
+          <DrawingArea Name="SettingsGameWheel" Bounds="0,0,346,304" HitTest="true" MouseWheel="onSettingsGameWheel"/>
+          <Label Name="SettingsPkText" Position="16,16" Text="Player PK" Effect="Shadow"/>
+          <ImageButton Name="SettingsOption1" Picture="Btn_On_1" Position="298,12" Click="onSettingsOption"/>
+          <Label Name="SettingsFightText" Position="16,44" Text="Fighting" Effect="Shadow"/>
+          <ImageButton Name="SettingsOption2" Picture="Btn_On_1" Position="298,40" Click="onSettingsOption"/>
+          <Label Name="SettingsTradeText" Position="16,72" Text="Trading" Effect="Shadow"/>
+          <ImageButton Name="SettingsOption6" Picture="Btn_On_1" Position="298,68" Click="onSettingsOption"/>
+          <Label Name="SettingsPartyText" Position="16,100" Text="Party" Effect="Shadow"/>
+          <ImageButton Name="SettingsOption10" Picture="Btn_On_1" Position="298,96" Click="onSettingsOption"/>
+          <Label Name="SettingsCameraText" Position="16,128" Text="Battle camera zoom" Effect="Shadow"/>
+          <ImageButton Name="SettingsCamera" Picture="Btn_On_1" Position="298,124" Click="onSettingsCamera"/>
+          <Label Name="SettingsSortText" Position="16,156" Text="Sort button in item windows" Effect="Shadow"/>
+          <CheckBox Name="SettingsSort" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="326,155"
+                    Click="onSettingsSort"/>
+          <Label Name="SettingsPartyLoginText" Position="16,184" Text="Log in more accounts (group window)" Effect="Shadow"/>
+          <CheckBox Name="SettingsPartyLogin" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="326,183"
+                    Click="onSettingsPartyLogin"/>
+          <Label Name="SettingsHumInfoText" Position="16,212" Text="Character information" Effect="Shadow"/>
+          <ImageButton Name="SettingsHumInfoSetup" Picture="Btn_setup_1" Position="298,208" Click="onSettingsHumInfoSetup"/>
+          <Label Name="SettingsBlacklistText" Position="16,240" Text="Black list" Effect="Shadow"/>
+          <ImageButton Name="SettingsBlacklistSetup" Picture="Btn_setup_1" Position="298,236" Click="onSettingsBlacklist"/>
+          <Label Name="SettingsTipsText" Position="16,270" Text="Online tips" Effect="Shadow"/>
+          <ImageButton Name="SettingsTips" Picture="Btn_Readme_1" Position="266,266" Click="onSettingsTips"/>
+        </Panel>
+        <ScrollBar Name="SettingsGameScroll" Bounds="348,4,17,242" Track="Rail_H5" TrackCap="16" Thumb="bar_H4"
+                   ThumbSource="0,0,9,21" ThumbCap="7" ThumbInset="3" Scroll="onSettingsGameScroll"/>
+      </Panel>
+      <!-- Sound -->
+      <Panel Name="SettingsSound" Bounds="0,0,378,250" Visible="false">
+        <DrawingArea Name="SettingsVolumes" Bounds="0,0,378,250"/>
+        <Label Name="SettingsMusicText" Position="16,20" Text="Music" Effect="Shadow"/>
+        <ImageButton Name="SettingsOption7" Picture="Btn_On_1" Position="320,16" Click="onSettingsOption"/>
+        <Label Name="SettingsMusicVolumeText" Position="16,52" Text="Music volume" Effect="Shadow"/>
+        <ImageButton Name="SettingsArrow1" Picture="Btn_ArrowL_4" Position="216,50" Click="onSettingsArrow"/>
+        <ImageButton Name="SettingsArrow2" Picture="Btn_ArrowR_4" Position="342,50" Click="onSettingsArrow"/>
+        <Label Name="SettingsSoundText" Position="16,100" Text="Sound effects" Effect="Shadow"/>
+        <ImageButton Name="SettingsOption8" Picture="Btn_On_1" Position="320,96" Click="onSettingsOption"/>
+        <Label Name="SettingsSoundVolumeText" Position="16,132" Text="Sound volume" Effect="Shadow"/>
+        <ImageButton Name="SettingsArrow3" Picture="Btn_ArrowL_4" Position="216,130" Click="onSettingsArrow"/>
+        <ImageButton Name="SettingsArrow4" Picture="Btn_ArrowR_4" Position="342,130" Click="onSettingsArrow"/>
+      </Panel>
+      <!-- Chat -->
+      <Panel Name="SettingsChat" Bounds="0,0,378,250" Visible="false">
+        <DrawingArea Name="SettingsColors" Bounds="0,0,378,250"/>
+        <Label Name="SettingsChannelsText" Position="16,16" Text="Chat channels" Effect="Shadow"/>
+        <ImageButton Name="SettingsChannelSetup" Picture="Btn_setup_1" Position="320,12" Click="onSettingsChannelSetup"/>
+        <Label Name="SettingsChatBoxText" Position="16,46" Text="Chat box" Effect="Shadow"/>
+        <ImageButton Name="SettingsChatBox" Picture="Btn_SetMsgForm" Position="288,42" Click="onSettingsChatBox"/>
+        <Label Name="SettingsColorsText" Position="16,82" Text="Channel colours" FontColor="#FFFF00" Effect="Shadow"/>
+        <Label Name="SettingsColorText1" Position="32,108" Text="Local" Effect="Shadow"/>
+        <ImageButton Name="SettingsArrow5" Picture="Btn_ArrowL_5" Position="216,106" Click="onSettingsArrow"/>
+        <ImageButton Name="SettingsArrow6" Picture="Btn_ArrowR_5" Position="342,106" Click="onSettingsArrow"/>
+        <Label Name="SettingsColorText2" Position="32,134" Text="Whisper" Effect="Shadow"/>
+        <ImageButton Name="SettingsArrow7" Picture="Btn_ArrowL_5" Position="216,132" Click="onSettingsArrow"/>
+        <ImageButton Name="SettingsArrow8" Picture="Btn_ArrowR_5" Position="342,132" Click="onSettingsArrow"/>
+        <Label Name="SettingsColorText3" Position="32,160" Text="Team" Effect="Shadow"/>
+        <ImageButton Name="SettingsArrow9" Picture="Btn_ArrowL_5" Position="216,158" Click="onSettingsArrow"/>
+        <ImageButton Name="SettingsArrow10" Picture="Btn_ArrowR_5" Position="342,158" Click="onSettingsArrow"/>
+        <Label Name="SettingsColorText4" Position="32,186" Text="Guild" Effect="Shadow"/>
+        <ImageButton Name="SettingsArrow11" Picture="Btn_ArrowL_5" Position="216,184" Click="onSettingsArrow"/>
+        <ImageButton Name="SettingsArrow12" Picture="Btn_ArrowR_5" Position="342,184" Click="onSettingsArrow"/>
+        <Label Name="SettingsColorText5" Position="32,212" Text="World" Effect="Shadow"/>
+        <ImageButton Name="SettingsArrow13" Picture="Btn_ArrowL_5" Position="216,210" Click="onSettingsArrow"/>
+        <ImageButton Name="SettingsArrow14" Picture="Btn_ArrowR_5" Position="342,210" Click="onSettingsArrow"/>
+      </Panel>
+      <!-- Video (the qol client's own settings): groups that open and close under their headings; the view model stacks them and
+           scrolls what does not fit (the wheel over them or the bar) -->
+      <Panel Name="SettingsVideo" Bounds="0,0,378,250" Visible="false" ClipChildren="true">
+        <Panel Name="SettingsVideoRows" Bounds="0,0,352,250">
+          <DrawingArea Name="SettingsVideoWheel" Bounds="0,0,352,250" HitTest="true" MouseWheel="onSettingsVideoWheel"/>
+          <Panel Name="SettingsVideoGroup1" Bounds="0,0,352,26">
+            <DrawingArea Name="SettingsVideoHead1" Bounds="0,0,352,26" HitTest="true" MouseDown="onSettingsVideoHead" MouseWheel="onSettingsVideoWheel"/>
+            <CheckBox Name="SettingsVideoOpen1" Picture="Btn_ArrowR_1" CheckedPicture="Btn_ArrowDn_3" Position="12,4" Click="onSettingsVideoOpen"/>
+            <Label Name="SettingsVideoTitle1" Position="36,6" Text="Window" FontColor="#FFFF00" Effect="Shadow"/>
+          </Panel>
+          <Panel Name="SettingsVideoBody1" Bounds="0,0,352,88">
+            <Label Name="SettingsWindowText" Position="16,6" Text="Window size" Effect="Shadow"/>
+            <ImageButton Name="SettingsVideoArrow3" Picture="Btn_ArrowL_4" Position="184,4" Click="onSettingsVideoArrow"/>
+            <Panel Name="SettingsWindowField" Bounds="204,2,124,21" Skin="panel16" SkinSource="0,0,120,21" Borders="4,4,4,4">
+              <Label Name="SettingsWindowValue" Bounds="0,4,124,15" Align="Center" FontColor="#1E3C78" Effect="Plain"/>
+            </Panel>
+            <ImageButton Name="SettingsVideoArrow4" Picture="Btn_ArrowR_4" Position="330,4" Click="onSettingsVideoArrow"/>
+            <Label Name="SettingsDisplayText" Position="16,36" Text="Display" Effect="Shadow"/>
+            <ImageButton Name="SettingsVideoArrow11" Picture="Btn_ArrowL_4" Position="184,34" Click="onSettingsVideoArrow"/>
+            <Panel Name="SettingsDisplayField" Bounds="204,32,124,21" Skin="panel16" SkinSource="0,0,120,21" Borders="4,4,4,4">
+              <Label Name="SettingsDisplayValue" Bounds="0,4,124,15" Align="Center" FontColor="#1E3C78" Effect="Plain"/>
+            </Panel>
+            <ImageButton Name="SettingsVideoArrow12" Picture="Btn_ArrowR_4" Position="330,34" Click="onSettingsVideoArrow"/>
+            <Label Name="SettingsRememberText" Position="16,64" Text="Start with the size it had when closed" Effect="Shadow"/>
+            <CheckBox Name="SettingsRemember" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="330,63"
+                      Click="onSettingsRemember"/>
+          </Panel>
+          <Panel Name="SettingsVideoGroup2" Bounds="0,0,352,26">
+            <DrawingArea Name="SettingsVideoHead2" Bounds="0,0,352,26" HitTest="true" MouseDown="onSettingsVideoHead" MouseWheel="onSettingsVideoWheel"/>
+            <CheckBox Name="SettingsVideoOpen2" Picture="Btn_ArrowR_1" CheckedPicture="Btn_ArrowDn_3" Position="12,4" Click="onSettingsVideoOpen"/>
+            <Label Name="SettingsVideoTitle2" Position="36,6" Text="Performance" FontColor="#FFFF00" Effect="Shadow"/>
+          </Panel>
+          <Panel Name="SettingsVideoBody2" Bounds="0,0,352,134">
+            <Label Name="SettingsFramesText" Position="16,6" Text="Frame rate" Effect="Shadow"/>
+            <ImageButton Name="SettingsVideoArrow1" Picture="Btn_ArrowL_4" Position="184,4" Click="onSettingsVideoArrow"/>
+            <Panel Name="SettingsFramesField" Bounds="204,2,124,21" Skin="panel16" SkinSource="0,0,120,21" Borders="4,4,4,4">
+              <Label Name="SettingsFramesValue" Bounds="0,4,124,15" Align="Center" FontColor="#1E3C78" Effect="Plain"/>
+            </Panel>
+            <ImageButton Name="SettingsVideoArrow2" Picture="Btn_ArrowR_4" Position="330,4" Click="onSettingsVideoArrow"/>
+            <Label Name="SettingsFramesHelp" Bounds="16,31,336,15" FontColor="#C8DCFF" Effect="Plain"/>
+            <Label Name="SettingsRendererText" Position="16,60" Text="Renderer" Effect="Shadow"/>
+            <ImageButton Name="SettingsVideoArrow5" Picture="Btn_ArrowL_4" Position="184,58" Click="onSettingsVideoArrow"/>
+            <Panel Name="SettingsRendererField" Bounds="204,56,124,21" Skin="panel16" SkinSource="0,0,120,21" Borders="4,4,4,4">
+              <Label Name="SettingsRendererValue" Bounds="0,4,124,15" Align="Center" FontColor="#1E3C78" Effect="Plain"/>
+            </Panel>
+            <ImageButton Name="SettingsVideoArrow6" Picture="Btn_ArrowR_4" Position="330,58" Click="onSettingsVideoArrow"/>
+            <Label Name="SettingsRendererHelp" Bounds="16,85,336,15" FontColor="#C8DCFF" Effect="Plain"/>
+            <Label Name="SettingsGraphText" Position="16,110" Text="Frame time graph (F11)" Effect="Shadow"/>
+            <CheckBox Name="SettingsGraph" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="330,109"
+                      Click="onSettingsGraph"/>
+          </Panel>
+          <Panel Name="SettingsVideoGroup3" Bounds="0,0,352,26">
+            <DrawingArea Name="SettingsVideoHead3" Bounds="0,0,352,26" HitTest="true" MouseDown="onSettingsVideoHead" MouseWheel="onSettingsVideoWheel"/>
+            <CheckBox Name="SettingsVideoOpen3" Picture="Btn_ArrowR_1" CheckedPicture="Btn_ArrowDn_3" Position="12,4" Click="onSettingsVideoOpen"/>
+            <Label Name="SettingsVideoTitle3" Position="36,6" Text="Scaling" FontColor="#FFFF00" Effect="Shadow"/>
+          </Panel>
+          <Panel Name="SettingsVideoBody3" Bounds="0,0,352,198">
+            <Label Name="SettingsScaleText" Position="16,6" Text="Pixel scale" Effect="Shadow"/>
+            <ImageButton Name="SettingsVideoArrow7" Picture="Btn_ArrowL_4" Position="184,4" Click="onSettingsVideoArrow"/>
+            <Panel Name="SettingsScaleField" Bounds="204,2,124,21" Skin="panel16" SkinSource="0,0,120,21" Borders="4,4,4,4">
+              <Label Name="SettingsScaleValue" Bounds="0,4,124,15" Align="Center" FontColor="#1E3C78" Effect="Plain"/>
+            </Panel>
+            <ImageButton Name="SettingsVideoArrow8" Picture="Btn_ArrowR_4" Position="330,4" Click="onSettingsVideoArrow"/>
+            <Label Name="SettingsHudText" Position="16,36" Text="HUD size" Effect="Shadow"/>
+            <ImageButton Name="SettingsVideoArrow13" Picture="Btn_ArrowL_4" Position="184,34" Click="onSettingsVideoArrow"/>
+            <Panel Name="SettingsHudField" Bounds="204,32,124,21" Skin="panel16" SkinSource="0,0,120,21" Borders="4,4,4,4">
+              <Label Name="SettingsHudValue" Bounds="0,4,124,15" Align="Center" FontColor="#1E3C78" Effect="Plain"/>
+            </Panel>
+            <ImageButton Name="SettingsVideoArrow14" Picture="Btn_ArrowR_4" Position="330,34" Click="onSettingsVideoArrow"/>
+            <Label Name="SettingsPixelArtText" Position="16,66" Text="Pixel art" Effect="Shadow"/>
+            <ImageButton Name="SettingsVideoArrow9" Picture="Btn_ArrowL_4" Position="184,64" Click="onSettingsVideoArrow"/>
+            <Panel Name="SettingsPixelArtField" Bounds="204,62,124,21" Skin="panel16" SkinSource="0,0,120,21" Borders="4,4,4,4">
+              <Label Name="SettingsPixelArtValue" Bounds="0,4,124,15" Align="Center" FontColor="#1E3C78" Effect="Plain"/>
+            </Panel>
+            <ImageButton Name="SettingsVideoArrow10" Picture="Btn_ArrowR_4" Position="330,64" Click="onSettingsVideoArrow"/>
+            <Label Name="SettingsPixelArtHelp" Bounds="16,91,336,15" FontColor="#C8DCFF" Effect="Plain"/>
+            <Label Name="SettingsPixelArtOnPicturesText" Position="32,118" Text="On the interface and pictures" Effect="Shadow"/>
+            <CheckBox Name="SettingsPixelArtOnPictures" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="330,117"
+                      Click="onSettingsPixelArtPart"/>
+            <Label Name="SettingsPixelArtOnSpritesText" Position="32,146" Text="On characters" Effect="Shadow"/>
+            <CheckBox Name="SettingsPixelArtOnSprites" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="330,145"
+                      Click="onSettingsPixelArtPart"/>
+            <Label Name="SettingsPixelArtOnTextText" Position="32,174" Text="On text" Effect="Shadow"/>
+            <CheckBox Name="SettingsPixelArtOnText" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="330,173"
+                      Click="onSettingsPixelArtPart"/>
+          </Panel>
+        </Panel>
+        <ScrollBar Name="SettingsVideoScroll" Bounds="352,4,17,242" Track="Rail_H5" TrackCap="16" Thumb="bar_H4"
+                   ThumbSource="0,0,9,21" ThumbCap="7" ThumbInset="3" Scroll="onSettingsVideoScroll"/>
+      </Panel>
+    </Panel>
+
+    <ImageButton Name="SettingsMenu4" Picture="Btn_ReTurn_1" Position="16,322" Click="onSettingsMenu"/>
+    <ImageButton Name="SettingsMenu5" Picture="Btn_ChangePassword_1" Position="92,322" Click="onSettingsMenu"/>
+    <ImageButton Name="SettingsMenu7" Picture="Btn_CheckNumber_1" Position="168,322" Click="onSettingsMenu"/>
+    <ImageButton Name="SettingsMenu8" Picture="Btn_Logout_1" Position="244,322" Click="onSettingsMenu"/>
+    <ImageButton Name="SettingsMenu9" Picture="Btn_Exit_2" Position="320,322" Click="onSettingsMenu"/>
+  </Window>
+</Panel>

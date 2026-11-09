@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The house computer's form (TH_ComputerForm, the owner's click on the Computer 39050); view model: viewmodels/ComputerWindow.cpp.  The five things under way, each with its
+     bar and a field for its place in the queue (two digits); OK starts the queue and STOP clears it.  The game draws a form's controls from the last created to the first:
+     the controls here are in drawing order, the reverse of TH_ComputerForm.Create (the five fields, then STOP, OK, Close and the small close button). -->
+<Panel Name="ComputerLayer" Bounds="0,0,800,600">
+  <Window Name="ComputerWindow" Escape="onComputerClose" Picture="Form_Computer_1" Position="256,131" Size="287,338" Visible="false">
+    <DrawingArea Name="ComputerPaint" Bounds="0,0,287,338">
+      <!-- the first job row: the product name's position, the step down to the next row, and the name colour (RGB565 2113) -->
+      <Spot Name="ComputerName" Position="24,99" Pitch="0,34" Color="#080808"/>
+      <!-- the first row's progress bar frame, and the fill drawn inside it -->
+      <Spot Name="ComputerFrame" Position="150,102"/>
+      <Spot Name="ComputerBar" Position="151,103"/>
+    </DrawingArea>
+    <TextBox Name="ComputerEdit5" Bounds="234,232,56,20" HitTest="true" CharFilter="Digits" MaxLength="2" FontColor="#080808"/>
+    <TextBox Name="ComputerEdit4" Bounds="234,198,56,20" HitTest="true" CharFilter="Digits" MaxLength="2" FontColor="#080808"/>
+    <TextBox Name="ComputerEdit3" Bounds="234,164,56,20" HitTest="true" CharFilter="Digits" MaxLength="2" FontColor="#080808"/>
+    <TextBox Name="ComputerEdit2" Bounds="234,130,56,20" HitTest="true" CharFilter="Digits" MaxLength="2" FontColor="#080808"/>
+    <TextBox Name="ComputerEdit1" Bounds="234,96,56,20" HitTest="true" CharFilter="Digits" MaxLength="2" FontColor="#080808"/>
+    <ImageButton Name="ComputerStop" Picture="Btn_STOP_1" Position="125,270" Size="56,20" Click="onComputerStop"/>
+    <ImageButton Name="ComputerOk" Picture="Btn_OK_1" Position="44,270" Size="56,20" Click="onComputerOk"/>
+    <ImageButton Name="ComputerClose" Picture="Btn_Close_1" Position="204,270" Size="56,20" Click="onComputerClose"/>
+    <ImageButton Name="ComputerCloseSmall" Picture="Btn_Close_S_1" Position="238,24" Size="18,18" Click="onComputerClose"/>
+  </Window>
+</Panel>

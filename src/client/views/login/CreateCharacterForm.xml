@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Character creation (TRE_CreateCharacter); view model: viewmodels/CreateCharacterForm.cpp.
+     Four pages: 1 role and name, 2 points, 3 element, 4 colours.  The view model moves the
+     shared parts (buttons, figure, portrait, name) to each page's places, places the role
+     pictures of the carousel and fills in the numbers. -->
+<Panel Name="CreateCharacterForm" Bounds="0,0,800,600" Visible="false">
+  <Image Name="CreatePage1Background" Source="Menu/Skins/White/Form_CreateRole_1.jpg" Position="30,135" Visible="false"/>
+  <Image Name="CreatePage2Background" Source="Menu/Skins/White/Form_CreateRole_2.jpg" Position="30,135" Visible="false"/>
+  <Image Name="CreatePage3Background" Source="Menu/Skins/White/Form_CreateRole_3.jpg" Position="30,135" Visible="false"/>
+  <Image Name="CreatePage4Background" Source="Menu/Skins/White/Form_CreateRole_4.jpg" Position="126,135" Visible="false"/>
+  <Image Name="CreateTitle" Picture="Icon_CreateRole_1" Position="282,80"/>
+  <DrawingArea Name="CreateFigure" Position="678,387"/>
+  <DrawingArea Name="CreatePortrait" Position="588,327"/>
+  <!-- the character name text: its top, and the width of one character -->
+  <Spot Name="CreateNameText" Position="0,405" Pitch="8,0"/>
+  <!-- the element description picture, and the role picture's anchor (bottom centre) on the element page -->
+  <Spot Name="CreateElementDescription" Position="301,283"/>
+  <Spot Name="CreateElementRole" Position="133,465"/>
+
+  <!-- page 2: the points -->
+  <Panel Name="CreatePage2" Bounds="0,0,800,600" Visible="false">
+    <DigitText Name="CreatePointsLeft" Position="442,257" Picture="Num_Yellow3_1"/>
+    <DigitText Name="CreateStat1" Position="442,299" Picture="Num_White3_2"/>
+    <DigitText Name="CreateStat2" Position="442,323" Picture="Num_White3_2"/>
+    <DigitText Name="CreateStat3" Position="442,347" Picture="Num_White3_2"/>
+    <DigitText Name="CreateStat4" Position="442,371" Picture="Num_White3_2"/>
+    <DigitText Name="CreateStat5" Position="442,395" Picture="Num_White3_2"/>
+  </Panel>
+  <Image Name="CreateDescription"/>
+  <Panel Name="CreatePage2Bonuses" Bounds="0,0,800,600" Visible="false">
+    <Label Name="CreateStatBonus1" Position="490,298" FontColor="#525152"/>
+    <Label Name="CreateStatBonus2" Position="490,322" FontColor="#525152"/>
+    <Label Name="CreateStatBonus3" Position="490,346" FontColor="#525152"/>
+    <Label Name="CreateStatBonus4" Position="490,370" FontColor="#525152"/>
+    <Label Name="CreateStatBonus5" Position="490,394" FontColor="#525152"/>
+  </Panel>
+
+  <!-- page 3: the element -->
+  <Image Name="CreateElementFrame" Picture="Panel25" Visible="false"/>
+
+  <!-- page 4: the colours -->
+  <Panel Name="CreatePage4" Bounds="0,0,800,600" Visible="false">
+    <Image Name="CreatePartFrame" Picture="Panel25"/>
+    <Image Name="CreateColorFrame1" Picture="Panel24" Position="222,346"/>
+    <Image Name="CreateColorFrame2" Picture="Panel24" Position="222,377"/>
+    <Image Name="CreateColorFrame3" Picture="Panel24" Position="222,409"/>
+    <Image Name="CreateColorBar1" Picture="Color_R" Position="224,348"/>
+    <Image Name="CreateColorBar2" Picture="Color_G" Position="224,379"/>
+    <Image Name="CreateColorBar3" Picture="Color_B" Position="224,411"/>
+  </Panel>
+
+  <Image Name="CreateRolePicture" Visible="false"/>
+  <Label Name="CreateName" FontColor="#525152" Visible="false"/>
+
+  <!-- page 1: the role carousel (drawn back to front) and the name -->
+  <Panel Name="CreatePage1" Bounds="0,0,800,600" Visible="false">
+    <ImageButton Name="CreateRole6" Picture="Btn_RolePic_6" Click="onCreateRole6"/>
+    <ImageButton Name="CreateRole12" Picture="Btn_RolePic_12" Click="onCreateRole12"/>
+    <ImageButton Name="CreateRole14" Picture="Btn_RolePic_14" Click="onCreateRole14"/>
+    <ImageButton Name="CreateRole4" Picture="Btn_RolePic_4" Click="onCreateRole4"/>
+    <ImageButton Name="CreateRole11" Picture="Btn_RolePic_11" Click="onCreateRole11"/>
+    <ImageButton Name="CreateRole7" Picture="Btn_RolePic_7" Click="onCreateRole7"/>
+    <ImageButton Name="CreateRole13" Picture="Btn_RolePic_13" Click="onCreateRole13"/>
+    <ImageButton Name="CreateRole5" Picture="Btn_RolePic_5" Click="onCreateRole5"/>
+    <ImageButton Name="CreateRole9" Picture="Btn_RolePic_9" Click="onCreateRole9"/>
+    <ImageButton Name="CreateRole10" Picture="Btn_RolePic_10" Click="onCreateRole10"/>
+    <ImageButton Name="CreateRole2" Picture="Btn_RolePic_2" Click="onCreateRole2"/>
+    <ImageButton Name="CreateRole8" Picture="Btn_RolePic_8" Click="onCreateRole8"/>
+    <ImageButton Name="CreateRole1" Picture="Btn_RolePic_1" Click="onCreateRole1"/>
+    <ImageButton Name="CreateRole3" Picture="Btn_RolePic_3" Click="onCreateRole3"/>
+    <ImageButton Name="CreateRolesBack" Picture="Btn_ArrowL_1" Bounds="38,274,18,17" Animation="Btn_ArrowL_10"
+                 AnimationFrames="2" AnimationInterval="288" Hint="The former character" Click="onCreateRolesBack"/>
+    <ImageButton Name="CreateRolesForward" Picture="Btn_ArrowR_1" Bounds="503,274,18,17" Animation="Btn_ArrowR_10"
+                 AnimationFrames="2" AnimationInterval="288" Hint="The next character" Click="onCreateRolesForward"/>
+    <!-- the game's editor is 93 wide, but its Panel27 frame ends at 92 -->
+    <TextBox Name="CreateNameBox" Bounds="612,207,92,22" Skin="Panel27" Borders="2,2,2,2" FontColor="#FFFFFF" MaxLength="10"/>
+  </Panel>
+
+  <Panel Name="CreatePage2Controls" Bounds="0,0,800,600" Visible="false">
+    <ImageButton Name="CreateStatDown1" Picture="Btn_ArrowL_4" Bounds="411,297,17,17" Click="onCreateStatDown1"/>
+    <ImageButton Name="CreateStatUp1" Picture="Btn_ArrowR_4" Bounds="467,297,17,17" Click="onCreateStatUp1"/>
+    <ImageButton Name="CreateStatDown2" Picture="Btn_ArrowL_4" Bounds="411,321,17,17" Click="onCreateStatDown2"/>
+    <ImageButton Name="CreateStatUp2" Picture="Btn_ArrowR_4" Bounds="467,321,17,17" Click="onCreateStatUp2"/>
+    <ImageButton Name="CreateStatDown3" Picture="Btn_ArrowL_4" Bounds="411,345,17,17" Click="onCreateStatDown3"/>
+    <ImageButton Name="CreateStatUp3" Picture="Btn_ArrowR_4" Bounds="467,345,17,17" Click="onCreateStatUp3"/>
+    <ImageButton Name="CreateStatDown4" Picture="Btn_ArrowL_4" Bounds="411,369,17,17" Click="onCreateStatDown4"/>
+    <ImageButton Name="CreateStatUp4" Picture="Btn_ArrowR_4" Bounds="467,369,17,17" Click="onCreateStatUp4"/>
+    <ImageButton Name="CreateStatDown5" Picture="Btn_ArrowL_4" Bounds="411,393,17,17" Click="onCreateStatDown5"/>
+    <ImageButton Name="CreateStatUp5" Picture="Btn_ArrowR_4" Bounds="467,393,17,17" Click="onCreateStatUp5"/>
+    <HintArea Name="CreateStatHint1" Bounds="327,296,72,17"
+              Hint="Strength. It&apos;s crucial for attack. Also it will affect the understanding of different skills."/>
+    <HintArea Name="CreateStatHint2" Bounds="327,320,72,17"
+              Hint="Constitution and level are the most significant for life and defensive ability. Also it will affect the understanding of other skills."/>
+    <HintArea Name="CreateStatHint3" Bounds="327,344,72,17"
+              Hint="Intelligence is consistent with the power of spells. Also it will affect the understanding of different skills."/>
+    <HintArea Name="CreateStatHint4" Bounds="327,368,72,17"
+              Hint="Wisdom is related with the spell defense. Also it will affect the understanding of different skills."/>
+    <HintArea Name="CreateStatHint5" Bounds="327,392,72,17"
+              Hint="Agility is the prerequisite for all attacks, whoever is faster hits first. Also it will affect the understanding of different skills"/>
+  </Panel>
+
+  <Panel Name="CreatePage3Controls" Bounds="0,0,800,600" Visible="false">
+    <ImageButton Name="CreateElement1" Picture="Icon_Element_1_2" Bounds="301,249,35,35" Frames="1" Click="onCreateElement1"/>
+    <ImageButton Name="CreateElement2" Picture="Icon_Element_2_2" Bounds="361,249,35,35" Frames="1" Click="onCreateElement2"/>
+    <ImageButton Name="CreateElement3" Picture="Icon_Element_3_2" Bounds="421,249,35,35" Frames="1" Click="onCreateElement3"/>
+    <ImageButton Name="CreateElement4" Picture="Icon_Element_4_2" Bounds="481,249,35,35" Frames="1" Click="onCreateElement4"/>
+  </Panel>
+
+  <Panel Name="CreatePage4Controls" Bounds="0,0,800,600" Visible="false">
+    <ImageButton Name="CreatePart1" Picture="Icon_Part_1" Bounds="172,267,44,28" Frames="1" Click="onCreatePart1"/>
+    <ImageButton Name="CreatePart2" Picture="Icon_Part_2" Bounds="224,267,44,28" Frames="1" Click="onCreatePart2"/>
+    <ImageButton Name="CreatePart3" Picture="Icon_Part_3" Bounds="276,267,44,28" Frames="1" Click="onCreatePart3"/>
+    <ImageButton Name="CreatePart4" Picture="Icon_Part_4" Bounds="328,267,44,28" Frames="1" Click="onCreatePart4"/>
+    <ImageButton Name="CreateColorUp1" Picture="Btn_ArrowR_2" Bounds="337,344,18,17" Click="onCreateColorUp1"/>
+    <ImageButton Name="CreateColorDown1" Picture="Btn_ArrowL_2" Bounds="201,344,18,17" Click="onCreateColorDown1"/>
+    <ImageButton Name="CreateColorUp2" Picture="Btn_ArrowR_2" Bounds="337,375,18,17" Click="onCreateColorUp2"/>
+    <ImageButton Name="CreateColorDown2" Picture="Btn_ArrowL_2" Bounds="201,375,18,17" Click="onCreateColorDown2"/>
+    <ImageButton Name="CreateColorUp3" Picture="Btn_ArrowR_2" Bounds="337,407,18,17" Click="onCreateColorUp3"/>
+    <ImageButton Name="CreateColorDown3" Picture="Btn_ArrowL_2" Bounds="201,407,18,17" Click="onCreateColorDown3"/>
+    <ImageButton Name="CreateDefaultColors" Picture="Btn_Default" Bounds="240,306,56,20" Click="onCreateDefaultColors"/>
+  </Panel>
+
+  <!-- shared by the pages; the view model places them -->
+  <Image Name="CreateElementIcon" Size="25,25" Visible="false" HitTest="true"/>
+  <ImageButton Name="CreateTurnLeft" Picture="Btn_ArrowL_1" Size="18,17" Click="onCreateTurnLeft"/>
+  <ImageButton Name="CreateTurnRight" Picture="Btn_ArrowR_1" Size="18,17" Click="onCreateTurnRight"/>
+  <ImageButton Name="CreatePrevious" Picture="Btn_Prev_1" Size="56,20" Click="onCreatePrevious"/>
+  <ImageButton Name="CreateNext" Picture="Btn_Next" Size="56,20" Click="onCreateNext"/>
+  <ImageButton Name="CreateConfirm" Picture="btn_ok_1" Size="56,20" Click="onCreateConfirm"/>
+</Panel>

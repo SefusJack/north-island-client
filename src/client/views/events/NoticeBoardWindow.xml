@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The public notice board (TNoticeBoardForm, opened by 82/9); view model:
+     viewmodels/NoticeBoardWindow.cpp.  Ten rows a page: the subject, the sender and the time;
+     a click on a row (HandleMouseUp of the form) opens the notice.  Previous and Next page, Add (level 10 and up), Update
+     and Close.  The game draws a form's controls from the last created to the first: the
+     controls here are in drawing order, the reverse of TNoticeBoardForm.Create. -->
+<Panel Name="NoticeBoardLayer" Bounds="0,0,800,600">
+  <Window Name="NoticeBoardWindow" Escape="onNoticeBoardClose" Picture="Notice" Position="73,117" Visible="false" Click="onNoticeBoardClick">
+    <ImageButton Name="NoticeBoardUpdate" Picture="Btn_UPdata_1" Position="290,320" Click="onNoticeBoardUpdate"/>
+    <ImageButton Name="NoticeBoardNext" Picture="Btn_NextPage_1" Position="380,290" Click="onNoticeBoardNext"/>
+    <ImageButton Name="NoticeBoardPrevious" Picture="Btn_PrePage_1" Position="200,290" Click="onNoticeBoardPrevious"/>
+    <ImageButton Name="NoticeBoardAdd" Picture="Btn_AddNew_1" Position="200,320" Click="onNoticeBoardAdd"/>
+    <ImageButton Name="NoticeBoardClose" Picture="Btn_Close_1" Position="380,320" Click="onNoticeBoardClose"/>
+    <ImageButton Name="NoticeBoardCloseSmall" Picture="Btn_Close_S_1" Position="603,24" Size="18,18" Click="onNoticeBoardClose"/>
+    <!-- DrawControl: the hover bar over the rows and their texts -->
+    <DrawingArea Name="NoticeBoardRows" Bounds="0,0,654,365">
+      <!-- the subject column: its x and the top of the first row's text; the sender and date columns: their x -->
+      <Spot Name="NoticeBoardSubject" Position="21,82"/>
+      <Spot Name="NoticeBoardSender" Position="270,0"/>
+      <Spot Name="NoticeBoardDate" Position="390,0"/>
+      <!-- the "page / count" text -->
+      <Spot Name="NoticeBoardPageNumbers" Position="295,295"/>
+      <!-- the row text (yellow, in RGB565 65504), the page text (blue, in RGB565 31) and the hover bar (light cyan with alpha) -->
+      <Spot Name="NoticeBoardTextColor" Color="#FFFF00"/>
+      <Spot Name="NoticeBoardPageColor" Color="#0000FF"/>
+      <Spot Name="NoticeBoardBarColor" Color="#509EFAFE"/>
+    </DrawingArea>
+  </Window>
+</Panel>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The instance tab of the group window (TDupMisForm, "Instance" beside the Party and Guild
+     tabs); view model: viewmodels/InstanceWindow.cpp.  The game keeps one form for each tab; here
+     the instance tab is a window of its own that opens where the group window was.  Three pages:
+     Choose Instance (the open instances, five a page, each with a Join button; New Instance opens
+     the create form), Inner Info (the player's own instance: its rules and goals, with Enter and
+     Leave) and Members (five a page: face, name, level, job, element, nickname; the creator can
+     send a member away while the instance waits).  Without an instance only the first page
+     shows.  The game draws a form's controls from the last created to the first: the controls
+     here are in drawing order, the reverse of TDupMisForm.Create. -->
+<Panel Name="InstanceWindowLayer" Bounds="0,0,800,600">
+  <Window Name="InstanceWindow" Escape="onInstanceClose" Picture="Form_Emblem_1" Position="444,0" Size="371,539" ScreenFit="true" Visible="false" DoubleClick="onInstanceWindowDoubleClick">
+    <!-- DrawControl: which tabs and pages show, and the picture of the page under its tabs -->
+    <DrawingArea Name="InstanceTabArt" Bounds="0,0,371,539">
+      <!-- the page art (Form_Dup*) under the tabs -->
+      <Spot Name="InstanceArt" Position="26,85"/>
+    </DrawingArea>
+    <ImageButton Name="InstanceLeave" Picture="Btn_LeaveDup" Position="148,455" Size="71,20" Visible="false" Click="onInstanceLeave"/>
+    <ImageButton Name="InstanceEnter" Picture="Btn_EnterDup" Position="148,425" Size="71,20" Visible="false" Click="onInstanceEnter"/>
+    <ImageButton Name="InstanceMembersNext" Picture="Btn_ArrowR_5" Position="213,465" Size="17,17" Visible="false"
+                 Click="onInstanceMembersNext"/>
+    <ImageButton Name="InstanceMembersPrevious" Picture="Btn_ArrowL_5" Position="137,465" Size="17,17" Visible="false"
+                 Click="onInstanceMembersPrevious"/>
+    <ImageButton Name="InstanceKick5" Picture="Btn_AssignLeave_1" Position="281,436" Size="56,20" Visible="false" Click="onInstanceKick"/>
+    <ImageButton Name="InstanceKick4" Picture="Btn_AssignLeave_1" Position="281,371" Size="56,20" Visible="false" Click="onInstanceKick"/>
+    <ImageButton Name="InstanceKick3" Picture="Btn_AssignLeave_1" Position="281,306" Size="56,20" Visible="false" Click="onInstanceKick"/>
+    <ImageButton Name="InstanceKick2" Picture="Btn_AssignLeave_1" Position="281,241" Size="56,20" Visible="false" Click="onInstanceKick"/>
+    <ImageButton Name="InstanceKick1" Picture="Btn_AssignLeave_1" Position="281,176" Size="56,20" Visible="false" Click="onInstanceKick"/>
+    <ImageButton Name="InstancePageChoose" Picture="Btn_DupChoose" Position="114,65" Size="64,21" Click="onInstancePageChoose"/>
+    <ImageButton Name="InstancePageMembers" Picture="Btn_ArmyGrounpHum_1" Position="70,65" Size="44,21" Click="onInstancePageMembers"/>
+    <ImageButton Name="InstancePageInfo" Picture="Btn_ArmyGrounpInfo_1" Position="26,65" Size="44,21" Click="onInstancePageInfo"/>
+    <Panel Name="InstanceHint" Skin="panel4" SkinSource="0,0,50,50" Borders="15,15,15,15" Bounds="0,0,200,150" Visible="false"/>
+    <ImageButton Name="InstanceTabInstances" Picture="Btn_DupMis" Position="150,41" Size="66,21"/>
+    <ImageButton Name="InstanceTabGuild" Picture="Btn_ArmyGrounp_1" Position="85,41" Size="66,21" Visible="false" Click="onInstanceTabGuild"/>
+    <ImageButton Name="InstanceTabParty" Picture="Btn_Team_1" Position="20,41" Size="66,21" Click="onInstanceTabParty"/>
+    <DrawingArea Name="InstanceList" Bounds="36,98,294,350" HitTest="true" MouseDown="onInstanceListDown"/>
+    <ImageButton Name="InstanceJoin5" Picture="Btn_Join" Position="271,415" Size="56,20" Visible="false" Click="onInstanceJoin"/>
+    <ImageButton Name="InstanceJoin4" Picture="Btn_Join" Position="271,345" Size="56,20" Visible="false" Click="onInstanceJoin"/>
+    <ImageButton Name="InstanceJoin3" Picture="Btn_Join" Position="271,275" Size="56,20" Visible="false" Click="onInstanceJoin"/>
+    <ImageButton Name="InstanceJoin2" Picture="Btn_Join" Position="271,205" Size="56,20" Visible="false" Click="onInstanceJoin"/>
+    <ImageButton Name="InstanceJoin1" Picture="Btn_Join" Position="271,135" Size="56,20" Visible="false" Click="onInstanceJoin"/>
+    <ImageButton Name="InstanceCloseSmall" Picture="Btn_Close_s_1" Position="321,24" Size="18,18" Click="onInstanceClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="InstanceNext" Picture="Btn_ArrowR_5" Position="213,440" Size="17,17" Click="onInstanceNext"/>
+    <ImageButton Name="InstancePrevious" Picture="Btn_ArrowL_5" Position="137,440" Size="17,17" Click="onInstancePrevious"/>
+    <ImageButton Name="InstanceCreate" Picture="Btn_CreateDup" Position="149,465" Size="71,20" Click="onInstanceCreate"/>
+    <ImageButton Name="InstanceClose" Picture="Btn_Close_1" Position="157,500" Size="56,20" Hint="[ESC]" Click="onInstanceClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <!-- RenderWithChildren: the texts, faces and page numbers of the page -->
+    <DrawingArea Name="InstanceTexts" Bounds="0,0,371,539">
+      <!-- the size of the text box every text uses, and its colour (RGB565 2113) -->
+      <Spot Name="InstanceText" Size="288,18" Color="#080808"/>
+      <!-- the page numbers of the Choose page, and of the Members page -->
+      <Spot Name="InstanceOrderNumbers" Position="168,443"/>
+      <Spot Name="InstanceMemberNumbers" Position="168,470"/>
+      <!-- the start-number icon (Icon_StartDupNum), and the start number's text -->
+      <Spot Name="InstanceStartIcon" Position="215,63"/>
+      <Spot Name="InstanceStartNumber" Position="303,67"/>
+      <!-- the instance title on the Members page -->
+      <Spot Name="InstanceMemberTitle" Position="33,91"/>
+      <!-- the first member row's element icon -->
+      <Spot Name="InstanceMemberPanel" Position="290,147"/>
+      <!-- the origin of member row 0 (slot n adds n steps down), and the step between member rows -->
+      <Spot Name="InstanceMemberRow" Position="31,75" Pitch="0,65"/>
+      <!-- the first member's double-click rectangle (a square) -->
+      <Spot Name="InstanceMemberRect" Bounds="33,142,60,60"/>
+      <!-- the first text line of the Info page, and the step down to the next line -->
+      <Spot Name="InstanceInnerText" Position="110,94" Pitch="0,23"/>
+      <!-- the description text of the Info page -->
+      <Spot Name="InstanceInnerDescription" Position="34,340"/>
+      <!-- the light blue bar under the hovered instance row (RGB 0x89BFF5) -->
+      <Spot Name="InstanceHoverBar" Color="#89BFF5"/>
+      <!-- the hint text colour (RGB565 65504) -->
+      <Spot Name="InstanceHintText" Color="#FFFF00"/>
+    </DrawingArea>
+  </Window>
+</Panel>

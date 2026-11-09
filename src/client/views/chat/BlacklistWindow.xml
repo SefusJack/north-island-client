@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The black list (THL_BlackNameListForm, Set Up beside "black list" in the system window);
+     view model: viewmodels/BlacklistWindow.cpp.  A name typed and OK adds that player (14/5 1);
+     a row chosen and Delete takes it off (14/5 2).  The game draws a form's controls from the
+     last created to the first: the controls here are in drawing order, the reverse of
+     THL_BlackNameListForm.Create. -->
+<Panel Name="BlacklistLayer" Bounds="0,0,800,600">
+  <Window Name="Blacklist" Position="500,30" Size="264,415" Hint="Blacklist" Visible="false">
+    <Image Name="BlacklistBackground" Source="Menu/Skins/white/form_BlackNameList.bmp" Position="0,0"/>
+    <ImageButton Name="BlacklistDown" Picture="Btn_ArrowDn_1" Position="217,349" Size="17,17" Click="onBlacklistDown"/>
+    <ImageButton Name="BlacklistUp" Picture="Btn_ArrowUp_1" Position="217,88" Size="17,17" Click="onBlacklistUp"/>
+    <ListBox Name="BlacklistNames" Bounds="26,90,190,240" RowHeight="26" FontColor="#FFFFFF" HighlightColor="#89BEF5"
+             ShowSelection="true" ToggleSelect="true" FocusFrame="false" TextShadow="false" WrapColumns="21"
+             TextOffset="10,3" ScrollBar="BlacklistScroll"/>
+    <ScrollBar Name="BlacklistScroll" Bounds="217,105,17,245" Track="Rail_H5" TrackCap="16" Thumb="bar_H4"
+               ThumbSource="0,0,9,21" ThumbCap="7" ThumbInset="3"/>
+    <ImageButton Name="BlacklistClose" Picture="btn_Close_1" Position="135,380" Hint="[ESC]" Click="onBlacklistClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="BlacklistCloseSmall" Picture="Btn_Close_s_1" Position="215,24" Size="18,18" Hint="[ESC]"
+                 Click="onBlacklistClose" ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="BlacklistRemove" Picture="btn_deleteMail_1" Position="62,380" Click="onBlacklistRemove"/>
+    <ImageButton Name="BlacklistAdd" Picture="Btn_OK_2" Position="197,59" Size="39,20" Click="onBlacklistAdd"/>
+    <TextBox Name="BlacklistName" Bounds="99,59,86,20" Skin="Panel26" SkinSource="0,0,104,14" Borders="1,1,1,1" HitTest="true"
+             MaxLength="14" AllowPaste="true" FontColor="#080808"/>
+  </Window>
+</Panel>

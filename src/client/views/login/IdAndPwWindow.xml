@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The second ID and password form (TRe_IdAndPwForm, opened by the server's 21/1 and 21/2); view model: viewmodels/IdAndPwWindow.cpp.  An account ("WL" and
+     a number) and its password; OK asks the server with 21/1 or 21/2 (the mode it was opened in), Enter or Tab goes from field to field and past the last one
+     OKs.  Made in the middle of the screen.  The game draws a form's controls from the last created to the first: the controls here are in drawing order,
+     the reverse of TRe_IdAndPwForm.Create. -->
+<Panel Name="IdAndPwLayer" Bounds="0,0,800,600">
+  <Window Name="IdAndPw" Escape="onIdAndPwCancel" Picture="Form_ReFill_1" Position="244,176" Visible="false">
+    <!-- DrawControl: the title and the two labels -->
+    <Image Name="IdAndPwTitle" Picture="Icon_Exchange_1" Position="103,11"/>
+    <Image Name="IdAndPwIdLabel" Picture="Icon_Exchange_2" Position="39,92"/>
+    <Image Name="IdAndPwPwLabel" Picture="Icon_Exchange_3" Position="39,136"/>
+    <TextBox Name="IdAndPwPw" Bounds="146,140,136,14" HitTest="true" Password="true" CharFilter="Alphanumeric" MaxLength="16" AllowPaste="true" FontColor="#080808"
+             Enter="onIdAndPwNext" Tab="onIdAndPwNext"/>
+    <TextBox Name="IdAndPwId" Bounds="146,96,136,14" HitTest="true" CharFilter="Alphanumeric" MaxLength="16" AllowPaste="true" FontColor="#080808"
+             Enter="onIdAndPwNext" Tab="onIdAndPwNext"/>
+    <ImageButton Name="IdAndPwOk" Picture="Btn_Ok_1" Position="78,204" Size="56,20" Click="onIdAndPwOk"/>
+    <ImageButton Name="IdAndPwCancel" Picture="Btn_Cancel_1" Position="166,204" Size="56,20" Click="onIdAndPwCancel"/>
+    <ImageButton Name="IdAndPwCloseSmall" Picture="Btn_Close_s_1" Position="261,26" Size="18,18" Click="onIdAndPwCancel"/>
+  </Window>
+</Panel>

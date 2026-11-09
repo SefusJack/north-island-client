@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A cupboard of a house (TTH_UseCupboardForm, a click on the Wardrobe or the Cabinet); view model:
+     viewmodels/CupboardWindow.cpp.  The five places of the Wardrobe (Form_Cupboard_1) or the ten of the Cabinet
+     (Form_Cupboard_2) with what lies in them: bag items dropped on one go in, the right button takes one back.
+     The view model shows the grid of the open size and puts the Close button where that form has it.  The game
+     draws a form's controls from the last created to the first: the controls here are in drawing order, the
+     reverse of TTH_UseCupboardForm.Create. -->
+<Panel Name="CupboardLayer" Bounds="0,0,800,600">
+  <Window Name="CupboardWindow" Escape="onCupboardClose" AbovePopups="true" Picture="Form_Cupboard_1" Position="295,222" Visible="false">
+    <IconGrid Name="CupboardFiveCells" Position="18,73" Columns="5" Rows="1" Pitch="34" HoverColor="#00000000" RightClick="onCupboardTake"/>
+    <IconGrid Name="CupboardTenCells" Position="18,64" Columns="5" Rows="2" Pitch="34" HoverColor="#00000000" RightClick="onCupboardTake"
+              Visible="false"/>
+    <!-- where the Close button goes in the wardrobe window, and in the cabinet window -->
+    <Spot Name="CupboardWardrobeClose" Position="75,118"/>
+    <Spot Name="CupboardCabinetClose" Position="75,143"/>
+    <ImageButton Name="CupboardClose" Picture="Btn_Close_1" Position="75,118" Click="onCupboardClose"/>
+    <ImageButton Name="CupboardCloseSmall" Picture="Btn_Close_S_1" Position="159,26" Size="18,18" Click="onCupboardClose"/>
+  </Window>
+</Panel>

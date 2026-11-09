@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The dye form (TTH_ChangeColorForm, opened by using a Hair Dye 34041, Color Mask 34042, Strange Eye-drops 34040 or Clothes Dye 34228); view model:
+     viewmodels/DyeWindow.cpp.  The game draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of
+     TTH_ChangeColorForm.Create. -->
+<Panel Name="DyeLayer" Bounds="0,0,800,600">
+  <Window Name="Dye" Picture="Form_ChangeColor_1" Position="150,100" Visible="false">
+    <!-- DrawControl: the two figures, the part's icon and the three bars -->
+    <DrawingArea Name="DyePaint" Bounds="0,0,258,323">
+      <!-- the standing portrait -->
+      <Spot Name="DyeStanding" Position="69,100"/>
+      <!-- the animated figure's feet -->
+      <Spot Name="DyeProfile" Position="165,140"/>
+      <!-- the part's icon (Icon_hair, Icon_Skin, ...) -->
+      <Spot Name="DyeIcon" Position="95,20"/>
+      <!-- the first (red) colour bar: 12 px wide per digit step, 15 px high; the step down to each next bar -->
+      <Spot Name="DyeBar" Bounds="84,191,12,15" Pitch="0,31"/>
+    </DrawingArea>
+    <ImageButton Name="DyeCloseSmall" Picture="Btn_Close_s_1" Position="208,22" Size="18,18" Click="onDyeClose"/>
+    <ImageButton Name="DyeClose" Picture="btn_close_1" Position="128,283" Size="56,20" Click="onDyeClose"/>
+    <ImageButton Name="DyeOk" Picture="btn_ok_1" Position="64,283" Size="56,20" Click="onDyeOk"/>
+    <ImageButton Name="DyePrimal" Picture="Btn_primal_1" Position="44,153" Size="56,20" Click="onDyePrimal"/>
+    <ImageButton Name="DyeMore3" Picture="Btn_ArrowR_2" Position="197,249" Size="17,17" Click="onDyeMore3"/>
+    <ImageButton Name="DyeMore2" Picture="Btn_ArrowR_2" Position="197,218" Size="17,17" Click="onDyeMore2"/>
+    <ImageButton Name="DyeMore1" Picture="Btn_ArrowR_2" Position="197,187" Size="17,17" Click="onDyeMore1"/>
+    <ImageButton Name="DyeLess3" Picture="Btn_ArrowL_2" Position="61,249" Size="17,17" Click="onDyeLess3"/>
+    <ImageButton Name="DyeLess2" Picture="Btn_ArrowL_2" Position="61,218" Size="17,17" Click="onDyeLess2"/>
+    <ImageButton Name="DyeLess1" Picture="Btn_ArrowL_2" Position="61,187" Size="17,17" Click="onDyeLess1"/>
+  </Window>
+</Panel>

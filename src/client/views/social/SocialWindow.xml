@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The social window (TSe_EmotiomForm, Ctrl+E or the Social button); view model:
+     viewmodels/SocialWindow.cpp.  The friend tab: five friends a page (the GM row first), each
+     with its face, name, level, job, element, online state, nickname and guild, a mail icon and
+     a tick box; Send Mail and Del Friend act on the ticked ones.  The emote tab: the Ctrl+1..5
+     phrases, the emotions and actions, and the Alt+1..8 slots (an emotion or action clicked,
+     then a slot, puts it there).  The setup tab: nickname, online or busy, birthday (and its
+     star sign), blood type and the heart radar switch; OK hands changes in, Cancel takes them
+     back.  The game draws a form's
+     controls from the last created to the first: the controls here are in drawing order, the
+     reverse of TSe_EmotiomForm.Create. -->
+<Panel Name="SocialWindowLayer" Bounds="0,0,800,600">
+  <Window Name="SocialWindow" Escape="onSocialWindowEscape" Picture="Form_Friend_2" Position="222,53" Visible="false" DoubleClick="onSocialDoubleClick">
+    <!-- DrawFriendListPage: faces, levels, elements, online states and the page numbers -->
+    <DrawingArea Name="FriendPage" Bounds="0,0,356,493">
+      <!-- the top left of the first friend row, one row down each step -->
+      <Spot Name="FriendRow" Position="25,70" Pitch="0,65"/>
+      <!-- inside a row: the face portrait and the level digits -->
+      <Spot Name="FriendFace" Position="31,27"/>
+      <Spot Name="FriendLevel" Position="180,3"/>
+      <!-- in the first row: the element icon and the online state icon, one row down 66 px each step; the part cut from the online picture -->
+      <Spot Name="FriendElement" Position="270,73" Pitch="0,66"/>
+      <Spot Name="FriendOnline" Position="260,104" Pitch="0,66"/>
+      <Spot Name="FriendOnlineArea" Bounds="0,0,32,16"/>
+      <!-- the clickable face area of the first row (a click whispers to the friend) -->
+      <Spot Name="FriendFaceHit" Bounds="30,65,60,60"/>
+      <!-- the page numbers: their right edge x and their y -->
+      <Spot Name="FriendPageNumbers" Position="171,400"/>
+    </DrawingArea>
+    <Image Name="SetupSunSign" Bounds="36,168,174,143" Visible="false"/>
+    <ImageButton Name="SetupCancel" Picture="Btn_Cancel_3" Position="200,458" Visible="false" Click="onSetupCancel"/>
+    <ImageButton Name="SetupOk" Picture="Btn_OK_2" Position="122,458" Visible="false" Click="onSetupOk"/>
+    <ImageButton Name="SetupHeartRadar" Picture="Btn_on_1" Position="152,354" Visible="false" Click="onSetupHeartRadar"/>
+    <TextBox Name="SetupBirthYear" Bounds="154,136,40,18" HitTest="true" MaxLength="4" CharFilter="Digits" FontColor="#080808"
+             Visible="false" TextChanged="onSetupBirthday"/>
+    <TextBox Name="SetupBirthDay" Bounds="113,136,23,18" HitTest="true" MaxLength="2" CharFilter="Digits" FontColor="#080808"
+             Visible="false" TextChanged="onSetupBirthday"/>
+    <TextBox Name="SetupBirthMonth" Bounds="70,136,23,18" HitTest="true" MaxLength="2" CharFilter="Digits" FontColor="#080808"
+             Visible="false" TextChanged="onSetupBirthday"/>
+    <ImageButton Name="SetupBlood4" Picture="btn_UnCheck_1" Position="235,326" Visible="false"
+                 Click="onSetupBlood"/>
+    <ImageButton Name="SetupBlood3" Picture="btn_UnCheck_1" Position="185,326" Visible="false"
+                 Click="onSetupBlood"/>
+    <ImageButton Name="SetupBlood2" Picture="btn_UnCheck_1" Position="135,326" Visible="false"
+                 Click="onSetupBlood"/>
+    <ImageButton Name="SetupBlood1" Picture="btn_UnCheck_1" Position="85,326" Visible="false"
+                 Click="onSetupBlood"/>
+    <ImageButton Name="SocialCloseSmall" Picture="Btn_Close_s_1" Position="304,24" Click="onSocialClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="SocialClose" Picture="Btn_Close_1" Position="152,458" Click="onSocialClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="SocialTabFriend" Picture="Btn_FriendIcon_1" Position="20,43" Click="onSocialTabFriend"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="SocialTabEmote" Picture="Btn_EmuationalIcon_1" Position="85,43" Click="onSocialTabEmote"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="FriendCheck5" Picture="btn_UnCheck_1" Position="305,367" Visible="false"
+                 Click="onFriendCheck"/>
+    <ImageButton Name="FriendCheck4" Picture="btn_UnCheck_1" Position="305,302" Visible="false"
+                 Click="onFriendCheck"/>
+    <ImageButton Name="FriendCheck3" Picture="btn_UnCheck_1" Position="305,237" Visible="false"
+                 Click="onFriendCheck"/>
+    <ImageButton Name="FriendCheck2" Picture="btn_UnCheck_1" Position="305,172" Visible="false"
+                 Click="onFriendCheck"/>
+    <ImageButton Name="FriendCheck1" Picture="btn_UnCheck_1" Position="305,107" Visible="false"
+                 Click="onFriendCheck"/>
+    <Image Name="FriendMailGray5" Picture="icon_mailGary_1" Position="305,337" Visible="false"/>
+    <Image Name="FriendMailGray4" Picture="icon_mailGary_1" Position="305,271" Visible="false"/>
+    <Image Name="FriendMailGray3" Picture="icon_mailGary_1" Position="305,205" Visible="false"/>
+    <Image Name="FriendMailGray2" Picture="icon_mailGary_1" Position="305,139" Visible="false"/>
+    <Image Name="FriendMailGray1" Picture="icon_mailGary_1" Position="305,73" Visible="false"/>
+    <ImageButton Name="FriendMail5" Picture="icon_mail_1" Frames="1" Position="305,337" Visible="false"
+                 Click="onFriendMail"/>
+    <ImageButton Name="FriendMail4" Picture="icon_mail_1" Frames="1" Position="305,271" Visible="false"
+                 Click="onFriendMail"/>
+    <ImageButton Name="FriendMail3" Picture="icon_mail_1" Frames="1" Position="305,205" Visible="false"
+                 Click="onFriendMail"/>
+    <ImageButton Name="FriendMail2" Picture="icon_mail_1" Frames="1" Position="305,139" Visible="false"
+                 Click="onFriendMail"/>
+    <ImageButton Name="FriendMail1" Picture="icon_mail_1" Frames="1" Position="305,73" Visible="false"
+                 Click="onFriendMail"/>
+    <ImageButton Name="SocialTabMarry" Picture="Btn_Marry" Position="217,43" Visible="false" Click="onSocialTabMarry"/>
+    <ImageButton Name="FriendDelete" Picture="btn_delFriend_1" Position="179,420" Click="onFriendDelete"/>
+    <ImageButton Name="FriendSendMail" Picture="btn_sendmail_3" Position="111,420" Click="onFriendSendMail"/>
+    <ImageButton Name="SetupBusy" Picture="btn_Uncheck_1" Position="199,107" Visible="false" Click="onSetupBusy"/>
+    <ImageButton Name="SetupOnline" Picture="btn_check_1" Position="144,107" Visible="false" Click="onSetupOnline"/>
+    <ImageButton Name="SocialTabSetup" Picture="Btn_setup_2" Position="151,43" Click="onSocialTabSetup"/>
+    <ImageButton Name="FriendNextPage" Picture="Btn_ArrowR_8" Position="207,392" Click="onFriendNextPage"/>
+    <ImageButton Name="FriendPreviousPage" Picture="Btn_ArrowL_8" Position="125,392" Click="onFriendPreviousPage"/>
+    <TextBox Name="FriendName5" Bounds="87,321,90,40" ReadOnly="true" FontColor="#080808"
+             Visible="false"/>
+    <TextBox Name="FriendName4" Bounds="87,256,90,40" ReadOnly="true" FontColor="#080808"
+             Visible="false"/>
+    <TextBox Name="FriendName3" Bounds="87,191,90,40" ReadOnly="true" FontColor="#080808"
+             Visible="false"/>
+    <TextBox Name="FriendName2" Bounds="87,126,90,40" ReadOnly="true" FontColor="#080808"
+             Visible="false"/>
+    <TextBox Name="FriendName1" Bounds="87,61,90,40" ReadOnly="true" FontColor="#080808"
+             Visible="false"/>
+    <AnimatedIcon Name="EmoteAction24" Picture="btn_Action_24" Bounds="282,350,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction23" Picture="btn_Action_23" Bounds="248,350,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction22" Picture="btn_Action_22" Bounds="214,350,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction21" Picture="btn_Action_21" Bounds="180,350,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction20" Picture="btn_Action_20" Bounds="282,316,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction19" Picture="btn_Action_19" Bounds="248,316,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction18" Picture="btn_Action_18" Bounds="214,316,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction17" Picture="btn_Action_17" Bounds="180,316,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction16" Picture="btn_Action_16" Bounds="282,282,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction15" Picture="btn_Action_15" Bounds="248,282,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction14" Picture="btn_Action_14" Bounds="214,282,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction13" Picture="btn_Action_13" Bounds="180,282,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction12" Picture="btn_Action_12" Bounds="282,248,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction11" Picture="btn_Action_11" Bounds="248,248,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction10" Picture="btn_Action_10" Bounds="214,248,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction9" Picture="btn_Action_9" Bounds="180,248,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction8" Picture="btn_Action_8" Bounds="282,214,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction7" Picture="btn_Action_7" Bounds="248,214,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction6" Picture="btn_Action_6" Bounds="214,214,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction5" Picture="btn_Action_5" Bounds="180,214,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction4" Picture="btn_Action_4" Bounds="282,180,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction3" Picture="btn_Action_3" Bounds="248,180,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction2" Picture="btn_Action_2" Bounds="214,180,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteAction1" Picture="btn_Action_1" Bounds="180,180,32,32" Visible="false"
+                  Click="onEmoteAction"/>
+    <AnimatedIcon Name="EmoteSlot8" Bounds="282,404,32,32" Active="true" Visible="false" Click="onEmoteSlot"/>
+    <AnimatedIcon Name="EmoteSlot7" Bounds="247,404,32,32" Active="true" Visible="false" Click="onEmoteSlot"/>
+    <AnimatedIcon Name="EmoteSlot6" Bounds="212,404,32,32" Active="true" Visible="false" Click="onEmoteSlot"/>
+    <AnimatedIcon Name="EmoteSlot5" Bounds="176,404,32,32" Active="true" Visible="false" Click="onEmoteSlot"/>
+    <AnimatedIcon Name="EmoteSlot4" Bounds="142,404,32,32" Active="true" Visible="false" Click="onEmoteSlot"/>
+    <AnimatedIcon Name="EmoteSlot3" Bounds="107,404,32,32" Active="true" Visible="false" Click="onEmoteSlot"/>
+    <AnimatedIcon Name="EmoteSlot2" Bounds="72,404,32,32" Active="true" Visible="false" Click="onEmoteSlot"/>
+    <AnimatedIcon Name="EmoteSlot1" Bounds="37,404,32,32" Active="true" Visible="false" Click="onEmoteSlot"/>
+    <ImageButton Name="EmotePhraseButton5" Picture="Btn_ctrl5_1" Position="34,154" Visible="false"
+                 Click="onEmotePhraseButton"/>
+    <ImageButton Name="EmotePhraseButton4" Picture="Btn_ctrl4_1" Position="34,134" Visible="false"
+                 Click="onEmotePhraseButton"/>
+    <ImageButton Name="EmotePhraseButton3" Picture="Btn_ctrl3_1" Position="34,114" Visible="false"
+                 Click="onEmotePhraseButton"/>
+    <ImageButton Name="EmotePhraseButton2" Picture="Btn_ctrl2_1" Position="34,94" Visible="false"
+                 Click="onEmotePhraseButton"/>
+    <ImageButton Name="EmotePhraseButton1" Picture="Btn_ctrl1_1" Position="34,74" Visible="false"
+                 Click="onEmotePhraseButton"/>
+    <TextBox Name="EmotePhrase5" Bounds="77,154,239,17" HitTest="true" MaxLength="29" AllowPaste="true" FontColor="#080808"
+             Visible="false" TextChanged="onEmotePhraseChanged"/>
+    <TextBox Name="EmotePhrase4" Bounds="77,134,239,17" HitTest="true" MaxLength="29" AllowPaste="true" FontColor="#080808"
+             Visible="false" TextChanged="onEmotePhraseChanged"/>
+    <TextBox Name="EmotePhrase3" Bounds="77,114,239,17" HitTest="true" MaxLength="29" AllowPaste="true" FontColor="#080808"
+             Visible="false" TextChanged="onEmotePhraseChanged"/>
+    <TextBox Name="EmotePhrase2" Bounds="77,94,239,17" HitTest="true" MaxLength="29" AllowPaste="true" FontColor="#080808"
+             Visible="false" TextChanged="onEmotePhraseChanged"/>
+    <TextBox Name="EmotePhrase1" Bounds="77,74,239,17" HitTest="true" MaxLength="29" AllowPaste="true" FontColor="#080808"
+             Visible="false" TextChanged="onEmotePhraseChanged"/>
+    <DrawingArea Name="FriendCareer5" Bounds="181,333,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="FriendCareer4" Bounds="181,268,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="FriendCareer3" Bounds="181,203,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="FriendCareer2" Bounds="181,138,16,16" HitTest="true" Visible="false"/>
+    <DrawingArea Name="FriendCareer1" Bounds="181,73,16,16" HitTest="true" Visible="false"/>
+    <TextBox Name="FriendGuild5" Bounds="132,373,130,10" ReadOnly="true" FontColor="#080808"
+             Visible="false"/>
+    <TextBox Name="FriendGuild4" Bounds="132,308,130,10" ReadOnly="true" FontColor="#080808"
+             Visible="false"/>
+    <TextBox Name="FriendGuild3" Bounds="132,243,130,10" ReadOnly="true" FontColor="#080808"
+             Visible="false"/>
+    <TextBox Name="FriendGuild2" Bounds="132,178,130,10" ReadOnly="true" FontColor="#080808"
+             Visible="false"/>
+    <TextBox Name="FriendGuild1" Bounds="132,113,130,10" ReadOnly="true" FontColor="#080808"
+             Visible="false"/>
+    <TextBox Name="FriendNickname5" Bounds="132,355,130,10" ReadOnly="true" FontColor="#080808"
+             Visible="false"/>
+    <TextBox Name="FriendNickname4" Bounds="132,290,130,10" ReadOnly="true" FontColor="#080808"
+             Visible="false"/>
+    <TextBox Name="FriendNickname3" Bounds="132,225,130,10" ReadOnly="true" FontColor="#080808"
+             Visible="false"/>
+    <TextBox Name="FriendNickname2" Bounds="132,160,130,10" ReadOnly="true" FontColor="#080808"
+             Visible="false"/>
+    <TextBox Name="FriendNickname1" Bounds="132,95,130,10" ReadOnly="true" FontColor="#080808"
+             Visible="false"/>
+    <TextBox Name="SetupNickname" Skin="Panel26" Borders="1,1,1,1" Bounds="125,75,130,19" MaxLength="14" AllowPaste="true"
+             FontColor="#080808" Visible="false"/>
+    <AnimatedIcon Name="EmoteEmotion24" Picture="E124" Bounds="139,350,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion23" Picture="E123" Bounds="105,350,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion22" Picture="E122" Bounds="71,350,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion21" Picture="E121" Bounds="37,350,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion20" Picture="E120" Bounds="139,316,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion19" Picture="E119" Bounds="105,316,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion18" Picture="E118" Bounds="71,316,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion17" Picture="E117" Bounds="37,316,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion16" Picture="E116" Bounds="139,282,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion15" Picture="E115" Bounds="105,282,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion14" Picture="E114" Bounds="71,282,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion13" Picture="E113" Bounds="37,282,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion12" Picture="E112" Bounds="139,248,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion11" Picture="E111" Bounds="105,248,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion10" Picture="E110" Bounds="71,248,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion9" Picture="E109" Bounds="37,248,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion8" Picture="E108" Bounds="139,214,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion7" Picture="E107" Bounds="105,214,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion6" Picture="E106" Bounds="71,214,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion5" Picture="E105" Bounds="37,214,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion4" Picture="E104" Bounds="139,180,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion3" Picture="E103" Bounds="105,180,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion2" Picture="E102" Bounds="71,180,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+    <AnimatedIcon Name="EmoteEmotion1" Picture="E101" Bounds="37,180,32,32" Visible="false"
+                  Click="onEmoteEmotion"/>
+  </Window>
+  <!-- UpdateHeartRadar: the jumping heart over the Social button -->
+  <DrawingArea Name="HeartRadar" Bounds="706,544,39,45"/>
+</Panel>

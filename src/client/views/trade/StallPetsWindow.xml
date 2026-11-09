@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Someone's pet stall (TTH_BuyPetSallForm, a double click on the plate over their head);
+     view model: viewmodels/StallPetsWindow.cpp.  One, two or three pets (the form's picture and
+     its buttons follow how many) with their numbers, gear and prices; a click marks a pet to buy,
+     Buy asks for the marked ones (23/63).  The game draws a form's controls from the last
+     created to the first: the controls here are in drawing order, the reverse of
+     TTH_BuyPetSallForm.Create (the places that take clicks come first, under everything). -->
+<Panel Name="StallPetsLayer" Bounds="0,0,800,600">
+  <Window Name="StallPets" Picture="Form_BuyPet3Stall_1" Position="25,20" Visible="false">
+    <!-- DrawControl: the pets, their numbers, the marks, the gold carried and the total -->
+    <DrawingArea Name="StallPetsPaint" Bounds="0,0,644,441">
+      <!-- the number text colour, in RGB565 2113 -->
+      <Spot Name="StallPetsText" Color="#080808"/>
+    </DrawingArea>
+    <DrawingArea Name="StallPets1" Bounds="21,64,170,280" HitTest="true" MouseDown="onStallPetsClick"/>
+    <DrawingArea Name="StallPets2" Bounds="224,64,170,280" HitTest="true" MouseDown="onStallPetsClick"/>
+    <DrawingArea Name="StallPets3" Bounds="427,64,170,280" HitTest="true" MouseDown="onStallPetsClick"/>
+    <IconGrid Name="StallPets3Gear6" Position="577,265" CellSize="33" FirstIndex="6"/>
+    <IconGrid Name="StallPets2Gear6" Position="375,265" CellSize="33" FirstIndex="6"/>
+    <IconGrid Name="StallPets1Gear6" Position="172,265" CellSize="33" FirstIndex="6"/>
+    <IconGrid Name="StallPets3Gear" Position="437,308" Columns="5" Pitch="35" CellSize="33"/>
+    <IconGrid Name="StallPets2Gear" Position="235,308" Columns="5" Pitch="35" CellSize="33"/>
+    <IconGrid Name="StallPets1Gear" Position="32,308" Columns="5" Pitch="35" CellSize="33"/>
+    <TextBox Name="StallPetsPrice3" Bounds="494,287,76,14" ReadOnly="true" Align="Right" FontColor="#080808"/>
+    <TextBox Name="StallPetsPrice2" Bounds="291,287,76,14" ReadOnly="true" Align="Right" FontColor="#080808"/>
+    <TextBox Name="StallPetsPrice1" Bounds="88,287,76,14" ReadOnly="true" Align="Right" FontColor="#080808"/>
+    <TextBox Name="StallPetsName3" Bounds="432,200,225,17" ReadOnly="true" FontColor="#080808"/>
+    <TextBox Name="StallPetsName2" Bounds="229,200,225,17" ReadOnly="true" FontColor="#080808"/>
+    <TextBox Name="StallPetsName1" Bounds="26,200,225,17" ReadOnly="true" FontColor="#080808"/>
+    <ImageButton Name="StallPetsCloseSmall" Picture="btn_close_s_1" Position="731,26" Size="18,18" Click="onStallPetsClose"/>
+    <ImageButton Name="StallPetsClose" Picture="Btn_CLose_1" Position="443,405" Click="onStallPetsClose"/>
+    <ImageButton Name="StallPetsBuy" Picture="Btn_Buy_1" Position="443,405" Click="onStallPetsBuy"/>
+    <DigitText Name="StallPetsTotal" Position="319,364" Picture="Num_MainInfo" Rows="11" Glyphs="0123456789"/>
+    <DigitText Name="StallPetsGold" Position="319,384" Picture="Num_MainInfo" Rows="11" Glyphs="0123456789"/>
+  </Window>
+</Panel>

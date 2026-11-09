@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What the game draws over the map and the battle while the player is in an instance: the time
+     left and the conditions for winning (DrawDupRemainTime, DrawDupGoals); view model:
+     instances/InstanceGoalsPainter.cpp.  It lies over the windows. -->
+<Panel Name="InstanceOverlayLayer" Bounds="0,0,800,600" Topmost="true">
+  <DrawingArea Name="InstanceOverlay" Bounds="0,0,800,600"/>
+</Panel>

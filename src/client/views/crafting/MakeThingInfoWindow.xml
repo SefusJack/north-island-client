@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The manufacture window (TRe_MakeThingInfoForm); view model: viewmodels/MakeThingInfoWindow.cpp.
+     What is made, the materials it takes with how many the player has, the making time, and how
+     many times to make it (only with a piece 38052 in the house; the original's two arrows beside it are never shown).  Confirm asks the server (64/1).
+     The game draws a form's controls from the last created to the first: the controls here are in
+     drawing order, the reverse of TRe_MakeThingInfoForm.Create. -->
+<Panel Name="MakeThingInfoLayer" Bounds="0,0,800,600">
+  <Window Name="MakeThingInfoWindow" Escape="onMakeThingInfoClose" Picture="Form_MakeThingInfo_1" Position="238,75" Visible="false">
+    <!-- DrawControl: the title, the product, the plus signs and frames between the materials, the making time -->
+    <DrawingArea Name="MakeThingInfoPaint" Bounds="0,0,323,449">
+      <!-- the " Manufacture " title, in RGB565 2113 -->
+      <Spot Name="MakeThingInfoTitle" Position="11,51" Color="#080808"/>
+      <!-- the product name, in RGB565 31 (blue) -->
+      <Spot Name="MakeThingInfoProduct" Position="19,64" Color="#0000FF"/>
+      <!-- the "Accessory needed" caption, in RGB565 2113 -->
+      <Spot Name="MakeThingInfoNeeded" Position="19,80" Color="#080808"/>
+      <!-- the making time in minutes, in RGB565 2113 -->
+      <Spot Name="MakeThingInfoTime" Position="250,386" Color="#080808"/>
+      <!-- the make-quantity icon beside the count box -->
+      <Spot Name="MakeThingInfoQuantity" Position="30,386"/>
+      <!-- the first "+" picture between material rows, and the step down to each next row -->
+      <Spot Name="MakeThingInfoPlus" Position="156,142" Pitch="0,61"/>
+      <!-- the first row frame picture (same step as the plus signs) -->
+      <Spot Name="MakeThingInfoFrame" Position="24,160"/>
+      <!-- the text colour inside a material row, in RGB565 2113 -->
+      <Spot Name="MakeThingInfoRowColor" Color="#080808"/>
+    </DrawingArea>
+    <TextBox Name="MakeThingCount" Bounds="83,392,24,14" HitTest="true" CharFilter="Digits" MaxLength="3" Align="Right"
+             FontColor="#080808" Visible="false"/>
+    <ImageButton Name="MakeThingInfoCloseSmall" Picture="Btn_Close_s_1" Position="273,24" Click="onMakeThingInfoClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MakeThingInfoClose" Picture="Btn_Close_1" Position="176,412" Click="onMakeThingInfoClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MakeThingInfoOk" Picture="Btn_Ok_1" Position="90,412" Click="onMakeThingConfirm"/>
+    <BlockList Name="MakeThingMaterials" Bounds="27,104,270,275" RowHeight="31" RowSpacing="30"
+               ShowHoverBar="false" FontColor="#080808"/>
+    <!-- RenderWithChildren: the Enough or Lack mark on each material's row -->
+    <DrawingArea Name="MakeThingMarks" Bounds="0,0,323,449">
+      <!-- the first enough/lack mark, and the step down to each next row -->
+      <Spot Name="MakeThingInfoMark" Position="17,100" Pitch="0,61"/>
+    </DrawingArea>
+  </Window>
+</Panel>

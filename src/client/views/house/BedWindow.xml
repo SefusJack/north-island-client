@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A pet bed of a house (TTH_UseBedForm, a click on a Hammock, a Wooden Bed or a Bunk Bed); view model:
+     viewmodels/BedWindow.cpp.  The pets asleep in it on the left, the carried ones on the right, each row a
+     small picture with level and bars; clicks check rows; the left arrow puts the checked carried pets to bed
+     (62/43), the right one wakes the checked sleepers (62/44).  The game draws a form's controls from the last
+     created to the first: the controls here are in drawing order, the reverse of TTH_UseBedForm.Create. -->
+<Panel Name="BedLayer" Bounds="0,0,800,600">
+  <Window Name="BedWindow" Escape="onBedClose" Picture="Form_Bed_1" Position="164,173" Visible="false">
+    <!-- DrawControl: a panel for each bed past the first, and the form going with the room -->
+    <DrawingArea Name="BedPaint" Bounds="0,0,472,254">
+      <!-- the first extra bed panel's top left -->
+      <Spot Name="BedPanel" Position="16,99"/>
+    </DrawingArea>
+    <ImageButton Name="BedRetrieve" Picture="Btn_ArrowR_8" Position="220,106" Size="21,21" Click="onBedRetrieve"/>
+    <ImageButton Name="BedStore" Picture="Btn_ArrowL_8" Position="221,144" Size="21,21" Click="onBedStore"/>
+    <BlockList Name="BedSleepers" Bounds="17,65,201,144" RowHeight="33" RowSpacing="4" HighlightColor="#89BEF5"
+               HoverAlpha="100" FontColor="#080808" Click="onBedSleeperClick"/>
+    <BlockList Name="BedCarried" Bounds="244,65,201,144" RowHeight="33" RowSpacing="4" HighlightColor="#89BEF5"
+               HoverAlpha="100" FontColor="#080808" Click="onBedCarriedClick"/>
+    <!-- the rows' TRe_MiniPetInfo -->
+    <DrawingArea Name="BedInfos" Bounds="0,0,472,254">
+      <!-- the first carried pet's info top left, the step to the next row, and its name colour (RGB565 31) -->
+      <Spot Name="BedCarriedInfo" Position="243,63" Pitch="0,37" Color="#0000FF"/>
+      <!-- the first sleeping pet's info top left, the step to the next row, and its name colour (RGB565 64512) -->
+      <Spot Name="BedSleeperInfo" Position="21,63" Pitch="0,37" Color="#FF8200"/>
+    </DrawingArea>
+    <ImageButton Name="BedClose" Picture="Btn_Close_1" Position="202,216" Click="onBedClose"/>
+    <ImageButton Name="BedCloseSmall" Picture="Btn_Close_S_1" Position="422,24" Size="18,18" Click="onBedClose"/>
+    <!-- RenderWithChildren, after the controls: the names and elements -->
+    <DrawingArea Name="BedNames" Bounds="0,0,472,254">
+      <!-- the name's offset from its info top left -->
+      <Spot Name="BedNameOffset" Position="35,10"/>
+      <!-- the first carried pet's element icon, and the first sleeping pet's -->
+      <Spot Name="BedCarriedElement" Position="361,67"/>
+      <Spot Name="BedSleeperElement" Position="134,67"/>
+      <!-- the name colour of a carried pet that cannot be traded (RGB565 63488) -->
+      <Spot Name="BedUntradableName" Color="#FF0000"/>
+    </DrawingArea>
+  </Window>
+</Panel>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The furniture pick-up list (TRe_RetainFurForm, the "Pick up the furniture" button); view model:
+     viewmodels/RetainFurWindow.cpp.  The pieces that wait in the owner's pick-up area (bought or rented, or sent
+     there), a row each with its icon and name; a row dragged onto the house floor stands there.  The game draws a
+     form's controls from the last created to the first: the controls here are in drawing order, the reverse of
+     TRe_RetainFurForm.Create. -->
+<Panel Name="RetainFurLayer" Bounds="0,0,800,600">
+  <Window Name="RetainFurWindow" Escape="onRetainFurClose" Picture="Form_MakeThing_1" Position="512,50" Visible="false">
+    <!-- DrawControl: the title -->
+    <Image Name="RetainFurTitle" Picture="Icon_BringUpFurTitle_1" Position="101,11"/>
+    <ScrollBar Name="RetainFurScroll" Bounds="249,77,17,310" Track="Rail_H5" Thumb="bar_H4" ThumbSource="0,0,9,21"
+               ThumbCap="7" TrackCap="16" ThumbInset="3" Scroll="onRetainFurScrolled"/>
+    <ImageButton Name="RetainFurDown" Picture="Btn_ArrowDn_3" Position="249,387" Click="onRetainFurDown"/>
+    <ImageButton Name="RetainFurUp" Picture="Btn_ArrowUp_3" Position="249,60" Click="onRetainFurUp"/>
+    <BlockList Name="RetainFurList" Bounds="19,65,225,338" RowHeight="32" RowSpacing="2" HighlightColor="#89BEF5"
+               HoverAlpha="100" FontColor="#080808" MouseDown="onRetainFurPress" MouseDrag="onRetainFurDrag" MouseUp="onRetainFurRelease"/>
+    <!-- inside a list row: the furniture icon's box, and the name's box and colour (RGB565 2113) -->
+    <Spot Name="RetainFurRowIcon" Size="34,34"/>
+    <Spot Name="RetainFurRowName" Bounds="75,3,115,30" Color="#080808"/>
+    <ImageButton Name="RetainFurCloseSmall" Picture="Btn_Close_S_1" Position="238,24" Size="18,18" Click="onRetainFurClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="RetainFurClose" Picture="Btn_Close_1" Position="116,414" Click="onRetainFurClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

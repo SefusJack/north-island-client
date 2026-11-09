@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The loading screen a relogin shows instead of the login forms (TForm1.DrawLoadingScreen with the mode 0, or 1 for the PvP server, called each frame while
+     Se_SystemForm.FReloginState is set); the controls are in drawing order.  View model: viewmodels/ReloginScreen.cpp. -->
+<Panel Name="ReloginLayer" Bounds="0,0,800,600" Topmost="true" Visible="false">
+  <Image Name="ReloginBackground" Picture="Anim_load0" Position="0,0"/>
+  <Image Name="ReloginPvpBackground" Picture="Anim_load1" Position="0,0" Visible="false"/>
+  <Image Name="ReloginSpinner" Picture="LoadingPic" Position="499,550" Frames="4" FrameInterval="250"/>
+  <Image Name="ReloginBarBack" Picture="LoadingBarB" Position="500,580"/>
+  <ProgressBar Name="ReloginProgress" Picture="LoadingBarF" Position="500,580" Maximum="30"/>
+  <Image Name="ReloginWarning" Picture="Warning" Position="8,530"/>
+  <Image Name="ReloginMark" Picture="Icon_Mark_1" Position="460,545" Visible="false"/>
+</Panel>

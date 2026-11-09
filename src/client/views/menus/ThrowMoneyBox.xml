@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The place-money box (TCY_ThrowMoenyMenu, the gold menu's Discard); view model:
+     viewmodels/ThrowMoneyBox.cpp.  How much gold to drop (10 at least): the left arrow adds
+     one, the right one takes one off.  The controls are in drawing order, the reverse of
+     TCY_ThrowMoenyMenu.Create. -->
+<Panel Name="ThrowMoneyLayer" Bounds="0,0,800,600">
+  <Window Name="ThrowMoney" Picture="Form_ThrowMoney" Position="540,1" Visible="false">
+    <ImageButton Name="ThrowMoneyLess" Picture="Arrow_R3" Position="154,32" Click="onThrowMoneyLess"/>
+    <ImageButton Name="ThrowMoneyMore" Picture="Arrow_L3" Position="34,32" Click="onThrowMoneyMore"/>
+    <ImageButton Name="ThrowMoneyCancel" Picture="btn_Cancel_1" Position="119,59" Click="onThrowMoneyCancel"/>
+    <ImageButton Name="ThrowMoneyOk" Picture="btn_ok_1" Position="34,59" Hint="Okay" Click="onThrowMoneyOk"/>
+    <TextBox Name="ThrowMoneyAmount" Bounds="70,29,76,24" HitTest="true" Align="Right" CharFilter="Digits" FontColor="#080808"/>
+  </Window>
+</Panel>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Short messages for the player (Re_TalkMsgFormPlus_1, a TSe_TalkMsgFormPlus); view model:
+     viewmodels/PlayerMessages.cpp.  Loaded last, so it lies above the other layouts. -->
+<MessagePanel Name="PlayerMessages" Bounds="0,25,800,0" Visible="false" Topmost="true"
+              Skin="panel22" SkinSource="0,0,332,168" Borders="50,32,60,32" Margins="50,31,50,31"
+              WrapColumns="32" MaxLines="5" LineHeight="15" LineSpacing="3" FontColor="#FFFF00"/>

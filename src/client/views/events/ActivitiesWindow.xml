@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The event schedule (TActionListForm, the Event Schedule button): five events a page with their start, end and state (the columns' names are
+     part of the picture), an arrow beside each that tells more, page arrows, Transmit to teleport to the selected event and Leave.  The game
+     draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of TActionListForm.Create.
+     View model: viewmodels/ActivitiesWindow.cpp. -->
+<Panel Name="ActivitiesLayer" Bounds="0,0,800,600">
+  <Window Name="ActivitiesWindow" Escape="onActivitiesClose" ScreenFit="true" Picture="Form_ActionList_2" Position="400,300" Size="556,360"
+          Visible="false">
+    <!-- DrawControl: the highlights and the texts -->
+    <DrawingArea Name="ActivitiesPage" Bounds="0,0,556,360">
+      <!-- the text clip width and line height -->
+      <Spot Name="ActivitiesText" Size="160,16"/>
+      <!-- the text colour (blue, in RGB565 31) and the processing colour (red, in RGB565 63488) -->
+      <Spot Name="ActivitiesTextColor" Color="#0000FF"/>
+      <Spot Name="ActivitiesProcessingColor" Color="#FF0000"/>
+      <!-- the selected or hovered row bar: light blue with alpha -->
+      <Spot Name="ActivitiesHighlight" Color="#C83D8BF9"/>
+    </DrawingArea>
+    <DrawingArea Name="ActivitiesRows" Bounds="24,85,485,192" HitTest="true" MouseUp="onActivitiesRowUp" DoubleClick="onActivitiesRowDouble"/>
+    <ImageButton Name="ActivitiesQuery5" Picture="query" Position="503,255" Size="27,27" Visible="false" Click="onActivitiesQuery"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="ActivitiesQuery4" Picture="query" Position="503,214" Size="27,27" Visible="false" Click="onActivitiesQuery"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="ActivitiesQuery3" Picture="query" Position="503,173" Size="27,27" Visible="false" Click="onActivitiesQuery"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="ActivitiesQuery2" Picture="query" Position="503,132" Size="27,27" Visible="false" Click="onActivitiesQuery"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="ActivitiesQuery1" Picture="query" Position="503,91" Size="27,27" Visible="false" Click="onActivitiesQuery"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="ActivitiesTransmit" Picture="Btn_Transmi" Position="183,332" Size="56,20" Click="onActivitiesTransmit"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="ActivitiesNext" Picture="Arrow_R3" Position="308,300" Size="56,20" Click="onActivitiesNext"/>
+    <ImageButton Name="ActivitiesPrevious" Picture="Arrow_L3" Position="218,300" Size="56,20" Click="onActivitiesPrevious"/>
+    <ImageButton Name="ActivitiesLeave" Picture="Btn_Leave_1" Position="308,332" Size="56,20" Click="onActivitiesClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="ActivitiesCloseSmall" Picture="Btn_Close_s_1" Position="504,25" Size="18,18" Click="onActivitiesClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

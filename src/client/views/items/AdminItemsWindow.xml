@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The qol client's admin item browser (no original form): a GM in admin mode (/gamemode admin, the server's 16/200) browses every
+     item of Item.dat and puts any of them into the bag (the chat command /give, never shown in the chat); view model:
+     viewmodels/items/AdminItemsWindow.cpp.  Made of the game's own pictures like the qol system window: the white form frame
+     (form_module), blank buttons with captions (Btn_Module_2) as the categories (groups of Item.dat item types: see
+     AdminItemsWindow::kindOf), the icon grid of item slots like the bag's and its scroll bar.
+     A click on an item chooses it (an orange tint); Put in bag gives the count of it, a right click gives one.
+     The ADMIN button stands at the top of the screen while admin mode is on and opens the browser again. -->
+<Panel Name="AdminItemsLayer" Bounds="0,0,800,600">
+  <ImageButton Name="AdminBadge" Picture="Btn_Module_2" Position="364,4" Text="ADMIN" Hint="Admin mode: no damage. Opens the item browser."
+               Click="onAdminBadge" Visible="false"/>
+  <Window Name="AdminItems" Escape="onAdminItemsClose" Position="174,70" Size="452,436" Hint="Admin items" Visible="false">
+    <!-- form_module_1: Borders keep the ornaments whole (top 122, bottom 45) and repeat only the picture's steady rows 122..177;
+         an odd height keeps its two-row stripes in step where the repeats meet the bottom -->
+    <Panel Name="AdminItemsFrame" Bounds="0,0,452,435" Skin="form_module_1" SkinSource="0,0,223,223" Borders="64,122,80,45"/>
+    <Label Name="AdminItemsTitle" Position="34,22" Text="Admin items" FontColor="#1E3C78" Effect="Plain"/>
+    <ImageButton Name="AdminItemsCloseSmall" Picture="Btn_Close_s_1" Position="402,26" Size="18,18" Click="onAdminItemsClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+
+    <!-- the categories, 22 px apart; captions of at most 9 letters fit the button -->
+    <ImageButton Name="AdminItemsKind0" Picture="Btn_Module_2" Position="18,50" Text="All" Click="onAdminItemsKind"/>
+    <ImageButton Name="AdminItemsKind1" Picture="Btn_Module_2" Position="18,72" Text="Weapons" Click="onAdminItemsKind"/>
+    <ImageButton Name="AdminItemsKind2" Picture="Btn_Module_2" Position="18,94" Text="Hats" Click="onAdminItemsKind"/>
+    <ImageButton Name="AdminItemsKind3" Picture="Btn_Module_2" Position="18,116" Text="Clothes" Click="onAdminItemsKind"/>
+    <ImageButton Name="AdminItemsKind4" Picture="Btn_Module_2" Position="18,138" Text="Gloves" Click="onAdminItemsKind"/>
+    <ImageButton Name="AdminItemsKind5" Picture="Btn_Module_2" Position="18,160" Text="Shoes" Click="onAdminItemsKind"/>
+    <ImageButton Name="AdminItemsKind6" Picture="Btn_Module_2" Position="18,182" Text="Jewelry" Click="onAdminItemsKind"/>
+    <ImageButton Name="AdminItemsKind7" Picture="Btn_Module_2" Position="18,204" Text="Usables" Click="onAdminItemsKind"/>
+    <ImageButton Name="AdminItemsKind8" Picture="Btn_Module_2" Position="18,226" Text="Food" Click="onAdminItemsKind"/>
+    <ImageButton Name="AdminItemsKind9" Picture="Btn_Module_2" Position="18,248" Text="Quest" Click="onAdminItemsKind"/>
+    <ImageButton Name="AdminItemsKind10" Picture="Btn_Module_2" Position="18,270" Text="Boxes" Click="onAdminItemsKind"/>
+    <ImageButton Name="AdminItemsKind11" Picture="Btn_Module_2" Position="18,292" Text="Mats." Click="onAdminItemsKind"/>
+    <ImageButton Name="AdminItemsKind12" Picture="Btn_Module_2" Position="18,314" Text="Furn." Click="onAdminItemsKind"/>
+    <ImageButton Name="AdminItemsKind13" Picture="Btn_Module_2" Position="18,336" Text="Vehicles" Click="onAdminItemsKind"/>
+    <ImageButton Name="AdminItemsKind14" Picture="Btn_Module_2" Position="18,358" Text="Other" Click="onAdminItemsKind"/>
+
+    <Panel Name="AdminItemsBox" Bounds="96,72,340,302">
+      <!-- CellPicture and CellSource: the bag's first slot in the item window's picture (ItemWindow.xml ItemBag at 193,74), the
+           32 px cell with its 2 px lines on the right and below, at the bag's Pitch 34; OutlineColor and OutlineGapColor: the bag's
+           frame round its slots (Form_RoleStatus_1 from 190,71: blue, pale, blue on the top and left, one blue line on the right,
+           a pale row and a blue line below).  Columns and Rows are AdminItemsWindow::kColumns and kRows. -->
+      <IconGrid Name="AdminItemsGrid" Position="4,7" Columns="9" Rows="8" Pitch="34" CellPicture="Form_RoleStatus_1" CellSource="193,74,34,34"
+                OutlineColor="#9DBBDD" OutlineGapColor="#E4EEF8"
+                Press="onAdminItemsPick"
+                RightClick="onAdminItemsQuickGive" MouseWheel="onAdminItemsWheel"/>
+      <!-- the chosen item tinted orange -->
+      <DrawingArea Name="AdminItemsChosen" Bounds="0,0,330,302">
+        <!-- the highlight over the chosen cell: its size, translucent orange -->
+        <Spot Name="AdminItemsChosenCell" Size="32,32" Color="#78FF6C01"/>
+      </DrawingArea>
+      <!-- MinThumb: the whole 21 px thumb picture plus its two 3 px insets, however long the list -->
+      <ScrollBar Name="AdminItemsScroll" Bounds="318,7,17,272" Track="Rail_H5" TrackCap="16" Thumb="bar_H4" ThumbSource="0,0,9,21"
+                 ThumbCap="7" ThumbInset="3" MinThumb="27" Scroll="onAdminItemsScrolled"/>
+    </Panel>
+    <Label Name="AdminItemsCount" Position="98,358" Text="" FontColor="#1E3C78" Effect="Plain"/>
+
+    <Label Name="AdminItemsSearchText" Position="20,382" Text="Search" FontColor="#1E3C78" Effect="Plain"/>
+    <TextBox Name="AdminItemsSearch" Bounds="72,384,130,12" Skin="Panel26" SkinSource="0,0,103,21" Borders="1,1,1,1"
+             FontColor="#0000FF" MaxLength="20" AllowPaste="true" TextChanged="onAdminItemsSearch" Enter="onAdminItemsSearch"/>
+    <Label Name="AdminItemsAmountText" Position="214,382" Text="Count" FontColor="#1E3C78" Effect="Plain"/>
+    <TextBox Name="AdminItemsAmount" Bounds="262,384,36,12" Skin="Panel26" SkinSource="0,0,103,21" Borders="1,1,1,1"
+             FontColor="#0000FF" MaxLength="3" CharFilter="Digits" Enter="onAdminItemsGive"/>
+    <ImageButton Name="AdminItemsGive" Picture="Btn_Module_2" Position="312,378" Text="Confirm" Click="onAdminItemsGive"/>
+    <Label Name="AdminItemsChoice" Position="70,406" Text="Click an item; right click gives one." FontColor="#080808" Effect="Plain"/>
+  </Window>
+</Panel>

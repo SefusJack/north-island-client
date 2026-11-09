@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The notebook (CH_NoteBook, a notebook item used from the bag); view model:
+     viewmodels/NotebookWindow.cpp.  Quest Log opens the quest window, Monster Information the monster book and
+     Character Introductions the star book.  The game draws a form's controls from the last created to the first: the
+     controls here are in drawing order, the reverse of CH_NoteBook.Create (its first button has
+     no picture and is left out). -->
+<Panel Name="NotebookLayer" Bounds="0,0,800,600">
+  <Window Name="Notebook" Picture="Form_NoteBook" Position="300,150" Visible="false">
+    <ImageButton Name="NotebookCloseSmall" Picture="btn_close_s_1" Position="173,26" Hint="Close" Click="onNotebookClose"/>
+    <ImageButton Name="NotebookClose" Picture="btn_close_1" Position="80,190" Hint="Close" Click="onNotebookClose"/>
+    <ImageButton Name="NotebookStars" Picture="Btn_StarBook" Position="63,142" Hint="Character Introductions"
+                 Click="onNotebookStars"/>
+    <ImageButton Name="NotebookMonsters" Picture="Btn_MonsterBook" Position="63,99" Hint="Monster Information"
+                 Click="onNotebookMonsters"/>
+    <ImageButton Name="NotebookQuests" Picture="Btn_MissionBook" Position="63,58" Hint="Quest Inquiry"
+                 Click="onNotebookQuests"/>
+  </Window>
+</Panel>

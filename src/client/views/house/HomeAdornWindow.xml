@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Handcart's form (TRe_HomeAdornForm, the owner's click on the piece 39065 in his house); view model: viewmodels/HomeAdornWindow.cpp.  Add, Move and
+     Remove choose what a click on the floor does with the pillars.  The game draws a form's controls from the last created to the first: the controls
+     here are in drawing order, the reverse of the form's Create. -->
+<Panel Name="HomeAdornLayer" Bounds="0,0,800,600">
+  <Window Name="HomeAdornWindow" Escape="onHomeAdornClose" AbovePopups="true" Picture="Form_HomeAdorn_1" Position="577,327" Visible="false">
+    <ImageButton Name="HomeAdornRemove" Picture="Btn_Remove_1" Position="84,130" Click="onHomeAdornRemove"/>
+    <ImageButton Name="HomeAdornMove" Picture="Btn_Move_1" Position="84,100" Click="onHomeAdornMove"/>
+    <ImageButton Name="HomeAdornAdd" Picture="Btn_AddNew_1" Position="84,70" Click="onHomeAdornAdd"/>
+    <ImageButton Name="HomeAdornCloseSmall" Picture="Btn_Close_s_1" Position="172,25" Size="18,18" Click="onHomeAdornClose"/>
+    <ImageButton Name="HomeAdornClose" Picture="Btn_Close_1" Position="84,160" Click="onHomeAdornClose"/>
+  </Window>
+</Panel>

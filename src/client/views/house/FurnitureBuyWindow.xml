@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- How many of an item on a shelf or in a vending machine to buy (TTH_BuyitemFOrm); view model:
+     viewmodels/FurnitureBuyWindow.cpp.  The item's name, its price, how many are left and how many to take
+     with what it comes to; OK sends the purchase (62/23 from a shelf, 62/26 from a vending machine).  The game
+     draws a form's controls from the last created to the first: the controls here are in drawing order, the
+     reverse of TTH_BuyitemFOrm.Create. -->
+<Panel Name="FurnitureBuyLayer" Bounds="0,0,800,600">
+  <Window Name="FurnitureBuyWindow" Picture="Form_BuyItemInHome_1" Position="288,188" Visible="false">
+    <!-- DrawControl: the price, the name, how many are left and the total -->
+    <DrawingArea Name="FurnitureBuyPaint" Bounds="0,0,223,223">
+      <!-- the unit price's text position -->
+      <Spot Name="FurnitureBuyPrice" Position="112,70"/>
+      <!-- the item name's text position and colour (RGB565 2113) -->
+      <Spot Name="FurnitureBuyName" Position="25,50" Color="#080808"/>
+      <!-- the items-left count's text position and colour (RGB565 2113) -->
+      <Spot Name="FurnitureBuyLeft" Position="110,92" Color="#080808"/>
+      <!-- the total price's text position and colour (RGB565 2113) -->
+      <Spot Name="FurnitureBuyTotal" Position="124,161" Color="#080808"/>
+    </DrawingArea>
+    <TextBox Name="FurnitureBuyCount" Bounds="59,138,104,14" HitTest="true" CharFilter="Digits" MaxLength="3" Align="Right"
+             FontColor="#080808"/>
+    <ImageButton Name="FurnitureBuyOk" Picture="Btn_OK_2" Position="68,185" Click="onFurnitureBuyOk"/>
+    <ImageButton Name="FurnitureBuyClose" Picture="Btn_Close_2" Position="116,185" Click="onFurnitureBuyClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="FurnitureBuyCloseSmall" Picture="Btn_Close_S_1" Position="173,26" Size="18,18" Click="onFurnitureBuyClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+  </Window>
+</Panel>

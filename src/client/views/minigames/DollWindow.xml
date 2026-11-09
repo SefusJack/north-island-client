@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The claw machine "Baby Dolls" (kind 7; MZ_MiniGame.pas TCatchDollForm): the machine's picture, the dolls, the claw and the picture over them are
+     painted by the view model; over them the form's buttons.  The form of the game is 588 x 600 at 230, 30 and is kept on the screen (and above the input
+     bar), which puts it at 212, -25: its buttons Move left (92, 450), Move right (160, 450), Grasp (228, 450) and Quit (500, 570) sit at 304, 425 / 372, 425 /
+     440, 425 and 712, 545.  A press on a move button sets the claw going, the release over it stops it; Grasp only presses.  The game draws a form's
+     controls from the last created to the first: the controls here are in drawing order, the reverse of TCatchDollForm.Create.  View model:
+     viewmodels/DollWindow.cpp. -->
+<Panel Name="DollLayer" Bounds="0,0,800,600">
+  <Panel Name="DollForm" Bounds="0,0,800,600" Visible="false">
+    <DrawingArea Name="DollPage" Bounds="0,0,800,600" HitTest="true">
+      <!-- the machine's background picture, and the mask picture drawn over the dolls -->
+      <Spot Name="DollGround" Position="106,10"/>
+      <Spot Name="DollMask" Position="106,377"/>
+    </DrawingArea>
+    <ImageButton Name="DollQuit" Picture="Hunting_Exit_Btn" Position="712,545" Size="74,40" Hint="Quit" Visible="false" Press="onDollQuit"/>
+    <ImageButton Name="DollGrasp" Picture="CatchButton" Position="440,425" Size="56,44" Hint="Grasp" Visible="false" Press="onDollGrasp"/>
+    <ImageButton Name="DollRight" Picture="CatchButton" Position="372,425" Size="56,44" Hint="Move right" Visible="false" Press="onDollRightDown" Click="onDollUp"/>
+    <ImageButton Name="DollLeft" Picture="CatchButton" Position="304,425" Size="56,44" Hint="Move left" Visible="false" Press="onDollLeftDown" Click="onDollUp"/>
+  </Panel>
+</Panel>

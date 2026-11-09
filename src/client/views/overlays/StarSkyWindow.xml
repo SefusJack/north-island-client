@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The star book's sky and the flight of a new star (CH_StarSystem, drawn over the map while its flight phase
+     is not 0) with its Quit button (TSe_StarSysExit); view model: viewmodels/StarSkyWindow.cpp.  The sky is a
+     picture the view model paints (the drifting sky, the stars, the fade); a left click on a star opens its
+     introduction, a right click leaves the sky.  The layer shows while the star system is at work and takes the
+     mouse from the map. -->
+<Panel Name="StarSkyLayer" Bounds="0,0,800,600" Visible="false">
+  <DrawingArea Name="StarSkyArea" Bounds="0,0,800,600" HitTest="true" MouseUp="onStarSkyUp" RightMouseUp="onStarSkyRightUp"/>
+  <ImageButton Name="StarSkyQuit" Picture="Btn_Minimize_1" Position="780,10" Hint="Quit" Visible="false" Click="onStarSkyQuit"/>
+</Panel>

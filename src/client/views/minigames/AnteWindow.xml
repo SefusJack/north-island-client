@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The chips form of Five in a Row (TAnteForm, over the hall when a free table is picked); view model: viewmodels/AnteWindow.cpp.  The gold
+     carried, the five bets and the one chosen; Confirm takes the table at that bet (57/11/3), Cancel and the small close button leave it.  The game
+     draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of TAnteForm.Create. -->
+<Panel Name="AnteLayer" Bounds="0,0,800,600">
+  <Window Name="AnteWindow" Picture="Form_Ante" Position="230,260" Visible="false">
+    <!-- DrawControl: the gold carried -->
+    <DrawingArea Name="AntePaint" Bounds="0,0,283,173">
+      <!-- the gold carried, as text in near-black (RGB565 2113) -->
+      <Spot Name="AnteGold" Position="62,45" Color="#080808"/>
+    </DrawingArea>
+    <Image Name="AnteMoney" Picture="GdMoney2" Position="31,34"/>
+    <ImageButton Name="AnteBet100000" Picture="btn_Gobang_A4" Position="114,98" Click="onAnteBet"/>
+    <ImageButton Name="AnteBet10000" Picture="btn_Gobang_A3" Position="37,98" Click="onAnteBet"/>
+    <ImageButton Name="AnteBet5000" Picture="btn_Gobang_A2" Position="191,63" Click="onAnteBet"/>
+    <ImageButton Name="AnteBet1000" Picture="btn_Gobang_A1" Position="114,63" Click="onAnteBet"/>
+    <ImageButton Name="AnteBet0" Picture="btn_Gobang_A0" Position="37,63" Click="onAnteBet"/>
+    <ImageButton Name="AnteCancel" Picture="btn_Cancel_1" Position="151,133" Click="onAnteCancel"/>
+    <ImageButton Name="AnteOk" Picture="btn_Ok_1" Position="75,133" Click="onAnteOk"/>
+    <TextBox Name="AnteEdit" Bounds="188,98,60,20" ReadOnly="true" FontColor="#FFFFFF"/>
+    <ImageButton Name="AnteCloseSmall" Picture="Btn_Close_s_1" Position="233,25" Size="17,17" Click="onAnteCancel"/>
+  </Window>
+</Panel>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reading a mail of someone the game does not know as a friend or guild member (TReadFurMailBoxForm,
+     a row of the mail box); view model: viewmodels/ReadFurMailWindow.cpp.  When it was sent, the
+     sender's name and the mail box's icon (the partner's picture for the partner), the text; Reply,
+     Delete, the previous and next mail of the box and Close.  The game draws a form's controls from
+     the last created to the first: the controls here are in drawing order, the reverse of
+     TReadFurMailBoxForm.Create; DrawControl draws over them. -->
+<Panel Name="ReadFurMailLayer" Bounds="0,0,800,600">
+  <Window Name="ReadFurMail" Escape="onReadFurMailClose" Picture="form_MailReceive_1" Position="10,50" Visible="false">
+    <Image Name="ReadFurMailPreviousGray" Picture="btn_PrevMail_Gray_1" Position="36,285"/>
+    <Image Name="ReadFurMailNextGray" Picture="btn_NextMail_Gray_1" Position="36,310"/>
+    <ImageButton Name="ReadFurMailPrevious" Picture="btn_PrevMail_1" Position="36,285" Click="onReadFurMailPrevious"/>
+    <ImageButton Name="ReadFurMailNext" Picture="btn_NextMail_1" Position="36,310" Click="onReadFurMailNext"/>
+    <ImageButton Name="ReadFurMailDelete" Picture="btn_deleteMail_1" Position="164,285" Click="onReadFurMailDelete"/>
+    <ImageButton Name="ReadFurMailClose" Picture="Btn_Close_1" Position="101,331" Hint="[ESC]" Click="onReadFurMailClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="ReadFurMailReply" Picture="btn_reply_1" Position="101,285" Click="onReadFurMailReply"/>
+    <Memo Name="ReadFurMailText" Bounds="28,88,200,190" FontColor="#080808" Effect="Plain" MaxChars="152" ReadOnly="true"/>
+    <ImageButton Name="ReadFurMailCloseSmall" Picture="Btn_Close_s_1" Position="203,23" Size="17,17" Click="onReadFurMailClose"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <!-- DrawControl: the date, the sender, the partner's picture or the mail box's icon, the invitation card, the arrows under hidden buttons -->
+    <DrawingArea Name="ReadFurMailPaint" Bounds="0,0,253,371">
+      <!-- where the send date and the sender's name are written -->
+      <Spot Name="ReadFurMailDate" Position="27,52"/>
+      <Spot Name="ReadFurMailName" Position="76,67"/>
+      <!-- the mailbox picture, shown when the sender is not the partner; the partner's portrait -->
+      <Spot Name="ReadFurMailMailbox" Position="165,208"/>
+      <Spot Name="ReadFurMailPartner" Position="193,249"/>
+      <!-- the invitation picture (form_invitation2) over an invitation -->
+      <Spot Name="ReadFurMailInvitation" Position="19,56"/>
+      <!-- the colour of the date and the name (RGB565 2113) -->
+      <Spot Name="ReadFurMailTextColor" Color="#080808"/>
+    </DrawingArea>
+  </Window>
+</Panel>

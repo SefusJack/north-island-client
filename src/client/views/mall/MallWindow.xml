@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The item mall (THL_ShoppingForm, the Item Mall button); view model: viewmodels/MallWindow.cpp.
+     Seven tabs (the marked rows, armour, weapons, goods, furniture, the slot machines, the
+     forge), eight rows a page with Add in Cart, the try-on room on the left with the player's
+     figure and attributes, the cart and Exit at the bottom.  Tab 6 draws eight game icons, tab 7
+     the forging room.  The form's own drawing (the rooms, the rows, the icons, the figure) comes
+     first, then its controls from the last created to the first (the hidden bonus-shop buttons
+     left out), then the hovered row's description. -->
+<Panel Name="MallLayer" Bounds="0,0,800,600">
+  <Window Name="Mall" Position="11,21" Size="778,554" Visible="false">
+    <Image Name="MallBackground" Source="Menu/Skins/white/Form_Shopping_1.bmp" Position="0,0"/>
+    <DrawingArea Name="MallPaint" Bounds="0,0,778,554" HitTest="true" MouseUp="onMallPress">
+      <!-- the text, near-black (RGB565 2113), and the description text, yellow (RGB565 65504) -->
+      <Spot Name="MallTextColor" Color="#080808"/>
+      <Spot Name="MallDescriptionColor" Color="#FFFF00"/>
+      <!-- the try-on's stat colours: a stat it raises is red (RGB565 63488), one it lowers is blue (RGB565 31) -->
+      <Spot Name="MallGainColor" Color="#FF0000"/>
+      <Spot Name="MallLossColor" Color="#0000FF"/>
+    </DrawingArea>
+    <!-- the forging room (tab 7): the piece in the forge, the bag's 50 cells, Cancel and Confirm -->
+    <IconGrid Name="MallForgeItem" Position="610,212" Columns="1" Rows="1" HoverColor="#52FF6C01" Visible="false" RightClick="onMallForgeCancel"/>
+    <IconGrid Name="MallBag" Position="274,50" Columns="5" Rows="10" Pitch="34" HoverColor="#52FF6C01" Visible="false" Click="onMallForgeSelect"
+              RightClick="onMallForgeRelease"/>
+    <ImageButton Name="MallForgeCancel" Picture="Btn_Cancel_1" Bounds="637,352,56,20" Visible="false" Click="onMallForgeCancel"/>
+    <ImageButton Name="MallForgeConfirm" Picture="Btn_confirm_1" Bounds="564,352,56,20" Visible="false" Click="onMallForgeConfirm"/>
+    <ImageButton Name="MallReset" Picture="Btn_Reset" Bounds="87,475,56,20" Click="onMallReset"/>
+    <ImageButton Name="MallRotateNext" Picture="Btn_ArrowR_8" Bounds="174,288,21,21" Click="onMallRotateNext"/>
+    <ImageButton Name="MallRotatePrevious" Picture="Btn_ArrowL_8" Bounds="36,288,21,21" Click="onMallRotatePrevious"/>
+    <ImageButton Name="MallExit" Picture="Btn_Exit" Bounds="681,519,71,20" Click="onMallExit"/>
+    <ImageButton Name="MallPayOff" Picture="Btn_PayOff" Bounds="581,519,71,20" Click="onMallOpenCart"/>
+    <ImageButton Name="MallViewCart" Picture="Btn_ViewCar" Bounds="481,519,71,20" Click="onMallOpenCart"/>
+    <ImageButton Name="MallPageNext" Picture="Btn_ArrowR_8" Bounds="549,486,21,21" Hint="Next page" Click="onMallPageNext"
+                 Animation="Btn_ArrowR_8" AnimationFirst="1" AnimationFrames="2" AnimationInterval="307"/>
+    <ImageButton Name="MallPagePrevious" Picture="Btn_ArrowL_8" Bounds="415,486,21,21" Hint="Previous page" Click="onMallPagePrevious"
+                 Animation="Btn_ArrowL_8" AnimationFirst="1" AnimationFrames="2" AnimationInterval="307"/>
+    <ImageButton Name="MallTab7" Picture="ShopTab_7" Bounds="677,12,74,22" Click="onMallTab"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MallTab6" Picture="ShopTab_6" Bounds="603,12,74,22" Click="onMallTab"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MallTab5" Picture="ShopTab_5" Bounds="529,12,74,22" Click="onMallTab"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MallTab4" Picture="ShopTab_4" Bounds="455,12,74,22" Click="onMallTab"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MallTab3" Picture="ShopTab_3" Bounds="381,12,74,22" Click="onMallTab"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MallTab2" Picture="ShopTab_2" Bounds="307,12,74,22" Click="onMallTab"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MallTab1" Picture="ShopTab_1" Bounds="233,12,74,22" Click="onMallTab"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MallAddToCart8" Picture="Btn_InCar" Bounds="646,460,89,20" Click="onMallAddToCart"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MallAddToCart7" Picture="Btn_InCar" Bounds="379,460,89,20" Click="onMallAddToCart"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MallAddToCart6" Picture="Btn_InCar" Bounds="646,348,89,20" Click="onMallAddToCart"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MallAddToCart5" Picture="Btn_InCar" Bounds="379,348,89,20" Click="onMallAddToCart"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MallAddToCart4" Picture="Btn_InCar" Bounds="646,236,89,20" Click="onMallAddToCart"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MallAddToCart3" Picture="Btn_InCar" Bounds="379,236,89,20" Click="onMallAddToCart"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MallAddToCart2" Picture="Btn_InCar" Bounds="646,124,89,20" Click="onMallAddToCart"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <ImageButton Name="MallAddToCart1" Picture="Btn_InCar" Bounds="379,124,89,20" Click="onMallAddToCart"
+                 ClickSound="" ReleaseSound="sound/wav0154.wav"/>
+    <DrawingArea Name="MallOverlay" Bounds="0,0,778,554"/>
+  </Window>
+</Panel>
