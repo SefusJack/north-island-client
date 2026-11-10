@@ -17,7 +17,7 @@ namespace client {
           m_progress(screen.get<ui::ProgressBar>("ReloginProgress")) {}
 
     void ReloginScreen::show(bool pvp) {
-        for (const char* name : {"ReloginBackground", "ReloginBarBack", "ReloginProgress", "ReloginLogo", "ReloginWarning"}) {
+        for (const char* name : {"ReloginBackground", "ReloginBarBack", "ReloginProgress", "ReloginWarning"}) {
             m_screen.get<ui::Element>(name).setVisible(!pvp);
         }
         for (const char* name : {"ReloginPvpBackground", "ReloginMark"}) {

@@ -52,6 +52,16 @@ namespace client {
             case 11: // 35/11: close the refill form
                 context.events.onReFillForm(false);
                 break;
+            case 12: { // 35/12: u8 account password change result (north-island-server only)
+                core::ByteReader reader(payload, 2); // body starts after the 2-byte action/sub header
+                const int result = reader.u8();
+                if (!reader.failed()) {
+                    context.events.onAccountPasswordChanged(result);
+                    break;
+                }
+                context.events.onUnhandled(id);
+                break;
+            }
             case 7: { // 35/7: u8 recommend result
                 core::ByteReader reader(payload, 2); // body starts after the 2-byte action/sub header
                 const int result = reader.u8();

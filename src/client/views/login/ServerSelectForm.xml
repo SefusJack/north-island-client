@@ -11,8 +11,8 @@
     <ImageButton Name="ServerClose" Picture="Btn_Close_s_1" Position="360,26" Size="18,18" Click="onLeave"
                  ClickSound="" ReleaseSound="sound/wav0154.wav"/>
 
-    <Panel Name="ServerBox" Bounds="18,48,374,232" Skin="panel10" SkinSource="0,0,50,50" Borders="7,7,7,7">
-      <DrawingArea Name="ServerRows" Bounds="4,4,348,224" HitTest="true" MouseDown="onServerRowDown"
+    <Panel Name="ServerBox" Bounds="18,48,370,232" Skin="panel10" SkinSource="0,0,50,50" Borders="7,7,7,7">
+      <DrawingArea Name="ServerRows" Bounds="4,4,344,224" HitTest="true" MouseDown="onServerRowDown"
                    DoubleClick="onServerRowDouble" MouseWheel="onServerRowsWheel">
         <!-- a row: its height -->
         <Spot Name="ServerRow" Size="0,20"/>
@@ -34,7 +34,7 @@
         <Spot Name="ServerSelectedColor" Color="#6E89BFF5"/>
         <Spot Name="ServerHoverColor" Color="#2D89BFF5"/>
       </DrawingArea>
-      <ScrollBar Name="ServerRowsScroll" Bounds="354,4,17,224" Track="Rail_H5" TrackCap="16" Thumb="bar_H4"
+      <ScrollBar Name="ServerRowsScroll" Bounds="350,4,17,224" Track="Rail_H5" TrackCap="16" Thumb="bar_H4"
                  ThumbSource="0,0,9,21" ThumbCap="7" ThumbInset="3" Scroll="onServerRowsScroll"/>
     </Panel>
     <Label Name="ServerMessage" Bounds="20,288,370,15" FontColor="#1E3C78" Effect="Plain"/>
@@ -53,8 +53,8 @@
     <ImageButton Name="ServerAdd" Picture="Btn_Module_2" Position="18,366" Text="Add" Click="onServerAdd"/>
     <ImageButton Name="ServerRemove" Picture="Btn_Module_2" Position="93,366" Text="Remove" Click="onServerRemove"/>
     <ImageButton Name="ServerRefresh" Picture="Btn_Module_2" Position="168,366" Text="Refresh" Click="onServerRefresh"/>
-    <ImageButton Name="Next" Picture="Btn_Module_2" Position="248,366" Text="Next" Click="onNext"/>
-    <ImageButton Name="Leave" Picture="Btn_Module_2" Position="323,366" Text="Leave" Click="onLeave"/>
+    <ImageButton Name="Next" Picture="Btn_Module_2" Position="243,366" Text="Next" Click="onNext"/>
+    <ImageButton Name="Leave" Picture="Btn_Module_2" Position="318,366" Text="Leave" Click="onLeave"/>
   </Panel>
   <!-- RenderWithChildren, after the controls: the tooltip of the status icon under the mouse -->
   <DrawingArea Name="ServerTooltip" Bounds="0,0,800,600"/>

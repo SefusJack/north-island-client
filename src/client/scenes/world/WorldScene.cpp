@@ -6399,6 +6399,8 @@ namespace client {
 
     void WorldScene::onPasswordChanged(int result) { m_changePassword.showResult(result); }
 
+    void WorldScene::onAccountPasswordChanged(int result) { m_changePassword.showAccountResult(result); }
+
     void WorldScene::onBlacklist(int result, const std::vector<protocol::BlacklistEntry>& entries) { m_blacklist.update(result, entries); }
 
     void WorldScene::onBlockedBy(int code) {

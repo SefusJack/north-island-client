@@ -23,8 +23,8 @@
     <Label Name="PartyLoginManualText" Position="24,140" Text="Manual battle commands" FontColor="#080808" Effect="Plain"/>
     <CheckBox Name="PartyLoginManual" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="218,138"/>
     <Label Name="PartyLoginError" Bounds="24,162,214,15" FontColor="#C80000" Effect="Plain"/>
-    <ImageButton Name="PartyLoginCancel" Picture="btn_cancel_1" Position="140,186" Click="onPartyLoginCancel"
+    <ImageButton Name="PartyLoginCancel" Picture="btn_cancel_1" Position="134,186" Click="onPartyLoginCancel"
                  ClickSound="" ReleaseSound="sound/wav0154.wav"/>
-    <ImageButton Name="PartyLoginOk" Picture="btn_ok_1" Position="40,186" Click="onPartyLoginOk"/>
+    <ImageButton Name="PartyLoginOk" Picture="btn_ok_1" Position="70,186" Click="onPartyLoginOk"/>
   </Window>
 </Panel>
