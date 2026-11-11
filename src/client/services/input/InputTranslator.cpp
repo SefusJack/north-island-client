@@ -86,6 +86,15 @@ namespace client {
             return text;
         }
 
+        /// @brief Gives the clipboard's text for Ctrl+V in the text boxes (ASCII only, as typed text is).
+        /// @return The text, empty when there is none.
+        std::string clipboardText() {
+            char* clipboard = SDL_GetClipboardText();
+            std::string text = clipboard ? asciiOnly(clipboard) : std::string();
+            SDL_free(clipboard);
+            return text;
+        }
+
     }
 
     bool forwardEvent(const SDL_Event& event, ui::Screen& screen, core::Point origin) {
@@ -115,6 +124,9 @@ namespace client {
                 }
                 break;
             case SDL_EVENT_KEY_DOWN: // key pressed
+                if (!screen.context().clipboardText) {
+                    screen.context().clipboardText = clipboardText;
+                }
                 screen.keyDown(keyEvent(event.key));
                 break;
             case SDL_EVENT_KEY_UP: // key released

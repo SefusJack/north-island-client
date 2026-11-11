@@ -12,6 +12,7 @@ namespace client {
 
         constexpr int kMessageMs = 2000; // message time, ms
         constexpr int kBaseRemote = 34058; // item 34058: Remote Control (the plain one, without the Plus form)
+        constexpr int kElectronControl = 34128; // item 34128: Electron Control, which runs a battle script
         constexpr int kKeyCell = 30; // width and height of a slot key, px
         constexpr char kNotSuitable[] = "This skill is not suitable for the target";
         constexpr char kCannotSetItem[] = "This function is unable to set this item";
@@ -133,7 +134,12 @@ namespace client {
               screen.get<ui::TextBox>("PlusValue3")
           },
           m_compare(screen.get<ui::ImageButton>("PlusCompare")),
-          m_cancel(screen.get<ui::ImageButton>("PlusCancel")) {
+          m_cancel(screen.get<ui::ImageButton>("PlusCancel")),
+          m_scriptBack(screen.get<ui::DrawingArea>("PlusScriptBack")),
+          m_scriptText(screen.get<ui::Label>("PlusScriptText")),
+          m_scriptPath(screen.get<ui::TextBox>("PlusScriptPath")),
+          m_scriptDebug(screen.get<ui::CheckBox>("PlusScriptDebug")),
+          m_scriptDebugText(screen.get<ui::Label>("PlusScriptDebugText")) {
         const auto find = [&](const char* name) { return services.pictures.find(name).value_or(gfx::PictureId{}); };
         // four role pictures Btn_Role_1..4
         for (int role = 1; role <= 4; ++role) {
@@ -150,6 +156,11 @@ namespace client {
             m_values[value].get().setText("0");
         }
         screen.get<ui::DrawingArea>("PlusOverlay").setPainter([this](gfx::Canvas& canvas, core::Point at, std::uint64_t) { paintOverlay(canvas, at); });
+        m_scriptBack.setPainter([](gfx::Canvas& canvas, core::Point at, std::uint64_t) {
+            canvas.fillRect({at.x, at.y, 194, 24}, {222, 239, 255}); // the form's light blue over the help line, 194 x 24 px
+            canvas.fillRect({at.x + 43, at.y + 2, 94, 20}, {148, 182, 206}); // the field's frame, in the form's border blue
+            canvas.fillRect({at.x + 44, at.y + 3, 92, 18}, {255, 255, 255}); // the field, under the path box
+        });
         for (int slot = 1; slot <= 9; ++slot) { // the nine key slots
             m_keys[static_cast<std::size_t>(slot)].get().setPainter([this, slot](gfx::Canvas& canvas, core::Point at, std::uint64_t) {
                 paintSlot(canvas, at, slot);
@@ -159,6 +170,7 @@ namespace client {
         screen.on("onPlusOk", [this](const ui::EventArgs&) { save(); });
         screen.on("onPlusCancel", [this](const ui::EventArgs&) {
             loadFromPlayer();
+            showScriptChoice();
             showTab(m_tab);
             m_modified = false;
         });
@@ -198,6 +210,8 @@ namespace client {
             return;
         }
         loadFromPlayer();
+        m_savedScript = m_remote.scriptChoice();
+        showScriptChoice();
         showTab(m_tab);
         m_window.setVisible(true);
         if (m_screen.context().bringToFront) {
@@ -208,8 +222,14 @@ namespace client {
     void RemotePlusWindow::close() {
         m_window.setVisible(false);
         loadFromPlayer();
+        showScriptChoice();
         showTab(m_tab);
         m_modified = false;
+    }
+
+    void RemotePlusWindow::showScriptChoice() {
+        m_scriptPath.setText(m_savedScript.path);
+        m_scriptDebug.setChecked(m_savedScript.debug);
     }
 
     void RemotePlusWindow::loadFromPlayer() {
@@ -230,6 +250,16 @@ namespace client {
         } else {
             m_remote.playSets()[1] = m_sets[1];
             m_remote.playSets()[2] = m_sets[2];
+        }
+        // the typed script path, without the spaces and quotes a pasted path may carry
+        std::string path = m_scriptPath.text();
+        const auto first = path.find_first_not_of(" \t\"'");
+        const auto last = path.find_last_not_of(" \t\"'");
+        path = first == std::string::npos ? std::string() : path.substr(first, last - first + 1);
+        if (path != m_savedScript.path || m_scriptDebug.isChecked() != m_savedScript.debug) {
+            m_savedScript.path = path;
+            m_savedScript.debug = m_scriptDebug.isChecked();
+            m_remote.setScriptChoice(m_savedScript);
         }
         close();
         checkModified();
@@ -265,6 +295,9 @@ namespace client {
             if (!m_values[3].get().text().empty()) {
                 current().faintHpValue = numberIn(m_values[3]);
             }
+        }
+        if (!m_modified && m_tab == 3) { // tab 3 holds the script path
+            m_modified = m_scriptPath.text() != m_savedScript.path || m_scriptDebug.isChecked() != m_savedScript.debug;
         }
         if (!m_modified && (m_tab == 1 || m_tab == 2)) {
             const AutoBattleSettings& inForce = m_remote.playSets()[static_cast<std::size_t>(m_tab)];
@@ -324,6 +357,12 @@ namespace client {
             m_healRoles[heal].get().setVisible(first);
         }
         m_compare.setVisible(first);
+        const bool script = tab == 3 && m_hooks.remoteItem() == kElectronControl; // tab 3 of the Electron Control has the script path
+        m_scriptBack.setVisible(script);
+        m_scriptText.setVisible(script);
+        m_scriptPath.setVisible(script);
+        m_scriptDebug.setVisible(script);
+        m_scriptDebugText.setVisible(script);
         for (std::size_t slot = 1; slot <= 9; ++slot) { // nine key slots
             m_keys[slot].get().setVisible(first);
         }

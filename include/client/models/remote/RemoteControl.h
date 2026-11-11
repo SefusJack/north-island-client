@@ -7,6 +7,8 @@
 #include "client/models/items/Inventory.h"
 #include "client/models/pets/PetTeam.h"
 #include "client/models/remote/AutoBattleSettings.h"
+#include "client/models/remote/RemoteBattleView.h"
+#include "client/models/remote/RemoteScript.h"
 #include "client/models/remote/RemoteSettings.h"
 #include "client/viewmodels/chat/PlayerMessages.h"
 #include "core/Bytes.h"
@@ -16,6 +18,8 @@
 #include <array>
 #include <cstdint>
 #include <functional>
+#include <optional>
+#include <string>
 
 namespace client {
 
@@ -37,6 +41,8 @@ namespace client {
                 std::function<core::Point()> position;
                 std::function<void(core::Point)> walkTo;
                 std::function<void()> closeForm;
+                std::function<std::int32_t()> playerId;
+                std::function<void(const std::string&)> chat; // a line in the chat's system channel
             };
 
             /// @brief Creates the remote control.
@@ -115,6 +121,36 @@ namespace client {
             /// @param nowMs Current time in ms.
             void update(std::uint64_t nowMs);
 
+            /// @brief Asks the Electron Control's script what the commanding fighter does.
+            /// @details Not in the original game. Only while the Electron Control (34128) runs with a script; a script error shows on screen.
+            /// @param view The battle.
+            /// @return The choice; nothing when there is no script, it returned nil, or it failed.
+            std::optional<RemoteDecision> decide(const RemoteBattleView& view);
+
+            /// @brief What the player chose for the Electron Control's script.
+            struct ScriptChoice {
+                std::string path; // as typed; empty for the default file (RemoteScript::pathFor); a relative one is in the user folder
+                bool debug = false; // errors, print() and each choice go to the chat and the log
+            };
+
+            /// @brief Gets the player's choice for the script (from sd<id xor 7654321>.script).
+            /// @return The choice.
+            ScriptChoice scriptChoice() const;
+
+            /// @brief Keeps the player's choice for the script and, while the Electron Control runs, loads the script again.
+            /// @param choice The choice.
+            void setScriptChoice(const ScriptChoice& choice);
+
+            /// @brief Tells whether the Electron Control runs with a script loaded, so the battle's auto asks it.
+            /// @return True while on with a script.
+            bool scriptOn() const { return m_on && m_script.loaded(); }
+
+            /// @brief Tells debug mode whether the script's choice became the command.
+            /// @param decision The script's choice.
+            /// @param actorKind 1 the player's choice, 2 the pet's.
+            /// @param used True when it is sent, false when it could not be used and the Plus settings decide.
+            void scriptOutcome(const RemoteDecision& decision, int actorKind, bool used);
+
             /// @brief Counts a death of the player (original ShowFightExpResult: experience lost).
             void playerDied();
 
@@ -160,6 +196,17 @@ namespace client {
             /// @brief Drops the items to keep out of the supply, on the pass after something arrived.
             void dropKept();
 
+            /// @brief Loads the player's script when the item in use is the Electron Control, else drops it.
+            void loadScript();
+
+            /// @brief Shows a script error on screen and, in debug mode, in the chat and the log.
+            /// @param text The error.
+            void scriptError(const std::string& text);
+
+            /// @brief In debug mode, puts a line in the chat and the log.
+            /// @param text The line.
+            void scriptDebug(const std::string& text);
+
             /// @brief Takes the player out of the game (original SendAfkAutoStop).
             void leaveGame();
 
@@ -173,6 +220,9 @@ namespace client {
             const PetTeam& m_pets;
             PlayerMessages& m_messages;
             Hooks m_hooks;
+            RemoteScript m_script;
+            bool m_debug = false;
+            std::string m_actorName; // who the script last decided for: "player" or "pet"
 
             RemoteSettings m_settings = RemoteSettings::defaults();
             std::array<AutoBattleSettings, 3> m_playSets{AutoBattleSettings{}, AutoBattleSettings::defaults(), AutoBattleSettings::defaults()};

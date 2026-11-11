@@ -74,6 +74,18 @@ target_include_directories(stb INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/
 add_library(nlohmann_json INTERFACE)
 target_include_directories(nlohmann_json SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/nlohmann/single_include)
 
+# Lua 5.4.7: the Electron Control's battle scripts. Built as C++ so its errors unwind the client's objects; only the core and the
+# libraries the sandbox opens (no io, os, package or debug, no interpreter)
+set(NORTH_ISLAND_LUA ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/lua)
+set(NORTH_ISLAND_LUA_SOURCES)
+foreach(file lapi lcode lctype ldebug ldo ldump lfunc lgc llex lmem lobject lopcodes lparser lstate lstring ltable ltm lundump lvm lzio
+             lauxlib lbaselib lmathlib lstrlib ltablib)
+  list(APPEND NORTH_ISLAND_LUA_SOURCES ${NORTH_ISLAND_LUA}/${file}.c)
+endforeach()
+set_source_files_properties(${NORTH_ISLAND_LUA_SOURCES} PROPERTIES LANGUAGE CXX)
+add_library(lua STATIC ${NORTH_ISLAND_LUA_SOURCES})
+target_include_directories(lua SYSTEM PUBLIC ${NORTH_ISLAND_LUA})
+
 # ---------------------------------------------------------------- libraries
 # north_island_library(NAME LEVEL BASE) builds src/BASE/NAME/**.cpp with include/BASE/NAME/**.h as a
 # static library; headers are included as "NAME/File.h" (subfolders such as client/actions
@@ -130,7 +142,7 @@ if(NORTH_ISLAND_BUILD_CLIENT)
   # level 4: the game client (view models, views, server action handlers)
   north_island_library(client 4 .)
   target_link_libraries(client PUBLIC core xml formats protocol net gfx audio ui)
-  target_link_libraries(client PRIVATE nlohmann_json)
+  target_link_libraries(client PRIVATE nlohmann_json lua)
   if(WIN32)
     # the photo's date and address lines (PhotoText) use the system's text drawing and host name
     target_link_libraries(client PRIVATE ws2_32 gdi32)

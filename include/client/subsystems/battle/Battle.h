@@ -9,6 +9,7 @@
 #include "client/subsystems/battle/BattleTween.h"
 #include "client/rendering/effects/LightEffect.h"
 #include "client/models/remote/AutoBattleSettings.h"
+#include "client/models/remote/RemoteBattleView.h"
 #include "client/subsystems/battle/BattlePainter.h"
 #include "client/subsystems/battle/SkillAction.h"
 #include "client/subsystems/battle/SkillUser.h"
@@ -59,6 +60,9 @@ namespace client {
                 std::function<AutoBattleSettings(int kind)> playSets;
                 std::function<int()> activePetId;
                 std::function<bool()> skillZoomOn; // the system window's camera switch is on (BattleSwitch 0)
+                std::function<std::optional<RemoteDecision>(const RemoteBattleView&)> scriptDecision; // the Electron Control's script
+                std::function<void(const RemoteDecision&, int actorKind, bool used)> scriptOutcome; // whether the script's choice became the command
+                std::function<bool()> scriptOn; // the Electron Control runs with a script loaded
             };
 
             /// @brief Creates an idle battle.
@@ -491,6 +495,23 @@ namespace client {
             /// @return False when none applies and the plain auto command follows.
             bool runAutoSettings(const AutoBattleSettings& sets);
 
+            /// @brief Builds the battle as the Electron Control's script sees it for the commanding fighter.
+            /// @return The view.
+            RemoteBattleView remoteView() const;
+
+            /// @brief Makes the script's choice the command and submits it, checked as the Plus sets' choices are.
+            /// @param decision The choice.
+            /// @param actorKind 1 the player commands, 2 the pet (for the outcome told to scriptOutcome).
+            /// @return False when it cannot be used and the Plus sets follow.
+            bool applyDecision(const RemoteDecision& decision, int actorKind);
+
+            /// @brief Whether the commanding fighter may use a skill on a target now: learnt (a stunt only the role's own), SP enough,
+            /// not sealed, and a target the skill may reach.
+            /// @param skillId Skill id.
+            /// @param targetSlot Target slot.
+            /// @return True when the script's choice of it would be used.
+            bool scriptSkillReady(int skillId, int targetSlot) const;
+
             /// @brief The own player's slot.
             /// @details Original: FindPlayerFighter.
             /// @return Slot, 0 when none.
@@ -627,6 +648,8 @@ namespace client {
             std::array<int, 3> m_autoCommands{};
             std::array<int, 3> m_lastCommandKinds{};
             std::array<int, 3> m_autoRotation{};
+            std::uint32_t m_battleCount = 0; // battles started, for the Electron Control's script
+            int m_round = 0; // command rounds of this battle
     };
 
 }

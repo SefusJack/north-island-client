@@ -8,6 +8,12 @@
   <Window Name="RemotePlusWindow" Escape="onPlusClose" Picture="Form_AutoPlayerPlus_1" Position="280,55" Size="240,489" Visible="false">
     <!-- DrawControl: the arrows from a skill to its target and the panel of the target menu, under the controls -->
     <DrawingArea Name="PlusOverlay" Bounds="0,0,240,489"/>
+    <!-- not in the game: the Electron Control's script file on tab 3, over the help's last line (4. Confirm after setting to execute) -->
+    <DrawingArea Name="PlusScriptBack" Bounds="24,419,194,24" Visible="false"/>
+    <Label Name="PlusScriptText" Position="30,424" Text="Script" FontColor="#080808" Effect="Plain" Visible="false"/>
+    <TextBox Name="PlusScriptPath" Bounds="68,422,92,18" HitTest="true" MaxLength="260" AllowPaste="true" FontColor="#080808" Visible="false"/>
+    <CheckBox Name="PlusScriptDebug" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="165,423" Size="16,16" Visible="false"/>
+    <Label Name="PlusScriptDebugText" Position="183,424" Text="Debug" FontColor="#080808" Effect="Plain" Visible="false"/>
     <DrawingArea Name="PlusKey9" Bounds="92,375,30,30" HitTest="true" DoubleClick="onPlusKeyDouble" RightMouseUp="onPlusKeyClear"/>
     <DrawingArea Name="PlusKey8" Bounds="162,410,30,30" HitTest="true" DoubleClick="onPlusKeyDouble" RightMouseUp="onPlusKeyClear"/>
     <DrawingArea Name="PlusKey7" Bounds="187,305,30,30" HitTest="true" DoubleClick="onPlusKeyDouble" RightMouseUp="onPlusKeyClear"/>

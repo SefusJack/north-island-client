@@ -1,8 +1,10 @@
 #include "client/subsystems/battle/Battle.h"
 
+#include "client/rules/SkillUse.h"
 #include "client/rules/Skills.h"
 
 #include <algorithm>
+#include <utility>
 
 namespace client {
 
@@ -390,6 +392,140 @@ namespace client {
                 return false;
             }
         }
+        submit(targetSlot);
+        return true;
+    }
+
+    RemoteBattleView Battle::remoteView() const {
+        RemoteBattleView view;
+        view.battle = m_battleCount;
+        view.round = m_round;
+        view.actorKind = commandSlotKind(m_actor);
+        view.actorSlot = m_actor;
+        view.ownSlot = ownFighterSlot();
+        view.petSlot = ownPetSlot();
+        const auto actor = m_field.fighter(m_actor);
+        view.allySide = actor ? actor->get().side() : 1;
+        view.enemySide = view.allySide == 1 ? 2 : 1;
+        for (int slot = 1; slot <= BattleField::kSlots; ++slot) {
+            const auto found = m_field.fighter(slot);
+            if (!found || found->get().id == 0) {
+                continue;
+            }
+            const Fighter& fighter = *found;
+            RemoteFighter seen;
+            seen.slot = slot;
+            seen.side = fighter.side();
+            seen.row = fighter.row;
+            seen.col = fighter.col;
+            seen.kind = fighter.kind;
+            seen.id = fighter.id;
+            seen.ownerId = fighter.ownerId;
+            seen.spawn = fighter.spawn;
+            seen.name = fighter.name;
+            seen.hp = fighter.hp;
+            seen.maxHp = fighter.maxHp;
+            seen.sp = fighter.sp;
+            seen.maxSp = fighter.maxSp;
+            seen.level = fighter.level;
+            seen.element = fighter.element;
+            seen.statusSkills = fighter.statuses.icons;
+            for (int kind = 1; kind < static_cast<int>(fighter.statuses.main.size()); ++kind) {
+                if (fighter.statuses.main[static_cast<std::size_t>(kind)].skill != 0) {
+                    seen.statusKinds.push_back(kind);
+                }
+            }
+            view.fighters.push_back(std::move(seen));
+        }
+        view.canUse = [this](int skillId, int targetSlot) { return scriptSkillReady(skillId, targetSlot); };
+        view.hasItem = [this](int itemId) { return m_hooks.bagSlotOf && m_hooks.bagSlotOf(itemId) != 0; };
+        view.skillLevel = [this](int skillId) {
+            const auto skill = m_services.skills.find(skillId);
+            const auto user = actorAsUser();
+            if (!skill || skill->key == 0 || !user || user->kind != 2 || !user->skillLevel) { // fighter kind 2: a player
+                return 0;
+            }
+            return user->skillLevel(skill->key);
+        };
+        return view;
+    }
+
+    bool Battle::scriptSkillReady(int skillId, int targetSlot) const {
+        const auto actor = m_field.fighter(m_actor);
+        const auto target = m_field.fighter(targetSlot);
+        const auto skill = m_services.skills.find(skillId);
+        const auto user = actorAsUser();
+        if (!actor || !target || !skill || !user || skill->spCost > actor->get().sp || !skillUsableOn(skillId, m_actor, targetSlot)) {
+            return false;
+        }
+        // whom the skill may reach, as submit checks it
+        const bool sameSide = actor->get().side() == target->get().side();
+        switch (skill->targetType) {
+            case 0: // target type 0: enemies only
+                if (sameSide) {
+                    return false;
+                }
+                break;
+            case 1: // target type 1: own side only
+            case 5: // target type 5: own side, not oneself (oneself is checked by skillUsableOn)
+                if (!sameSide) {
+                    return false;
+                }
+                break;
+            default: // types 2 (anyone) and 3 (oneself, checked by skillUsableOn)
+                break;
+        }
+        // skill type 8 revives; types 6, 7 and 14 heal
+        const bool revives = skill->skillType == 8;
+        const bool heals = skill->skillType == 6 || skill->skillType == 7 || skill->skillType == 14;
+        if ((revives && target->get().hp > 0) || (heals && target->get().hp <= 0)) {
+            return false;
+        }
+        // a stunt is told as the role's first skill, so only the role's own stunt can be asked for
+        int checked = skillId;
+        if (isStunt(skillId)) {
+            if (roleSkillId(user->bodyType, user->head) != skillId) {
+                return false;
+            }
+            checked = kRoleSkillPlaceholder;
+        }
+        return checkCanUseSkill(m_services.skills, m_services.motions, *user, checked) == 0; // 0: the skill may be used
+    }
+
+    bool Battle::applyDecision(const RemoteDecision& decision, int actorKind) {
+        // told before the command is sent: sending it starts the next fighter's command, which may ask the script again
+        const auto report = [&](bool used) {
+            if (m_hooks.scriptOutcome) {
+                m_hooks.scriptOutcome(decision, actorKind, used);
+            }
+            return used;
+        };
+        const auto actor = m_field.fighter(m_actor);
+        if (!actor || decision.id == 0 || !m_field.fighter(decision.targetSlot)) {
+            return report(false);
+        }
+        if (decision.item) {
+            if (!chooseItemById(decision.id)) {
+                return report(false);
+            }
+            report(true);
+            submit(decision.targetSlot);
+            return true;
+        }
+        const int targetSlot = decision.id == kDefence || decision.id == kFlee ? m_actor : decision.targetSlot;
+        if (!scriptSkillReady(decision.id, targetSlot)) {
+            return report(false);
+        }
+        chooseSkill(isStunt(decision.id) ? kRoleSkillPlaceholder : decision.id, false);
+        if (m_skill == kRoleSkillPlaceholder) {
+            if (const auto user = actorAsUser()) {
+                m_skill = roleSkillId(user->bodyType, user->head);
+            }
+        }
+        if (m_skill == 0) {
+            return report(false);
+        }
+        report(true);
         submit(targetSlot);
         return true;
     }

@@ -9,6 +9,7 @@
 #include "ui/CheckBox.h"
 #include "ui/DrawingArea.h"
 #include "ui/ImageButton.h"
+#include "ui/Label.h"
 #include "ui/Screen.h"
 #include "ui/TextBox.h"
 #include "ui/Window.h"
@@ -230,6 +231,9 @@ namespace client {
             /// @return The current tab's settings.
             AutoBattleSettings& current() { return m_sets[static_cast<std::size_t>(m_tab)]; }
 
+            /// @brief Puts the script choice in force back in the script row (tab 3).
+            void showScriptChoice();
+
             /// @brief Reads a number from a text box.
             /// @param box The text box.
             /// @return The number typed in, or 0 when it is not a number.
@@ -257,6 +261,12 @@ namespace client {
             std::array<std::reference_wrapper<ui::TextBox>, 4> m_values;
             ui::ImageButton& m_compare;
             ui::ImageButton& m_cancel;
+            ui::DrawingArea& m_scriptBack; // not in the game: the Electron Control's script path row on tab 3
+            ui::Label& m_scriptText;
+            ui::TextBox& m_scriptPath;
+            ui::CheckBox& m_scriptDebug;
+            ui::Label& m_scriptDebugText;
+            RemoteControl::ScriptChoice m_savedScript; // the script choice in force, as the row shows it when unchanged
             std::array<AutoBattleSettings, 3> m_sets;
             std::array<Slot, 10> m_slots; // one per key 1..9 (index 0 unused)
             int m_tab = 1;
