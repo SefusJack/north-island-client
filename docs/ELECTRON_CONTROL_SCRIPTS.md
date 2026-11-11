@@ -5,9 +5,21 @@ turn, ahead of the Remote Control Plus settings. The plain Remote Control (34058
 
 ## The file
 
-The script is `sd<id xor 7654321>.lua` in the per-player user folder, beside the Remote Control's `sd<…>.asd` file. It is read
-each time the Electron Control is started, so to reload an edited script, stop the remote and start it again. "Electron Control
-script loaded" shows when it loaded; a load error shows on screen instead, and the Plus settings are used.
+Choose the script in game: open the Electron Control's Level-up Setting (the Plus window), go to its third tab, type or paste
+the file's path in the **Script** box and press OK. A relative path is taken from the user folder. Each character keeps its own
+choice (in `sd<id xor 7654321>.script` in the user folder). With the box empty, the script is `sd<id xor 7654321>.lua` in the
+user folder, beside the Remote Control's `sd<…>.asd` file.
+
+The script is read when the Electron Control starts and when you press OK in the Plus window while it runs, so after editing
+the file, press OK again to reload it. "Electron Control script loaded" shows when it loaded; a load error, or "Script not
+found", shows on screen instead, and the Plus settings are used.
+
+## Debug mode
+
+Tick **Debug** beside the Script box and press OK. Then errors, the script's `print()` lines and each turn's choice
+("player: Hagendis Attack (15044) on slot 12", or "... cannot be used now: the Plus settings decide") also go to the chat's
+system lines and to the log (`north-island-client.log` in the user folder). With Debug off, `print()` shows nothing and errors
+only show briefly on screen.
 
 ## decide(b)
 
@@ -32,18 +44,20 @@ be used, or `decide` raises an error (the error shows on screen), the Plus setti
 | `b.fighters`, `b.allies`, `b.enemies` | lists of fighters (allies are on the commanding fighter's side) |
 | `b.battle`, `b.round` | battle counter and command round (from 1) |
 | `b.memory` | a table kept for the whole battle (also the global `memory`), emptied when a new battle starts |
-| `b.can_use(skill, target)` | true when the commanding fighter may use the skill on the target now |
+| `b.can_use(skill, target)` | true when the commanding fighter may use the skill on the target now: learnt (a role stunt only the role's own), SP enough, not sealed, a target the skill may reach (side, alive or fallen) |
 | `b.has_item(item)` | true when the bag holds the item |
+| `b.skill_level(skill)` | the level the commanding player learnt the skill to, whatever the SP; 0 when not learnt, and always 0 for a pet |
 
 ### A fighter
 
-`slot`, `side`, `row`, `col`, `kind` (2 a player, 4 a pet), `id`, `owner`, `name`, `hp`, `max_hp`, `sp`, `max_sp`, `hp_pct`,
+`slot`, `side`, `row`, `col`, `kind` (2 a player, 4 a pet), `id`, `owner`, `spawn` (differs for each fighter that enters the
+battle, so a monster that takes a fallen one's slot has a new one), `name`, `hp`, `max_hp`, `sp`, `max_sp`, `hp_pct`,
 `sp_pct` (0..100), `level`, `element`, `alive`, `statuses` (skill ids shown as status icons), `status_kinds` (main status kinds 1..8).
 
 ### Helpers
 
 `filter(list, fn)`, `alive(list)`, `fallen(list)`, `lowest(list, key)`, `highest(list, key)`, `has_status(fighter, skill)`;
-`print(...)` shows a line on screen.
+`print(...)` writes a line to the chat and the log in debug mode.
 
 ## Limits
 

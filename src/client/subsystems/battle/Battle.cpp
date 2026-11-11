@@ -573,7 +573,7 @@ namespace client {
         if (mode == kRemote) {
             const int slotKind = commandSlotKind(m_actor);
             if (slotKind != 0 && m_hooks.scriptDecision) {
-                if (const auto decision = m_hooks.scriptDecision(remoteView()); decision && applyDecision(*decision)) {
+                if (const auto decision = m_hooks.scriptDecision(remoteView()); decision && applyDecision(*decision, slotKind)) {
                     return;
                 }
             }
@@ -1083,9 +1083,12 @@ namespace client {
                 break;
             case 5: // ring button 5: auto
                 if (const int kind = commandSlotKind(m_actor); kind != 0) {
-                    // sides 1 and 2 are the player and the pet; auto mode 5 runs the Plus sets, 3 is the plain auto; flags[0] marks Plus sets
+                    // sides 1 and 2 are the player and the pet; auto mode 5 runs the Electron Control's script and the Plus sets, 3 is the
+                    // plain auto; flags[0] marks Plus sets
+                    const bool script = m_hooks.scriptOn && m_hooks.scriptOn();
                     for (int side = 1; side <= 2; ++side) {
-                        const bool plus = m_hooks.remoteOn && m_hooks.remoteOn() && m_hooks.playSets && m_hooks.playSets(side).flags[0] != 0;
+                        const bool plus = m_hooks.remoteOn && m_hooks.remoteOn() &&
+                                          (script || (m_hooks.playSets && m_hooks.playSets(side).flags[0] != 0));
                         m_autoCommands[static_cast<std::size_t>(side)] = plus ? 5 : 3;
                     }
                     issueAutoCommand(m_autoCommands[static_cast<std::size_t>(kind)]);

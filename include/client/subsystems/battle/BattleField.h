@@ -62,6 +62,7 @@ namespace client {
 
         private:
             std::array<std::optional<Fighter>, kSlots + 1> m_fighters{};
+            int m_placed = 0; // fighters placed so far, the last spawn number given
     };
 
 }

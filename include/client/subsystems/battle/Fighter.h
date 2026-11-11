@@ -34,6 +34,7 @@ namespace client {
         int kind = 0;
         std::int32_t id = 0;
         std::int32_t ownerId = 0;
+        int spawn = 0; // set by BattleField::place: which placement on the field this is, so a fighter that takes a freed slot is told apart
         int row = 0;
         int col = 0;
         std::int32_t hp = 0;

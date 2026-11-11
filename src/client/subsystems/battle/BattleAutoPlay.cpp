@@ -1,5 +1,6 @@
 #include "client/subsystems/battle/Battle.h"
 
+#include "client/rules/SkillUse.h"
 #include "client/rules/Skills.h"
 
 #include <algorithm>
@@ -420,6 +421,7 @@ namespace client {
             seen.kind = fighter.kind;
             seen.id = fighter.id;
             seen.ownerId = fighter.ownerId;
+            seen.spawn = fighter.spawn;
             seen.name = fighter.name;
             seen.hp = fighter.hp;
             seen.maxHp = fighter.maxHp;
@@ -435,31 +437,84 @@ namespace client {
             }
             view.fighters.push_back(std::move(seen));
         }
-        view.canUse = [this](int skillId, int targetSlot) {
-            const auto actorFound = m_field.fighter(m_actor);
-            const auto skill = m_services.skills.find(skillId);
-            return actorFound && skill && skill->spCost <= actorFound->get().sp && skillUsableOn(skillId, m_actor, targetSlot);
-        };
+        view.canUse = [this](int skillId, int targetSlot) { return scriptSkillReady(skillId, targetSlot); };
         view.hasItem = [this](int itemId) { return m_hooks.bagSlotOf && m_hooks.bagSlotOf(itemId) != 0; };
+        view.skillLevel = [this](int skillId) {
+            const auto skill = m_services.skills.find(skillId);
+            const auto user = actorAsUser();
+            if (!skill || skill->key == 0 || !user || user->kind != 2 || !user->skillLevel) { // fighter kind 2: a player
+                return 0;
+            }
+            return user->skillLevel(skill->key);
+        };
         return view;
     }
 
-    bool Battle::applyDecision(const RemoteDecision& decision) {
+    bool Battle::scriptSkillReady(int skillId, int targetSlot) const {
+        const auto actor = m_field.fighter(m_actor);
+        const auto target = m_field.fighter(targetSlot);
+        const auto skill = m_services.skills.find(skillId);
+        const auto user = actorAsUser();
+        if (!actor || !target || !skill || !user || skill->spCost > actor->get().sp || !skillUsableOn(skillId, m_actor, targetSlot)) {
+            return false;
+        }
+        // whom the skill may reach, as submit checks it
+        const bool sameSide = actor->get().side() == target->get().side();
+        switch (skill->targetType) {
+            case 0: // target type 0: enemies only
+                if (sameSide) {
+                    return false;
+                }
+                break;
+            case 1: // target type 1: own side only
+            case 5: // target type 5: own side, not oneself (oneself is checked by skillUsableOn)
+                if (!sameSide) {
+                    return false;
+                }
+                break;
+            default: // types 2 (anyone) and 3 (oneself, checked by skillUsableOn)
+                break;
+        }
+        // skill type 8 revives; types 6, 7 and 14 heal
+        const bool revives = skill->skillType == 8;
+        const bool heals = skill->skillType == 6 || skill->skillType == 7 || skill->skillType == 14;
+        if ((revives && target->get().hp > 0) || (heals && target->get().hp <= 0)) {
+            return false;
+        }
+        // a stunt is told as the role's first skill, so only the role's own stunt can be asked for
+        int checked = skillId;
+        if (isStunt(skillId)) {
+            if (roleSkillId(user->bodyType, user->head) != skillId) {
+                return false;
+            }
+            checked = kRoleSkillPlaceholder;
+        }
+        return checkCanUseSkill(m_services.skills, m_services.motions, *user, checked) == 0; // 0: the skill may be used
+    }
+
+    bool Battle::applyDecision(const RemoteDecision& decision, int actorKind) {
+        // told before the command is sent: sending it starts the next fighter's command, which may ask the script again
+        const auto report = [&](bool used) {
+            if (m_hooks.scriptOutcome) {
+                m_hooks.scriptOutcome(decision, actorKind, used);
+            }
+            return used;
+        };
         const auto actor = m_field.fighter(m_actor);
         if (!actor || decision.id == 0 || !m_field.fighter(decision.targetSlot)) {
-            return false;
+            return report(false);
         }
         if (decision.item) {
             if (!chooseItemById(decision.id)) {
-                return false;
+                return report(false);
             }
+            report(true);
             submit(decision.targetSlot);
             return true;
         }
         const int targetSlot = decision.id == kDefence || decision.id == kFlee ? m_actor : decision.targetSlot;
-        const auto skill = m_services.skills.find(decision.id);
-        if (!skill || skill->spCost > actor->get().sp || !skillUsableOn(decision.id, m_actor, targetSlot)) {
-            return false;
+        if (!scriptSkillReady(decision.id, targetSlot)) {
+            return report(false);
         }
         chooseSkill(isStunt(decision.id) ? kRoleSkillPlaceholder : decision.id, false);
         if (m_skill == kRoleSkillPlaceholder) {
@@ -468,8 +523,9 @@ namespace client {
             }
         }
         if (m_skill == 0) {
-            return false;
+            return report(false);
         }
+        report(true);
         submit(targetSlot);
         return true;
     }

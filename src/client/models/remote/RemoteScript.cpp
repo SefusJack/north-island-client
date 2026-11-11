@@ -112,6 +112,13 @@ end
             return 1;
         }
 
+        int skillLevel(lua_State* state) {
+            const auto* view = static_cast<const RemoteBattleView*>(lua_touserdata(state, lua_upvalueindex(1)));
+            const auto skill = static_cast<int>(luaL_checkinteger(state, 1));
+            lua_pushinteger(state, view->skillLevel ? view->skillLevel(skill) : 0);
+            return 1;
+        }
+
         void pushIntegers(lua_State* state, const std::vector<int>& values) {
             lua_createtable(state, static_cast<int>(values.size()), 0);
             for (std::size_t i = 0; i < values.size(); ++i) {
@@ -129,6 +136,7 @@ end
             setInteger(state, "kind", fighter.kind);
             setInteger(state, "id", fighter.id);
             setInteger(state, "owner", fighter.ownerId);
+            setInteger(state, "spawn", fighter.spawn);
             lua_pushstring(state, fighter.name.c_str());
             lua_setfield(state, -2, "name");
             setInteger(state, "hp", fighter.hp);
@@ -197,6 +205,9 @@ end
             lua_pushlightuserdata(state, const_cast<RemoteBattleView*>(&view));
             lua_pushcclosure(state, hasItem, 1);
             lua_setfield(state, b, "has_item");
+            lua_pushlightuserdata(state, const_cast<RemoteBattleView*>(&view));
+            lua_pushcclosure(state, skillLevel, 1);
+            lua_setfield(state, b, "skill_level");
             lua_getglobal(state, "memory");
             lua_setfield(state, b, "memory");
         }
@@ -290,6 +301,10 @@ end
 
     std::filesystem::path RemoteScript::pathFor(const std::filesystem::path& userRoot, std::int32_t playerId) {
         return userRoot / ("sd" + std::to_string(playerId ^ kFileKey) + ".lua");
+    }
+
+    std::filesystem::path RemoteScript::choiceFor(const std::filesystem::path& userRoot, std::int32_t playerId) {
+        return userRoot / ("sd" + std::to_string(playerId ^ kFileKey) + ".script");
     }
 
     bool RemoteScript::load(const std::filesystem::path& path) {

@@ -37,6 +37,12 @@ namespace client {
             /// @return The file path.
             static std::filesystem::path pathFor(const std::filesystem::path& userRoot, std::int32_t playerId);
 
+            /// @brief Builds the path of the file that holds a player's chosen script path (sd<id xor 7654321>.script, one line).
+            /// @param userRoot Directory holding the per-player files.
+            /// @param playerId Id of the player.
+            /// @return The file path.
+            static std::filesystem::path choiceFor(const std::filesystem::path& userRoot, std::int32_t playerId);
+
             /// @brief Loads and runs a script file, replacing the one loaded.
             /// @param path The file.
             /// @return True when it loaded and defines decide; false for no file (error() empty) or a failure (error() says why).

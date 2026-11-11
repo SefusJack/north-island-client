@@ -1,6 +1,7 @@
 #include "client/models/remote/RemoteControl.h"
 
 #include "client/rules/ItemInfo.h"
+#include "core/Log.h"
 #include "gfx/TextRenderer.h"
 #include "protocol/RemoteRequests.h"
 #include "protocol/TeamRequests.h"
@@ -8,9 +9,13 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <filesystem>
+#include <fstream>
 #include <functional>
 #include <limits>
 #include <optional>
+#include <string>
+#include <system_error>
 
 namespace client {
 
@@ -59,7 +64,7 @@ namespace client {
           m_pets(pets),
           m_messages(messages),
           m_hooks(std::move(hooks)),
-          m_script([this](const std::string& line) { m_messages.show(line, kScriptMessageMs); }) {}
+          m_script([this](const std::string& line) { scriptDebug(line); }) {}
 
     bool RemoteControl::use(int bagSlot, bool onVehicle, bool stalled) {
         if (m_on) {
@@ -149,10 +154,58 @@ namespace client {
             m_script.unload();
             return;
         }
-        if (m_script.load(RemoteScript::pathFor(m_services.game.userRoot(), m_hooks.playerId()))) {
+        const ScriptChoice choice = scriptChoice();
+        m_debug = choice.debug;
+        const std::filesystem::path path = choice.path.empty() ? RemoteScript::pathFor(m_services.game.userRoot(), m_hooks.playerId())
+                                                               : m_services.game.userRoot() / std::filesystem::path(choice.path);
+        if (!choice.path.empty() && !std::filesystem::exists(path)) {
+            m_script.unload();
+            scriptError("Script not found: " + path.string());
+            return;
+        }
+        if (m_script.load(path)) {
             m_messages.show("Electron Control script loaded", kScriptMessageMs);
+            scriptDebug("loaded " + path.string());
         } else if (!m_script.error().empty()) {
-            m_messages.show(m_script.error(), kScriptMessageMs);
+            scriptError(m_script.error());
+        } else {
+            scriptDebug("no script at " + path.string() + ": the Plus settings decide");
+        }
+    }
+
+    RemoteControl::ScriptChoice RemoteControl::scriptChoice() const {
+        ScriptChoice choice;
+        if (!m_hooks.playerId) {
+            return choice;
+        }
+        std::ifstream file(RemoteScript::choiceFor(m_services.game.userRoot(), m_hooks.playerId()), std::ios::binary);
+        // line 1 the path, line 2 "debug" when debug mode is on
+        std::string lines[2];
+        for (std::string& line : lines) {
+            std::getline(file, line);
+            if (!line.empty() && line.back() == '\r') {
+                line.pop_back();
+            }
+        }
+        choice.path = lines[0];
+        choice.debug = lines[1] == "debug";
+        return choice;
+    }
+
+    void RemoteControl::setScriptChoice(const ScriptChoice& choice) {
+        if (!m_hooks.playerId) {
+            return;
+        }
+        const std::filesystem::path file = RemoteScript::choiceFor(m_services.game.userRoot(), m_hooks.playerId());
+        std::error_code ignored;
+        if (choice.path.empty() && !choice.debug) {
+            std::filesystem::remove(file, ignored);
+        } else {
+            std::ofstream(file, std::ios::binary | std::ios::trunc) << choice.path << '\n' << (choice.debug ? "debug\n" : "");
+        }
+        m_debug = choice.debug;
+        if (m_on) {
+            loadScript();
         }
     }
 
@@ -160,11 +213,52 @@ namespace client {
         if (!m_on || !m_script.loaded()) {
             return std::nullopt;
         }
+        m_actorName = view.actorKind == 2 ? "pet" : "player"; // actor kind 2: the pet
         auto decision = m_script.decide(view);
         if (!m_script.error().empty()) {
-            m_messages.show(m_script.error(), kScriptMessageMs);
+            scriptError(m_script.error());
+        } else if (!decision) {
+            scriptDebug(m_actorName + ": nil, the Plus settings decide");
         }
         return decision;
+    }
+
+    void RemoteControl::scriptOutcome(const RemoteDecision& decision, int actorKind, bool used) {
+        if (!m_debug) {
+            return;
+        }
+        std::string what;
+        if (decision.item) {
+            const auto item = m_services.items.find(decision.id);
+            what = (item ? item->name : "item") + " (" + std::to_string(decision.id) + ")";
+        } else {
+            const auto skill = m_services.skills.find(decision.id);
+            what = (skill ? skill->name : "skill") + " (" + std::to_string(decision.id) + ")";
+        }
+        scriptDebug(
+            std::string(actorKind == 2 ? "pet" : "player") + ": " + what + " on slot " + std::to_string(decision.targetSlot) +
+            (used ? "" : " cannot be used now: the Plus settings decide")
+        );
+    }
+
+    void RemoteControl::scriptError(const std::string& text) {
+        m_messages.show(text, kScriptMessageMs);
+        if (m_debug) {
+            core::logWarning("Electron Control script: ", text);
+            if (m_hooks.chat) {
+                m_hooks.chat("[script] " + text);
+            }
+        }
+    }
+
+    void RemoteControl::scriptDebug(const std::string& text) {
+        if (!m_debug) {
+            return;
+        }
+        core::logInfo("Electron Control script: ", text);
+        if (m_hooks.chat) {
+            m_hooks.chat("[script] " + text);
+        }
     }
 
     void RemoteControl::startWander() {

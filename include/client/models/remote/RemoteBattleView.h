@@ -17,6 +17,7 @@ namespace client {
         int kind = 0; // fighter kind: 2 a player, 4 a pet, others monsters and NPCs
         std::int32_t id = 0;
         std::int32_t ownerId = 0;
+        int spawn = 0; // differs for each fighter placed in the battle, also one that takes the slot of a fallen one
         std::string name;
         std::int32_t hp = 0;
         std::int32_t maxHp = 0;
@@ -41,6 +42,7 @@ namespace client {
         std::vector<RemoteFighter> fighters;
         std::function<bool(int skillId, int targetSlot)> canUse; // the actor may use the skill on the slot now
         std::function<bool(int itemId)> hasItem; // the bag holds the item
+        std::function<int(int skillId)> skillLevel; // the level the commanding player learnt the skill to, 0 when not learnt or a pet
     };
 
     /// @brief What the script chose for the commanding fighter.

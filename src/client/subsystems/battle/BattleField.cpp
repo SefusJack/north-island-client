@@ -39,6 +39,7 @@ namespace client {
 
     void BattleField::place(int slot, Fighter fighter) {
         fighter.position = cellPosition(fighter.row, fighter.col);
+        fighter.spawn = ++m_placed;
         m_fighters.at(static_cast<std::size_t>(slot)) = std::move(fighter);
     }
 

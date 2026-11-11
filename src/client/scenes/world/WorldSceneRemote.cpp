@@ -27,6 +27,7 @@ namespace client {
         hooks.walkTo = [this](core::Point point) { walkTo(point); };
         hooks.closeForm = [this] { m_remoteWindow.close(); };
         hooks.playerId = [this] { return m_player.id; };
+        hooks.chat = [this](const std::string& text) { m_chat.add(10, text); }; // chat channel 10: system line
         return hooks;
     }
 
