@@ -2458,6 +2458,10 @@ namespace client {
             /// @param result The result code.
             virtual void onPasswordChanged(int result) { (void)result; }
 
+            /// @brief How changing the account password went (packet 35/12, north-island-server only).
+            /// @param result The result code.
+            virtual void onAccountPasswordChanged(int result) { (void)result; }
+
             /// @brief Whether a revival spot is recorded (packet 5/21).
             /// @param code 1 yes, other non-zero values no, 0 no news.
             virtual void onReturnSpotRecorded(int code) { (void)code; }
