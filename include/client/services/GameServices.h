@@ -70,6 +70,12 @@ namespace client {
         std::function<bool(std::int32_t playerId)> isPartyMember;
         std::function<void(std::int32_t playerId)> partyLogOut;
         std::function<void(bool centre, const std::string& text, int durationMs)> partyMessage;
+        std::function<bool()> partyMirrorsNpcs; // the members follow the leader's NPC talk (qol)
+        std::function<void(bool on)> setPartyMirrorsNpcs;
+        std::function<void(int npcIndex)> partyNpcClicked; // the leader started an NPC's event
+        std::function<void(int dataId, int code)> partyEventAnswered; // the leader answered an event dialog
+        std::function<void()> partyEventEnded; // the leader's event ended
+        bool unseenPartyMember = false; // a party member's account, played without its own screen (qol)
         bool serverSorts = false;
         std::array<bool, 3> videoGroupsOpen = {true, false, false}; // which groups of the settings Video tab are open, until the game closes
 

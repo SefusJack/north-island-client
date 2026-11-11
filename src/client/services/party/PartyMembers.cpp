@@ -148,9 +148,15 @@ namespace client {
         services.partyLogIn = nullptr;
         services.isPartyMember = nullptr;
         services.partyLogOut = nullptr;
+        services.partyMirrorsNpcs = nullptr;
+        services.setPartyMirrorsNpcs = nullptr;
+        services.partyNpcClicked = nullptr;
+        services.partyEventAnswered = nullptr;
+        services.partyEventEnded = nullptr;
     }
 
     void PartyMembers::setUpPlayed(GameServices& services) {
+        services.unseenPartyMember = false;
         services.autoBattle = [] { return false; };
         services.chatHeard = nullptr;
         services.partyMessage = nullptr;
@@ -168,6 +174,21 @@ namespace client {
         };
         services.isPartyMember = [this](std::int32_t playerId) { return isMember(playerId); };
         services.partyLogOut = [this](std::int32_t playerId) { logOut(playerId); };
+        services.partyMirrorsNpcs = [this] { return m_mirrorNpcs; };
+        services.setPartyMirrorsNpcs = [this](bool on) { m_mirrorNpcs = on; };
+        services.partyNpcClicked = [this](int npcIndex) {
+            forMirroringMembers([npcIndex](Member& member, WorldScene& world) {
+                if (!world.mirrorNpcClick(npcIndex)) {
+                    core::logInfo("party member ", member.account.account, ": cannot follow the leader to NPC ", npcIndex);
+                }
+            });
+        };
+        services.partyEventAnswered = [this](int dataId, int code) {
+            forMirroringMembers([dataId, code](Member&, WorldScene& world) { world.mirrorEventAnswer(dataId, code); });
+        };
+        services.partyEventEnded = [this] {
+            forMirroringMembers([](Member&, WorldScene& world) { world.mirrorLeaderEventEnded(); });
+        };
         if (m_setUpPlayed) {
             m_setUpPlayed(services);
         }
@@ -176,6 +197,7 @@ namespace client {
     void PartyMembers::setUpMember(Member& member) {
         GameServices& services = member.bundle->services;
         const GameServices& main = played();
+        services.unseenPartyMember = true;
         services.freeFrames = main.freeFrames;
         services.view = main.view;
         services.videoSettings = main.videoSettings;
@@ -199,6 +221,25 @@ namespace client {
         services.partyLogIn = nullptr;
         services.isPartyMember = nullptr;
         services.partyLogOut = nullptr;
+        services.partyMirrorsNpcs = nullptr;
+        services.setPartyMirrorsNpcs = nullptr;
+        services.partyNpcClicked = nullptr;
+        services.partyEventAnswered = nullptr;
+        services.partyEventEnded = nullptr;
+    }
+
+    template <typename Call>
+    void PartyMembers::forMirroringMembers(const Call& call) {
+        if (!m_mirrorNpcs || m_played->kind != SceneKind::World || !m_played->scene) {
+            return;
+        }
+        const int leaderMap = static_cast<const WorldScene&>(*m_played->scene).ownMapId();
+        for (const auto& owned : m_members) {
+            Member& member = *owned;
+            if (member.world && !member.leavingSinceMs && member.world->get().inWorld() && member.world->get().ownMapId() == leaderMap) {
+                call(member, member.world->get());
+            }
+        }
     }
 
     std::vector<PartyChatLine> PartyMembers::takeChatLines(std::uint64_t nowMs) {

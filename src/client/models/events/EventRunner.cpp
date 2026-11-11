@@ -66,6 +66,56 @@ namespace client {
         return true;
     }
 
+    bool EventRunner::startMirrored(int npcIndex) {
+        if (m_running || m_waitingReply || (m_hooks.fighting && m_hooks.fighting())) {
+            return false;
+        }
+        m_mirrored = true;
+        m_leaderEnded = false;
+        m_leaderAnswers.clear();
+        m_eventNpc = npcIndex;
+        m_running = true;
+        m_hooks.send(protocol::npcClickedRequest(npcIndex));
+        m_waitingReply = true;
+        return true;
+    }
+
+    void EventRunner::leaderAnswered(int dataId, int code) {
+        if (!m_mirrored) {
+            return;
+        }
+        m_leaderAnswers.emplace_back(dataId, code);
+        answerMirrored();
+    }
+
+    void EventRunner::leaderEnded() {
+        if (!m_mirrored) {
+            return;
+        }
+        m_leaderEnded = true;
+        answerMirrored();
+    }
+
+    void EventRunner::answerMirrored() {
+        if (!m_mirrorSurface) {
+            return;
+        }
+        int code = kCloseAnswer;
+        if (!m_leaderAnswers.empty()) {
+            const auto [dataId, leaderCode] = m_leaderAnswers.front();
+            m_leaderAnswers.pop_front();
+            if (dataId == *m_mirrorSurface) {
+                code = leaderCode;
+            } else {
+                core::logInfo("mirrored event: dialog ", *m_mirrorSurface, " is not the leader's ", dataId, ", closed");
+            }
+        } else if (!m_leaderEnded) {
+            return;
+        }
+        m_mirrorSurface.reset();
+        answer(code);
+    }
+
     void EventRunner::npcNear(int npcIndex) {
         m_eventNpc = npcIndex;
         m_running = true;
@@ -154,6 +204,10 @@ namespace client {
     }
 
     void EventRunner::talk(const EventResult& result) {
+        if (m_mirrored) {
+            m_requestNext = true;
+            return;
+        }
         m_requestNext = false;
         std::optional<core::Point> look;
         int facingNpc = 0;
@@ -205,6 +259,16 @@ namespace client {
             return;
         }
         const formats::SceneSurface& surface = found->second;
+        m_surfaceId = surface.kind == kDialogSurface ? result.dataId : 0;
+        if (m_mirrored) {
+            if (surface.kind != kDialogSurface) {
+                answer(kCloseAnswer);
+                return;
+            }
+            m_mirrorSurface = result.dataId;
+            answerMirrored();
+            return;
+        }
         const auto entryText = [this, &surface](const formats::SceneSurface::Entry& entry) -> std::string {
             if (entry.source == kTalkSource) {
                 return m_services.talks.text(entry.id);
@@ -264,6 +328,10 @@ namespace client {
     void EventRunner::answer(int code) {
         m_hooks.send(protocol::eventAnswerRequest(code));
         m_waitingChoice = false;
+        if (!m_mirrored && m_surfaceId != 0 && m_hooks.answered) {
+            m_hooks.answered(m_surfaceId, code);
+        }
+        m_surfaceId = 0;
     }
 
     void EventRunner::signal(int sub, std::int32_t value) {
@@ -306,6 +374,14 @@ namespace client {
         m_waitingReply = false;
         m_eventNpc = 0;
         m_eventDoor = 0;
+        m_surfaceId = 0;
+        if (!m_mirrored && m_hooks.ended) {
+            m_hooks.ended();
+        }
+        m_mirrored = false;
+        m_leaderEnded = false;
+        m_mirrorSurface.reset();
+        m_leaderAnswers.clear();
     }
 
     void EventRunner::update() {

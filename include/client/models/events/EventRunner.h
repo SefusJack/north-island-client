@@ -11,9 +11,11 @@
 #include "formats/SceneSurface.h"
 
 #include <cstdint>
+#include <deque>
 #include <functional>
 #include <map>
 #include <optional>
+#include <utility>
 
 namespace client {
 
@@ -34,6 +36,8 @@ namespace client {
                 std::function<bool()> npcsWalking;
                 std::function<bool(const EventResult&)> movie;
                 std::function<bool()> fighting;
+                std::function<void(int dataId, int code)> answered; // the player answered a dialog (not called for mirrored events)
+                std::function<void()> ended; // the player's own event ended (not called for mirrored events)
             };
 
             /// @brief Creates the runner over the shared services and windows.
@@ -113,6 +117,20 @@ namespace client {
             /// @details Original: FEventRunning := 1.
             void startedElsewhere() { m_running = true; }
 
+            /// @brief Starts an NPC's event because the party leader started it (qol NPC mirror): no proximity check, talk lines
+            /// move on by themselves and dialogs are answered with the leader's answers.
+            /// @param npcIndex Index of the NPC.
+            /// @return True when the NPC's event was asked for.
+            bool startMirrored(int npcIndex);
+
+            /// @brief The leader answered a dialog; the mirrored event answers its own matching dialog the same way.
+            /// @param dataId The leader's dialog surface.
+            /// @param code The leader's answer code.
+            void leaderAnswered(int dataId, int code);
+
+            /// @brief The leader's event ended; a mirrored dialog left without a leader's answer is closed.
+            void leaderEnded();
+
             /// @brief A form the event opened went (the sale form), so the next result is asked for.
             /// @details Original: FRequestNextResult.
             void moveOn() { m_requestNext = true; }
@@ -130,6 +148,10 @@ namespace client {
             /// @details Original: InterChoiceOk / Cancel / Select / Close.
             /// @param code Answer code (Confirm 20, Cancel 21, choice 30+n, Close 40).
             void answer(int code);
+
+            /// @brief Answers the waiting mirrored dialog with the leader's next answer, or closes it when the leader's
+            /// dialog differs or the leader's event has ended.
+            void answerMirrored();
 
             /// @brief Where the talk looks: the event's NPC, another NPC, or a step from the player.
             /// @param option Look mode (1 event NPC, 2 other NPC, 3 step from the player).
@@ -150,6 +172,11 @@ namespace client {
             bool m_lineOpen = false;
             int m_eventNpc = 0;
             int m_eventDoor = 0;
+            int m_surfaceId = 0; // the open dialog surface, 0 for none
+            bool m_mirrored = false;
+            bool m_leaderEnded = false;
+            std::optional<int> m_mirrorSurface; // the mirrored dialog waiting for the leader's answer
+            std::deque<std::pair<int, int>> m_leaderAnswers; // the leader's answers (surface, code) not yet used
     };
 
 }

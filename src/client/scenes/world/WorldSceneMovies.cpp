@@ -127,6 +127,9 @@ namespace client {
         if (isGmId(m_player.id)) {
             return false;
         }
+        if (m_services.unseenPartyMember) { // nobody watches it or clicks its lines, so the event goes on at once
+            return true;
+        }
         m_movie.director().startEvent(std::to_string(result.value), result.option, m_nowMs);
         return true;
     }

@@ -71,6 +71,9 @@
                  Click="onGroupMateLogout"/>
     <ImageButton Name="GroupPartyLogin" Picture="Btn_Module_2" Position="30,235" Text="Log in" Hint="Log in another account (qol)"
                  Visible="false" Click="onGroupPartyLogin"/>
+    <!-- qol NPC mirror: the party members start the NPC events the leader starts and answer them as the leader does -->
+    <ImageButton Name="GroupPartyMirror" Picture="Btn_Module_2" Position="250,235" Text="Mirror off"
+                 Hint="Party members talk to the NPCs you talk to (qol)" Visible="false" Click="onGroupPartyMirror"/>
     <ImageButton Name="GroupLeaveTeam" Picture="btn_LeaveTeam_1" Position="140,235" Hint="Leave the team" Visible="false"
                  Click="onGroupLeaveTeam"/>
     <ImageButton Name="GroupPetExile4" Picture="Btn_AssignLeave_1" Position="295,179" Visible="false"
