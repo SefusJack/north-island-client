@@ -19,7 +19,7 @@ namespace audio {
             /// @brief Tag selecting the never-opened device.
             struct Silent {};
 
-            /// @brief Makes a device that is never opened (the qol client's party members).
+            /// @brief Makes a device that is never opened (the qol client's party members, and --background test runs).
             explicit AudioDevice(
                 Silent
             ) {}

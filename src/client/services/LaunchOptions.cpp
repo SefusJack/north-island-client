@@ -157,6 +157,8 @@ namespace client {
                 options.noMods = true;
             } else if (argument == "--mods-report" && hasValue) {
                 options.modsReport = arguments[++i];
+            } else if (argument == "--background") {
+                options.background = true;
             } else if (argument == "--software") {
                 options.renderMode = gfx::RenderMode::Software;
             } else {

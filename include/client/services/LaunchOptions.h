@@ -19,6 +19,7 @@ namespace client {
         std::filesystem::path layoutDirectory;
         gfx::RenderMode renderMode = gfx::RenderMode::Accelerated;
         std::filesystem::path scriptFile;
+        bool background = false; // test runs: the window opens minimized without taking focus, and no sound plays
         std::string rendererName;
         bool showFrameGraph = false;
         std::filesystem::path frameLogFile;

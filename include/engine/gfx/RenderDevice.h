@@ -35,6 +35,7 @@ namespace gfx {
                 int height = 600; // the game's screen height
                 bool resizable = false;
                 bool maximized = false;
+                bool minimized = false;
                 WindowDisplay display = WindowDisplay::Windowed;
                 int minWidth = 800; // the game's screen width
                 int minHeight = 600; // the game's screen height
