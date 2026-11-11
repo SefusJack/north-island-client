@@ -259,6 +259,7 @@ namespace client {
             ui::ImageButton& m_guildButton;
             ui::ImageButton& m_instancesButton;
             ui::ImageButton& m_partyLoginButton;
+            ui::ImageButton& m_partyMirrorButton;
             PartyLoginWindow m_partyLogin;
             const ui::Spot& m_instancesAloneSpot;
             const ui::Spot& m_instancesWithGuildSpot;

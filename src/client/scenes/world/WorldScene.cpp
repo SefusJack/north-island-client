@@ -1242,7 +1242,17 @@ namespace client {
                [this](const EventResult& result) { runWorldResult(result); },
                [this] { return std::any_of(m_npcs.begin(), m_npcs.end(), [](const MapNpc& npc) { return npc.eventWalking; }); },
                [this](const EventResult& result) { return startEventMovie(result); },
-               [this] { return m_fightState != 0; }}
+               [this] { return m_fightState != 0; },
+               [this](int dataId, int code) {
+                   if (m_services.partyEventAnswered) {
+                       m_services.partyEventAnswered(dataId, code);
+                   }
+               },
+               [this] {
+                   if (m_services.partyEventEnded) {
+                       m_services.partyEventEnded();
+                   }
+               }}
           ),
           m_rebornWish(
               services,
@@ -3202,8 +3212,19 @@ namespace client {
         }
         if (m_eventRunner.npcClicked(npcIndex, npc->get().eventCount, npc->get().triggerHalfSize, !npc->get().body.walking)) {
             m_screen.consumeNextRelease();
+            if (m_services.partyNpcClicked) {
+                m_services.partyNpcClicked(npcIndex);
+            }
         }
         startAutoCollect(npc->get());
+    }
+
+    bool WorldScene::mirrorNpcClick(int npcIndex) {
+        auto npc = findNpc(npcIndex);
+        if (!npc || npc->get().eventCount <= 0 || m_inputLocked) {
+            return false;
+        }
+        return m_eventRunner.startMirrored(npcIndex);
     }
 
     void WorldScene::onMapSign(int kind, int index, int sign) {

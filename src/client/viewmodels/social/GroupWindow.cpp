@@ -84,6 +84,7 @@ namespace client {
           m_guildButton(screen.get<ui::ImageButton>("GroupTabGuild")),
           m_instancesButton(screen.get<ui::ImageButton>("GroupTabInstances")),
           m_partyLoginButton(screen.get<ui::ImageButton>("GroupPartyLogin")),
+          m_partyMirrorButton(screen.get<ui::ImageButton>("GroupPartyMirror")),
           m_partyLogin(services, screen),
           m_instancesAloneSpot(screen.get<ui::Spot>("GroupInstancesAlone")),
           m_instancesWithGuildSpot(screen.get<ui::Spot>("GroupInstancesWithGuild")),
@@ -125,6 +126,12 @@ namespace client {
         screen.on("onGroupMateLead", [this](const ui::EventArgs& args) { askLead(numberAfter(args.source, "GroupMateLead")); });
         screen.on("onGroupMateLogout", [this](const ui::EventArgs& args) { askLogout(numberAfter(args.source, "GroupMateLogout")); });
         screen.on("onGroupPartyLogin", [this](const ui::EventArgs&) { m_partyLogin.open(); });
+        screen.on("onGroupPartyMirror", [this](const ui::EventArgs&) {
+            if (m_services.partyMirrorsNpcs && m_services.setPartyMirrorsNpcs) {
+                m_services.setPartyMirrorsNpcs(!m_services.partyMirrorsNpcs());
+                refreshTeam();
+            }
+        });
         for (int order = 1; order <= PetTeam::kPlaces; ++order) {
             const std::string n = std::to_string(order);
             m_rows.push_back(
@@ -305,6 +312,10 @@ namespace client {
         m_memberIds.fill(0);
         m_leave.setVisible(leader.has_value());
         m_partyLoginButton.setVisible(m_services.partyLogIn && m_services.videoSettings().partyLogin);
+        const bool mirrors = m_services.partyMirrorsNpcs && m_services.partyMirrorsNpcs();
+        m_partyMirrorButton.setVisible(m_services.partyMirrorsNpcs && m_services.videoSettings().partyLogin);
+        m_partyMirrorButton.setText(mirrors ? "Mirror on" : "Mirror off");
+        m_partyMirrorButton.setSelected(mirrors);
         for (MateRow& row : m_mateRows) {
             row.kick.get().setVisible(false);
             row.lead.get().setVisible(false);

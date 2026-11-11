@@ -410,6 +410,19 @@ namespace client {
             /// @param text The text.
             void sayAsPartyMember(int typedChannel, const std::string& text) { sendChat(typedChannel, text); }
 
+            /// @brief Starts the event of the NPC the party leader clicked (qol NPC mirror), even as a team follower.
+            /// @param npcIndex Index of the NPC.
+            /// @return True when the NPC's event was asked for.
+            bool mirrorNpcClick(int npcIndex);
+
+            /// @brief Passes the party leader's dialog answer to the mirrored event.
+            /// @param dataId The leader's dialog surface.
+            /// @param code The leader's answer code.
+            void mirrorEventAnswer(int dataId, int code) { m_eventRunner.leaderAnswered(dataId, code); }
+
+            /// @brief Tells the mirrored event that the party leader's event ended.
+            void mirrorLeaderEventEnded() { m_eventRunner.leaderEnded(); }
+
         private:
             /// @brief Loads a map and puts the own player at a position.
             /// @param mapId Map id.

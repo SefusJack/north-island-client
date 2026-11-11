@@ -262,6 +262,12 @@ namespace client {
             /// @return The member's row, or -1 for none.
             int memberAt(core::Point point, float hudScale);
 
+            /// @brief Runs a call on each member in the world on the leader's map, while the NPC mirror is on.
+            /// @tparam Call The callable type; it takes the Member and its WorldScene.
+            /// @param call What to run.
+            template <typename Call>
+            void forMirroringMembers(const Call& call);
+
             /// @brief Marks a member as left the party: closes its scene and connection.
             /// @param member The member.
             /// @param reason Why it left (shown on its row).
@@ -277,6 +283,7 @@ namespace client {
             std::int32_t m_teamLeaderId = 0;
             int m_otherTeammates = 0;
             int m_commanding = -1;
+            bool m_mirrorNpcs = false;
             int m_selected = -1;
             std::unique_ptr<PartyPanels> m_panels;
             std::vector<PartyMessage> m_messages;
