@@ -4038,6 +4038,10 @@ namespace client {
             /// @param result Result code.
             void onPasswordChanged(int result) override;
 
+            /// @brief The result of an account password change.
+            /// @param result Result code.
+            void onAccountPasswordChanged(int result) override;
+
             /// @brief A request to a player was refused.
             /// @param reason Reason code.
             void onPlayerRefused(int reason) override;

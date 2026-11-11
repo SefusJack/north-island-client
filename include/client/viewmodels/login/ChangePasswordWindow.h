@@ -44,6 +44,10 @@ namespace client {
             /// @param result Result code from server 35/1.
             void showResult(int result);
 
+            /// @brief Shows how the account password change went.
+            /// @param result Result code from server 35/12.
+            void showAccountResult(int result);
+
         private:
             /// @brief Checks the fields and asks for confirmation before sending 35/1.
             /// @details Original: SubmitChangePassword, ConfirmChangePassword.
