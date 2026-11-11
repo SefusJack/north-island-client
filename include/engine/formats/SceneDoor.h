@@ -12,13 +12,15 @@ namespace formats {
     /// @brief A door of a map in eve.Emg.
     /// @details The cells that trigger it (stepping in asks the server, client 20/8 with the index), the events it runs, and the light picture
     /// it shows (cursorKind 1 DoorLight, 2 SmallDoorLight) standing on a map point. mapSign is the minimap sign it starts with on every map load
-    /// (Icon_Sign_<n>; 0 none), until a server 22/12.
+    /// (Icon_Sign_<n>; 0 none), until a server 22/12. clickable is set when one of its events has event flag 1: a click inside its area then asks
+    /// the server too (client 20/4 with the index; original HandleDoorClick).
     struct SceneDoor {
         int index = 0;
         std::string name;
         int flags = 0;
         core::Rect area;
         std::vector<int> eventIds;
+        bool clickable = false;
         int kind = 0;
         core::Point lightPosition;
         int mapSign = 0;

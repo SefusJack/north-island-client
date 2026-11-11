@@ -96,6 +96,11 @@ namespace client {
             /// @param doorIndex Index of the door.
             void doorEntered(int doorIndex);
 
+            /// @brief The player clicked inside a door whose events can start on a click (sends 20/4).
+            /// @details Original: HandleDoorClick.
+            /// @param doorIndex Index of the door.
+            void doorClicked(int doorIndex);
+
             /// @brief Handles one event result from the server (20/1..6).
             /// @details Original: Inter_RunResults.
             /// @param result The result.

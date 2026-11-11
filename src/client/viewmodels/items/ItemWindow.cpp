@@ -246,7 +246,7 @@ namespace client {
             shown.exp = pet.exp;
             shown.stats = {pet.strength, pet.constitution, pet.intelligence, pet.wisdom, pet.agility};
             for (std::size_t i = 0; i < shown.combat.size(); ++i) {
-                shown.combat[i] = combatValue(
+                shown.combat[i] = pet.serverCombatKnown ? pet.serverCombat[i] : combatValue(
                     m_services.formula,
                     static_cast<int>(i),
                     totalLevel(pet.level, pet.reborn),

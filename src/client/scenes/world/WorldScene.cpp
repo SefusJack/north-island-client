@@ -1617,6 +1617,7 @@ namespace client {
                     m_walkMark.start(walkTo(m_camera.toMap(m_mouse)));
                 }
             }
+            clickDoorAt(m_camera.toMap(m_mouse));
         });
         m_screen.on("onMapDoubleClick", [this](const ui::EventArgs& local) {
             const ui::EventArgs args = onScreen(local);
@@ -1993,6 +1994,20 @@ namespace client {
             m_services.partyEventStarted(PartyTrigger::Door, door->index);
         }
         m_eventRunner.doorEntered(door->index);
+    }
+
+    void WorldScene::clickDoorAt(core::Point mapPoint) {
+        if (m_fightState != 0 || m_teams.isMember(m_player.id) || m_eventRunner.isRunning()) {
+            return;
+        }
+        const auto door = std::find_if(m_doors.begin(), m_doors.end(), [mapPoint](const formats::SceneDoor& candidate) {
+            return candidate.clickable && candidate.area.contains(mapPoint);
+        });
+        if (door == m_doors.end()) {
+            return;
+        }
+        m_mouseHeld = false;
+        m_eventRunner.doorClicked(door->index);
     }
 
     void WorldScene::checkNearNpcs(std::uint64_t nowMs) {

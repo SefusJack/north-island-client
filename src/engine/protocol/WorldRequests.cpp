@@ -11,6 +11,13 @@ namespace protocol {
         return writer.take();
     }
 
+    core::Bytes doorClickedRequest(int doorIndex) {
+        core::ByteWriter writer;
+        // 20 = event action, 4 = door clicked sub id
+        writer.u8(20).u8(4).u16(static_cast<std::uint16_t>(doorIndex));
+        return writer.take();
+    }
+
     core::Bytes npcClickedRequest(int npcIndex) {
         core::ByteWriter writer;
         // 20 = event action, 1 = NPC clicked sub id

@@ -10,6 +10,11 @@ namespace protocol {
     /// @return The encoded request payload.
     core::Bytes doorEnteredRequest(int doorIndex);
 
+    /// @brief Builds request 20/4: the own player clicked inside a door of the map whose events can start on a click (u16 door).
+    /// @param doorIndex The door's eve.Emg index.
+    /// @return The encoded request payload.
+    core::Bytes doorClickedRequest(int doorIndex);
+
     /// @brief Builds request 20/1: the own player clicked an NPC with events (u16 NPC).
     /// @param npcIndex The NPC's eve.Emg index.
     /// @return The encoded request payload.

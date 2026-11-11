@@ -16,6 +16,8 @@ namespace client {
         constexpr int kConstitution = 29; // CON
         constexpr int kAgility = 30; // AGI
         constexpr int kWisdom = 33; // WIS
+        constexpr int kFirstCombat = 41; // ATK; 42 DEF, 43 MATK, 44 MDEF, 45 SPD follow
+        constexpr int kLastCombat = 45; // SPD
         constexpr int kLevel = 35; // level
         constexpr int kExp = 36; // experience
         constexpr int kAmity = 64; // amity
@@ -197,6 +199,11 @@ namespace client {
             return;
         }
         Pet& pet = *m_places[index(place)];
+        if (attribute >= kFirstCombat && attribute <= kLastCombat) { // 8/2 attributes 41-45: the pet's shown values as the server works them out
+            pet.serverCombat[static_cast<std::size_t>(attribute - kFirstCombat)] = value;
+            pet.serverCombatKnown = true;
+            return;
+        }
         switch (attribute) {
             case kHp: // 8/2 attribute 25: current HP
                 pet.hp = std::clamp(value, 0, std::max(pet.maxHp, 0));
@@ -276,6 +283,27 @@ namespace client {
                 pet.combatBonus[4] = value; // index 4 = SPD
                 break;
             default: // other attributes are ignored
+                return;
+        }
+        switch (attribute) {
+            case kStrength:
+            case kIntelligence:
+            case kAgility:
+            case kConstitution:
+            case kWisdom:
+            case kAtkBonus:
+            case kDefBonus:
+            case kMatkBonus:
+            case kMdefBonus:
+            case kSpdBonus: // a stat or bonus changed: the shown values follow it at once; the server's values are stale until it sends new ones
+                pet.recalcStats = {pet.strength, pet.constitution, pet.intelligence, pet.wisdom, pet.agility};
+                pet.recalcBonus = pet.combatBonus;
+                pet.serverCombatKnown = false;
+                break;
+            case kLevel:
+                pet.serverCombatKnown = false;
+                break;
+            default:
                 break;
         }
     }

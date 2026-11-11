@@ -33,6 +33,8 @@ namespace client {
         std::array<int, 5> combatBonus{};
         std::array<int, 5> recalcStats{};
         std::array<int, 5> recalcBonus{};
+        std::array<int, 5> serverCombat{};
+        bool serverCombatKnown = false; // true while serverCombat matches the pet's current stats and bonuses
         int amity = 0;
         int tradable = 0;
         int potential = 0;

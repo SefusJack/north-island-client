@@ -151,6 +151,13 @@ namespace client {
         m_waitingReply = true;
     }
 
+    void EventRunner::doorClicked(int doorIndex) {
+        m_running = true;
+        m_eventDoor = doorIndex;
+        m_hooks.send(protocol::doorClickedRequest(doorIndex));
+        m_waitingReply = true;
+    }
+
     void EventRunner::result(const EventResult& result) {
         m_waitingReply = false;
         m_running = true;

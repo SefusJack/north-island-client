@@ -524,6 +524,10 @@ namespace client {
             /// @brief Checks whether the own player walked into a door.
             void checkDoors();
 
+            /// @brief Starts the event of a door clicked inside its area, when one of its events can start on a click (Original: HandleDoorClick).
+            /// @param mapPoint The clicked map point.
+            void clickDoorAt(core::Point mapPoint);
+
             /// @brief Checks the NPC an event sends back to its post (FChaseNpcIndex).
             void checkChase();
 

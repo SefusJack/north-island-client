@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <set>
 
 namespace formats {
 
@@ -16,6 +17,7 @@ namespace formats {
         constexpr int kFallbackMap = 12003; // map 12003: Civillian's House; its scene is used for maps without one
         constexpr std::size_t kNameSize = 20; // bytes of a name field (1 length byte + 19 characters)
         constexpr std::size_t kNpcItemSize = 92; // bytes of one event-walk block in an NPC record
+        constexpr int kClickFlag = 1; // event flag value 1 (TEvent.FFlag0): a door with such an event starts it on a click inside its area
         constexpr int kNearFlag = 2; // event flag value 2 (TEvent.FFlag1): a "near" event, listed in EventScene::nearEvents
         constexpr int kMostWalkPoints = 10; // most points in one event walk
         constexpr int kCell = 20; // map cell size, px
@@ -161,10 +163,15 @@ namespace formats {
                 reader.skip(4 + 2 + 1 + 4);
             }
             const int events = reader.u16();
+            std::set<int> clickEvents;
             for (int i = 0; i < events && !reader.failed(); ++i) {
                 const int id = reader.u16();
-                if ((reader.u8() & kNearFlag) != 0) {
+                const int flags = reader.u8();
+                if ((flags & kNearFlag) != 0) {
                     scene.nearEvents.insert(id);
+                }
+                if ((flags & kClickFlag) != 0) {
+                    clickEvents.insert(id);
                 }
                 reader.skip(kNameSize);
                 const int conditions = reader.u8();
@@ -172,6 +179,9 @@ namespace formats {
                     reader.skip(kConditionSize);
                     reader.skip(reader.u8() * kResultSize);
                 }
+            }
+            for (SceneDoor& door : scene.doors) {
+                door.clickable = std::any_of(door.eventIds.begin(), door.eventIds.end(), [&clickEvents](int id) { return clickEvents.count(id) != 0; });
             }
             const int groups = reader.u16();
             for (int i = 0; i < groups && !reader.failed(); ++i) {
