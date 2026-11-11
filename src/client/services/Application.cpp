@@ -212,13 +212,17 @@ namespace client {
 
         SDL_SetHint(SDL_HINT_WINDOWS_INTRESOURCE_ICON, "1");
         SDL_SetHint(SDL_HINT_WINDOWS_INTRESOURCE_ICON_SMALL, "1");
+        if (m_options.background) {
+            SDL_SetHint(SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN, "0");
+            SDL_SetHint(SDL_HINT_WINDOW_ACTIVATE_WHEN_RAISED, "0");
+        }
         const SdlVideo video;
         if (!video.isReady()) {
             showError(std::string("cannot start SDL: ") + SDL_GetError());
             return 1;
         }
         const net::NetworkSystem network;
-        const audio::AudioDevice audioDevice;
+        const audio::AudioDevice audioDevice = m_options.background ? audio::AudioDevice(audio::AudioDevice::Silent{}) : audio::AudioDevice();
 
         const std::filesystem::path extraFile = ExtraSettings::fileIn(m_options.userDirectory);
         const auto loadedExtra = ExtraSettings::loadIn(m_options.userDirectory);
@@ -257,6 +261,7 @@ namespace client {
         settings.width = live.windowWidth;
         settings.height = live.windowHeight;
         settings.maximized = live.maximized;
+        settings.minimized = m_options.background; // a window shown unfocused still lands on top in GNOME, so it starts in the dock
         settings.display = windowDisplayOf(live.display);
         settings.resizable = true;
         settings.pixelScale = live.pixelScale;

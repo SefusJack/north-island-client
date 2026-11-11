@@ -39,7 +39,8 @@ namespace gfx {
         SDL_SetNumberProperty(
             properties,
             SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER,
-            static_cast<Sint64>((settings.resizable ? SDL_WINDOW_RESIZABLE : 0) | (settings.maximized ? SDL_WINDOW_MAXIMIZED : 0))
+            static_cast<Sint64>((settings.resizable ? SDL_WINDOW_RESIZABLE : 0) | (settings.maximized ? SDL_WINDOW_MAXIMIZED : 0) |
+                                 (settings.minimized ? SDL_WINDOW_MINIMIZED : 0))
         );
         device.m_window.reset(SDL_CreateWindowWithProperties(properties));
         SDL_DestroyProperties(properties);
