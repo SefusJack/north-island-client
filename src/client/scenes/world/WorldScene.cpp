@@ -150,7 +150,8 @@ namespace client {
                    const auto& pet = m_pets.at(m_pets.activePlace());
                    return pet ? pet->info.npcId : 0;
                },
-               [this] { return m_systemWindow.settings().battleSwitch == 0; }}
+               [this] { return m_systemWindow.settings().battleSwitch == 0; },
+               [this](const RemoteBattleView& view) { return m_remote.decide(view); }}
           ),
           m_starSky(
               services,

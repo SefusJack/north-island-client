@@ -22,6 +22,8 @@ namespace client {
         constexpr int kWornOut = 200; // wear value from which gear counts as damaged
         constexpr std::uint64_t kStopHoldMs = 3000; // time the stop request is held, ms
         constexpr int kMessageMs = 1500; // on-screen message time, ms
+        constexpr int kElectronControl = 34128; // item 34128: Electron Control, the remote that runs a battle script
+        constexpr int kScriptMessageMs = 5000; // on-screen time of the script's messages and errors, ms
 
         // wander offsets from the wander centre in world px {x, y}, indexed by wander step 1..8 (index 0 unused)
         constexpr std::array<core::Point, 9> kWanderOffsets = {
@@ -56,7 +58,8 @@ namespace client {
           m_status(status),
           m_pets(pets),
           m_messages(messages),
-          m_hooks(std::move(hooks)) {}
+          m_hooks(std::move(hooks)),
+          m_script([this](const std::string& line) { m_messages.show(line, kScriptMessageMs); }) {}
 
     bool RemoteControl::use(int bagSlot, bool onVehicle, bool stalled) {
         if (m_on) {
@@ -91,6 +94,7 @@ namespace client {
         }
         m_marks.setUseMark(m_itemSlot, 10); // use mark 10: the item shows as in use
         m_on = true;
+        loadScript();
         int ticks = 0;
         for (int tick = 1; tick <= RemoteSettings::kTicks; ++tick) {
             if (m_settings.ticks[static_cast<std::size_t>(tick)]) {
@@ -119,6 +123,7 @@ namespace client {
 
     void RemoteControl::reset() {
         m_on = false;
+        m_script.unload();
         stopWander();
         m_deaths = 0;
         m_petDeaths = 0;
@@ -137,6 +142,29 @@ namespace client {
     void RemoteControl::stop() {
         reset();
         m_services.connection.send(protocol::remoteStopRequest());
+    }
+
+    void RemoteControl::loadScript() {
+        if (m_inventory.bagItem(m_itemSlot).itemId != kElectronControl || !m_hooks.playerId) {
+            m_script.unload();
+            return;
+        }
+        if (m_script.load(RemoteScript::pathFor(m_services.game.userRoot(), m_hooks.playerId()))) {
+            m_messages.show("Electron Control script loaded", kScriptMessageMs);
+        } else if (!m_script.error().empty()) {
+            m_messages.show(m_script.error(), kScriptMessageMs);
+        }
+    }
+
+    std::optional<RemoteDecision> RemoteControl::decide(const RemoteBattleView& view) {
+        if (!m_on || !m_script.loaded()) {
+            return std::nullopt;
+        }
+        auto decision = m_script.decide(view);
+        if (!m_script.error().empty()) {
+            m_messages.show(m_script.error(), kScriptMessageMs);
+        }
+        return decision;
     }
 
     void RemoteControl::startWander() {

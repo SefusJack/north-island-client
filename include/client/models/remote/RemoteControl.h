@@ -7,6 +7,8 @@
 #include "client/models/items/Inventory.h"
 #include "client/models/pets/PetTeam.h"
 #include "client/models/remote/AutoBattleSettings.h"
+#include "client/models/remote/RemoteBattleView.h"
+#include "client/models/remote/RemoteScript.h"
 #include "client/models/remote/RemoteSettings.h"
 #include "client/viewmodels/chat/PlayerMessages.h"
 #include "core/Bytes.h"
@@ -16,6 +18,7 @@
 #include <array>
 #include <cstdint>
 #include <functional>
+#include <optional>
 
 namespace client {
 
@@ -37,6 +40,7 @@ namespace client {
                 std::function<core::Point()> position;
                 std::function<void(core::Point)> walkTo;
                 std::function<void()> closeForm;
+                std::function<std::int32_t()> playerId;
             };
 
             /// @brief Creates the remote control.
@@ -115,6 +119,12 @@ namespace client {
             /// @param nowMs Current time in ms.
             void update(std::uint64_t nowMs);
 
+            /// @brief Asks the Electron Control's script what the commanding fighter does.
+            /// @details Not in the original game. Only while the Electron Control (34128) runs with a script; a script error shows on screen.
+            /// @param view The battle.
+            /// @return The choice; nothing when there is no script, it returned nil, or it failed.
+            std::optional<RemoteDecision> decide(const RemoteBattleView& view);
+
             /// @brief Counts a death of the player (original ShowFightExpResult: experience lost).
             void playerDied();
 
@@ -160,6 +170,9 @@ namespace client {
             /// @brief Drops the items to keep out of the supply, on the pass after something arrived.
             void dropKept();
 
+            /// @brief Loads the player's script when the item in use is the Electron Control, else drops it.
+            void loadScript();
+
             /// @brief Takes the player out of the game (original SendAfkAutoStop).
             void leaveGame();
 
@@ -173,6 +186,7 @@ namespace client {
             const PetTeam& m_pets;
             PlayerMessages& m_messages;
             Hooks m_hooks;
+            RemoteScript m_script;
 
             RemoteSettings m_settings = RemoteSettings::defaults();
             std::array<AutoBattleSettings, 3> m_playSets{AutoBattleSettings{}, AutoBattleSettings::defaults(), AutoBattleSettings::defaults()};

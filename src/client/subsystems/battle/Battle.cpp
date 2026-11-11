@@ -151,6 +151,8 @@ namespace client {
         m_field.clear();
         m_itemFlights.clear();
         m_on = true;
+        ++m_battleCount;
+        m_round = 0;
         m_ownId = ownId;
         m_type = 0;
         m_timeLimitOn = false;
@@ -366,6 +368,7 @@ namespace client {
             return;
         }
         m_commandPhase = true;
+        ++m_round;
         m_services.zoom.reset();
         ActionContext context = actionContext(nowMs);
         resetForRound(context);
@@ -569,6 +572,11 @@ namespace client {
         }
         if (mode == kRemote) {
             const int slotKind = commandSlotKind(m_actor);
+            if (slotKind != 0 && m_hooks.scriptDecision) {
+                if (const auto decision = m_hooks.scriptDecision(remoteView()); decision && applyDecision(*decision)) {
+                    return;
+                }
+            }
             if (slotKind != 0 && m_hooks.playSets && runAutoSettings(m_hooks.playSets(slotKind))) {
                 return;
             }

@@ -3,6 +3,7 @@
 #include "client/rules/Skills.h"
 
 #include <algorithm>
+#include <utility>
 
 namespace client {
 
@@ -389,6 +390,85 @@ namespace client {
             if (m_skill == 0) {
                 return false;
             }
+        }
+        submit(targetSlot);
+        return true;
+    }
+
+    RemoteBattleView Battle::remoteView() const {
+        RemoteBattleView view;
+        view.battle = m_battleCount;
+        view.round = m_round;
+        view.actorKind = commandSlotKind(m_actor);
+        view.actorSlot = m_actor;
+        view.ownSlot = ownFighterSlot();
+        view.petSlot = ownPetSlot();
+        const auto actor = m_field.fighter(m_actor);
+        view.allySide = actor ? actor->get().side() : 1;
+        view.enemySide = view.allySide == 1 ? 2 : 1;
+        for (int slot = 1; slot <= BattleField::kSlots; ++slot) {
+            const auto found = m_field.fighter(slot);
+            if (!found || found->get().id == 0) {
+                continue;
+            }
+            const Fighter& fighter = *found;
+            RemoteFighter seen;
+            seen.slot = slot;
+            seen.side = fighter.side();
+            seen.row = fighter.row;
+            seen.col = fighter.col;
+            seen.kind = fighter.kind;
+            seen.id = fighter.id;
+            seen.ownerId = fighter.ownerId;
+            seen.name = fighter.name;
+            seen.hp = fighter.hp;
+            seen.maxHp = fighter.maxHp;
+            seen.sp = fighter.sp;
+            seen.maxSp = fighter.maxSp;
+            seen.level = fighter.level;
+            seen.element = fighter.element;
+            seen.statusSkills = fighter.statuses.icons;
+            for (int kind = 1; kind < static_cast<int>(fighter.statuses.main.size()); ++kind) {
+                if (fighter.statuses.main[static_cast<std::size_t>(kind)].skill != 0) {
+                    seen.statusKinds.push_back(kind);
+                }
+            }
+            view.fighters.push_back(std::move(seen));
+        }
+        view.canUse = [this](int skillId, int targetSlot) {
+            const auto actorFound = m_field.fighter(m_actor);
+            const auto skill = m_services.skills.find(skillId);
+            return actorFound && skill && skill->spCost <= actorFound->get().sp && skillUsableOn(skillId, m_actor, targetSlot);
+        };
+        view.hasItem = [this](int itemId) { return m_hooks.bagSlotOf && m_hooks.bagSlotOf(itemId) != 0; };
+        return view;
+    }
+
+    bool Battle::applyDecision(const RemoteDecision& decision) {
+        const auto actor = m_field.fighter(m_actor);
+        if (!actor || decision.id == 0 || !m_field.fighter(decision.targetSlot)) {
+            return false;
+        }
+        if (decision.item) {
+            if (!chooseItemById(decision.id)) {
+                return false;
+            }
+            submit(decision.targetSlot);
+            return true;
+        }
+        const int targetSlot = decision.id == kDefence || decision.id == kFlee ? m_actor : decision.targetSlot;
+        const auto skill = m_services.skills.find(decision.id);
+        if (!skill || skill->spCost > actor->get().sp || !skillUsableOn(decision.id, m_actor, targetSlot)) {
+            return false;
+        }
+        chooseSkill(isStunt(decision.id) ? kRoleSkillPlaceholder : decision.id, false);
+        if (m_skill == kRoleSkillPlaceholder) {
+            if (const auto user = actorAsUser()) {
+                m_skill = roleSkillId(user->bodyType, user->head);
+            }
+        }
+        if (m_skill == 0) {
+            return false;
         }
         submit(targetSlot);
         return true;
