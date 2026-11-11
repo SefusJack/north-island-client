@@ -19,6 +19,7 @@ namespace client {
         std::filesystem::path layoutDirectory;
         gfx::RenderMode renderMode = gfx::RenderMode::Accelerated;
         std::filesystem::path scriptFile;
+        int scriptTimeoutSeconds = 0; // --script-timeout: the program ends with an error when the script runs longer (0: no limit)
         std::string rendererName;
         bool showFrameGraph = false;
         std::filesystem::path frameLogFile;

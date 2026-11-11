@@ -113,6 +113,10 @@ namespace client {
             /// @return The number of members.
             int size() const { return static_cast<int>(m_members.size()); }
 
+            /// @brief Tells whether every member has entered the world (test scripts wait for it).
+            /// @return True when all are in the world, also with no members.
+            bool allInWorld() const;
+
             /// @brief Finds the member whose battle commands are given now, shown and steered in the leader's place.
             /// @param leaderDone The leader is in a fight and its own fighters have their commands.
             /// @return The member's scene, or nothing for the leader.

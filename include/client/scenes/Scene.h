@@ -2,6 +2,7 @@
 #define NORTH_ISLAND_CLIENT_SCENES_SCENE_H
 
 #include "client/scenes/SceneKind.h"
+#include "client/services/input/ScriptLogin.h"
 #include "client/services/input/ScriptProbe.h"
 #include "gfx/Canvas.h"
 #include "ui/Screen.h"
@@ -49,6 +50,10 @@ namespace client {
             /// @brief Gives what a test script may ask of the scene.
             /// @return The probe, or nothing (the default: it offers nothing).
             virtual std::optional<std::reference_wrapper<ScriptProbe>> scriptProbe() { return std::nullopt; }
+
+            /// @brief Gives what a test script's login command may ask of the scene.
+            /// @return The login hook, or nothing (the default: only the login scene offers it).
+            virtual std::optional<std::reference_wrapper<ScriptLogin>> scriptLogin() { return std::nullopt; }
     };
 
 }

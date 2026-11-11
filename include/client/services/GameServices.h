@@ -78,6 +78,7 @@ namespace client {
         bool unseenPartyMember = false; // a party member's account, played without its own screen (qol)
         bool serverSorts = false;
         std::array<bool, 3> videoGroupsOpen = {true, false, false}; // which groups of the settings Video tab are open, until the game closes
+        std::function<void(const std::string& text)> errorShown = nullptr; // a modal error box opened (disconnection, refused login); a test script ends the program
 
         /// @brief Builds the UI load context (pictures, game file resolver, emote lookup).
         /// @return The load context.
