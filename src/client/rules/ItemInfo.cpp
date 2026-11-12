@@ -81,6 +81,30 @@ namespace client {
             return gem && (gem->type == 52 || gem->type == 54); // item types 52 and 54: gems
         }
 
+        /// @brief The points a mounted attribute gem adds to each positive attribute line of a piece of gear.
+        /// @param items The item table.
+        /// @param record The item record of the piece.
+        /// @param item The item instance.
+        /// @return Twice the gem's rank for a piece with one positive line, the rank for two, otherwise 0 (also for a critical gem or no gem).
+        int gemBonusOf(const formats::ItemTable& items, const formats::ItemRecord& record, const protocol::ItemInstance& item) {
+            const bool equipment = record.equipSlot >= 1 && record.equipSlot <= 6; // equip slots 1..6: gear
+            if (!equipment || item.insertItemId == 0 || !isGem(items, item.insertItemId)) {
+                return 0;
+            }
+            const auto gem = items.find(item.insertItemId);
+            if (!gem || gem->type != 52) { // item type 52: gem that adds a stat bonus
+                return 0;
+            }
+            int strong = 0;
+            for (std::size_t k = 0; k < 2; ++k) { // two attribute slots per item
+                const int kind = record.attributeKinds[k];
+                if (kind != 0 && kind != kHiddenAttribute && record.attributeValues[k] > kNeutralValue) {
+                    ++strong;
+                }
+            }
+            return strong == 1 ? gem->rank * 2 : strong == 2 ? gem->rank : 0;
+        }
+
         /// @brief Wear state text of a stall list entry.
         /// @details Original: the status line of RecvStallItemList (IsWearRangeSpecial and IsWear100Special are always false).
         /// @param wear The item's wear.
@@ -115,7 +139,6 @@ namespace client {
         /// @param item The item instance.
         /// @return The attribute line.
         std::string stallAttributes(const formats::ItemTable& items, const formats::ItemRecord& record, const protocol::ItemInstance& item) {
-            const bool equipment = record.equipSlot >= 1 && record.equipSlot <= 6; // equip slots 1..6: gear
             int fusionBonus = 0;
             if (record.equipSlot >= 1 && record.equipSlot <= 5 && item.fusionLevel > 0) { // equip slots 1..5: worn gear that takes fusion
                 int raised = 0;
@@ -129,20 +152,7 @@ namespace client {
                     fusionBonus = raised == 1 ? item.fusionLevel * 2 : raised == 2 ? item.fusionLevel : fusionBonus;
                 }
             }
-            int gemBonus = 0;
-            if (equipment && item.insertItemId != 0 && isGem(items, item.insertItemId)) {
-                const auto gem = items.find(item.insertItemId);
-                if (gem && gem->type == 52) { // item type 52: gem that adds a stat bonus
-                    int strong = 0;
-                    for (std::size_t k = 0; k < 2; ++k) { // two attribute slots per item
-                        const int kind = record.attributeKinds[k];
-                        if (kind != 0 && kind != kHiddenAttribute && record.attributeValues[k] > kNeutralValue) {
-                            ++strong;
-                        }
-                    }
-                    gemBonus = strong == 1 ? gem->rank * 2 : strong == 2 ? gem->rank : 0;
-                }
-            }
+            const int gemBonus = gemBonusOf(items, record, item);
             std::array<int, 2> adjust{}; // one adjust per attribute slot
             if (item.attributeAdjust > 0) {
                 adjust[0] = signedNibble(item.attributeAdjust);
@@ -414,6 +424,8 @@ namespace client {
             }
             fusionBonus = raised == 1 ? item.fusionLevel * 2 : raised == 2 ? item.fusionLevel : 0;
         }
+        // the mounted gem's bonus shows after each positive line like the fusion bonus, as the stall list shows it
+        const int gemBonus = showsAttributes ? gemBonusOf(items, record, item) : 0;
         std::array<int, 2> adjust{}; // one adjust per attribute slot
         if (item.attributeAdjust > 0) {
             adjust[0] = signedNibble(item.attributeAdjust);
@@ -444,6 +456,9 @@ namespace client {
                     line += "%";
                 }
                 line += " ";
+                if (gemBonus > 0 && value > kNeutralValue) {
+                    line += "+" + std::to_string(gemBonus);
+                }
                 if (fusionBonus > 0 && value > kNeutralValue) {
                     line += "+" + std::to_string(fusionBonus);
                 }
