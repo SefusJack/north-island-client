@@ -11,6 +11,7 @@
 
 #include <array>
 #include <cstdint>
+#include <functional>
 #include <random>
 #include <vector>
 
@@ -88,6 +89,16 @@ namespace client {
             /// @param view Map point at the screen's top-left corner.
             /// @param nowMs Current tick in milliseconds.
             void draw(gfx::Canvas& canvas, SceneParticle& particle, core::Point view, std::uint64_t nowMs);
+
+            /// @brief Draws the particles a test picks, as draw does each, but an additive kind (steam, stars) grouped by picture.
+            /// @details Added light is the same in any order, and draws of one texture in a row merge into one GPU draw: steam
+            /// drawn in spawn order switched among its pictures nearly every particle, thousands of draws a frame on a large
+            /// window (the set is drawn once per 800x600 tile). The sway still runs in spawn order first.
+            /// @param canvas Canvas to draw on.
+            /// @param view Map point at the screen's top-left corner.
+            /// @param nowMs Current tick in milliseconds.
+            /// @param shown Whether a particle is drawn.
+            void drawParticles(gfx::Canvas& canvas, core::Point view, std::uint64_t nowMs, const std::function<bool(const SceneParticle&)>& shown);
 
             /// @brief The speed of a particle for its speed level.
             /// @param particle Particle asked about.

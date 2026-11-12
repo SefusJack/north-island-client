@@ -443,6 +443,13 @@ namespace ui {
     }
 
     void Screen::draw(gfx::Canvas& canvas, std::uint64_t nowMs) {
+        if (m_hoveredLayout != nullptr && !kept(*m_hoveredLayout)) {
+            // update found the hovered element without this filter (party member screens get it only to draw), in a
+            // layout the filter hides: find it again among the kept layouts, so hidden layouts give no highlight or
+            // hint. A hit in a kept layout is already what the filtered search would find: every layout searched
+            // before it gave no hit.
+            refreshHover();
+        }
         DrawContext context{canvas, m_hoveredId, m_context.focusedId, m_mouse, nowMs};
         const auto drawLayouts = [&](bool overlay) {
             for (const auto& layout : m_root->children()) {
@@ -476,8 +483,8 @@ namespace ui {
 
     void Screen::drawHint(gfx::Canvas& canvas) {
         const auto target = locate(m_hoveredId);
-        if (!target) {
-            return;
+        if (!target || (target->layout && !kept(target->layout->get()))) {
+            return; // nothing hovered, or in a layout the filter hides
         }
         const core::Point local = localMouse(*target, m_mouse);
         drawHintBox(canvas, fromLayout(target->screenPosition + target->element.get().hintOrigin(local), target->layout), target->element.get().hintAt(local));

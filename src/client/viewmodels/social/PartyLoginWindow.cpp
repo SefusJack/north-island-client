@@ -35,7 +35,6 @@ namespace client {
         m_screen.get<ui::TextBox>("PartyLoginAccount").setText("");
         m_screen.get<ui::TextBox>("PartyLoginPassword").setText("");
         m_screen.get<ui::CheckBox>("PartyLoginSecond").setChecked(false);
-        m_screen.get<ui::CheckBox>("PartyLoginManual").setChecked(false);
         m_screen.get<ui::Label>("PartyLoginError").setText("");
         m_window.setVisible(true);
         if (m_screen.context().bringToFront) {
@@ -65,8 +64,7 @@ namespace client {
         const std::string error = m_services.partyLogIn(
             m_screen.get<ui::TextBox>("PartyLoginAccount").text(),
             m_screen.get<ui::TextBox>("PartyLoginPassword").text(),
-            m_screen.get<ui::CheckBox>("PartyLoginSecond").isChecked() ? 2 : 1, // character number to log in: 2 for the second character, else 1
-            !m_screen.get<ui::CheckBox>("PartyLoginManual").isChecked()
+            m_screen.get<ui::CheckBox>("PartyLoginSecond").isChecked() ? 2 : 1 // character number to log in: 2 for the second character, else 1
         );
         if (!error.empty()) {
             m_screen.get<ui::Label>("PartyLoginError").setText(error);

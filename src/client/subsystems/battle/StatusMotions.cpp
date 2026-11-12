@@ -103,6 +103,17 @@ namespace client {
     }
 
     void updateStatusMotions(Fighter& fighter, ActionContext& context) {
+        if (fighter.hp <= 0) {
+            // a fallen fighter lies still: a looping status left on it would move it and change its pose every beat
+            // while the painter puts the death pose back every frame, so the body twitched
+            if (fighter.statusPose && !fighter.casting && !fighter.hitEffectOn) {
+                fighter.position = BattleField::cellPosition(fighter.row, fighter.col);
+                fighter.jumping = false;
+                fighter.jumpHeight = 0;
+            }
+            fighter.statusPose = false;
+            return;
+        }
         // status places 1, 2 and 3: the first three statuses hold the pose
         fighter.statusPose = loops(context.skills, fighter.statuses.main[1].skill) || loops(context.skills, fighter.statuses.main[2].skill) ||
                              loops(context.skills, fighter.statuses.main[3].skill);

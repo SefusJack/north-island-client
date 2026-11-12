@@ -120,8 +120,11 @@ namespace ui {
         }
         // 8: pixel width of a character; width gets 10 extra pixels, height 4 + 5 (CalcMsgPanelSize)
         // m_margins[0..3] = left, top, right, bottom
+        // draw puts the rows m_lineHeight + m_lineSpacing apart, so the spacing between rows counts too: a one-line box
+        // keeps the original size, and grouped messages (many lines) no longer run past the bottom edge
         const int width = static_cast<int>(longest) * 8 + m_margins[0] + m_margins[2] + 10;
-        const int height = static_cast<int>(m_lines.size()) * m_lineHeight + m_margins[1] + m_margins[3] + 4 + 5;
+        const int rows = static_cast<int>(m_lines.size());
+        const int height = rows * m_lineHeight + std::max(0, rows - 1) * m_lineSpacing + m_margins[1] + m_margins[3] + 4 + 5;
         return {screenPosition.x + (bounds().width - width) / 2, screenPosition.y, width, height};
     }
 

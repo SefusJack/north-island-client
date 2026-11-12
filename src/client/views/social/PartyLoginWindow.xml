@@ -3,10 +3,10 @@
      viewmodels/social/PartyLoginWindow.cpp.  Made of the game's own pictures: the white form frame (form_module), the login
      form's text boxes (Panel26), the switches and OK / Cancel. -->
 <Panel Name="PartyLoginLayer" Bounds="0,0,800,600">
-  <Window Name="PartyLogin" Escape="onPartyLoginCancel" Position="270,170" Size="260,230" Hint="Log in an account" Visible="false">
+  <Window Name="PartyLogin" Escape="onPartyLoginCancel" Position="270,182" Size="260,206" Hint="Log in an account" Visible="false">
     <!-- form_module_1: Borders keep the ornaments whole (top 122, bottom 45) and repeat only the picture's steady rows 122..177;
          an odd height keeps its two-row stripes in step where the repeats meet the bottom -->
-    <Panel Name="PartyLoginFrame" Bounds="0,0,260,229" Skin="form_module_1" SkinSource="0,0,223,223" Borders="64,122,80,45"/>
+    <Panel Name="PartyLoginFrame" Bounds="0,0,260,205" Skin="form_module_1" SkinSource="0,0,223,223" Borders="64,122,80,45"/>
     <Label Name="PartyLoginTitle" Position="34,22" Text="Log in an account" FontColor="#1E3C78" Effect="Plain"/>
     <ImageButton Name="PartyLoginCloseSmall" Picture="Btn_Close_s_1" Position="212,26" Size="18,18" Click="onPartyLoginCancel"
                  ClickSound="" ReleaseSound="sound/wav0154.wav"/>
@@ -20,11 +20,9 @@
              Enter="onPartyLoginNext" Tab="onPartyLoginNext"/>
     <Label Name="PartyLoginSecondText" Position="24,116" Text="Second character" FontColor="#080808" Effect="Plain"/>
     <CheckBox Name="PartyLoginSecond" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="218,114"/>
-    <Label Name="PartyLoginManualText" Position="24,140" Text="Manual battle commands" FontColor="#080808" Effect="Plain"/>
-    <CheckBox Name="PartyLoginManual" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="218,138"/>
-    <Label Name="PartyLoginError" Bounds="24,162,214,15" FontColor="#C80000" Effect="Plain"/>
-    <ImageButton Name="PartyLoginCancel" Picture="btn_cancel_1" Position="134,186" Click="onPartyLoginCancel"
+    <Label Name="PartyLoginError" Bounds="24,138,214,15" FontColor="#C80000" Effect="Plain"/>
+    <ImageButton Name="PartyLoginCancel" Picture="btn_cancel_1" Position="134,162" Click="onPartyLoginCancel"
                  ClickSound="" ReleaseSound="sound/wav0154.wav"/>
-    <ImageButton Name="PartyLoginOk" Picture="btn_ok_1" Position="70,186" Click="onPartyLoginOk"/>
+    <ImageButton Name="PartyLoginOk" Picture="btn_ok_1" Position="70,162" Click="onPartyLoginOk"/>
   </Window>
 </Panel>

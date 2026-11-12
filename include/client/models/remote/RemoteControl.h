@@ -231,6 +231,8 @@ namespace client {
             int m_deaths = 0;
             int m_petDeaths = 0;
             bool m_itemPending = false;
+            std::uint64_t m_itemPendingMs = 0; // when the pending supply was sent, ms
+            static constexpr std::uint64_t kSupplyWaitMs = 3000; // a supply with no HP / SP change by then was refused or never sent: try again
             bool m_stopPending = false;
             std::uint64_t m_stopMs = 0;
             bool m_unequipSent = false;

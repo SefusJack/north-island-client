@@ -25,6 +25,7 @@
 #include "client/rules/Skills.h"
 #include "client/data/StarterRoles.h"
 #include "gfx/TextStyle.h"
+#include "client/rules/CellDistances.h"
 #include "client/rules/CharacterActions.h"
 #include "client/rules/NpcMovement.h"
 #include "client/rules/PathFinder.h"
@@ -1317,7 +1318,7 @@ namespace client {
         m_itemWindow.setItemBagDrop([this](const ui::EventArgs& args) { m_itemBag.bagItemDropped(args); });
         m_itemWindow.setStoreroomDrop([this](const ui::EventArgs& args) { m_storeroom.bagItemDropped(args); });
         m_itemWindow.setAutoCombat([this] { return m_remote.isOn() && m_remote.settings().ticks[1]; });
-        m_battleMain.setAutoFight([this] { return (m_remote.isOn() && m_remote.settings().ticks[1]) || m_services.autoBattle(); });
+        m_battleMain.setAutoFight([this] { return m_remote.isOn() && m_remote.settings().ticks[1]; });
         m_battleMain.setToWindow([this](core::Point point) { return isViewZoomed() ? ViewZoom::toWindow(point, m_camera.view(), m_services.view) : point; });
         for (int cell = 1; cell <= RemoteSettings::kKeepItems; ++cell) {
             m_itemWindow.setBagDrop("RemoteItem" + std::to_string(cell), [this, cell](int slot) {
@@ -4115,6 +4116,18 @@ namespace client {
             path.assign(cells.begin() + 1, cells.end());
         } else {
             path = findPath(*m_map, m_player.position, mapPoint, m_player.walkClass());
+            if (path.empty()) {
+                // findPath reaches CellDistances::kReach cells each way; a window wider than the original 800x600 shows
+                // points farther than that, so walk toward such a point as far as findPath reaches
+                const int dx = mapPoint.x - m_player.position.x;
+                const int dy = mapPoint.y - m_player.position.y;
+                const int farthest = std::max(std::abs(dx), std::abs(dy));
+                const int reach = (CellDistances::kReach - 1) * formats::MapFile::kCellSize;
+                if (farthest > reach) {
+                    const core::Point nearer{m_player.position.x + dx * reach / farthest, m_player.position.y + dy * reach / farthest};
+                    path = findPath(*m_map, m_player.position, nearer, m_player.walkClass());
+                }
+            }
             if (path.empty()) {
                 return mapPoint;
             }

@@ -54,6 +54,13 @@ namespace gfx {
             /// @return The driver names.
             static std::vector<std::string> driverNames();
 
+            /// @brief Tells whether a render driver of this build starts on this machine, by trying it on a hidden window.
+            /// @details A GPU driver can be in the build but have no device (Vulkan without a Vulkan driver). Takes about
+            /// 80 to 370 ms a driver, so the loading screen tries them one a step.
+            /// @param name The driver name ("opengl", "vulkan", ...).
+            /// @return True when a renderer could be made with it.
+            static bool driverStarts(const std::string& name);
+
             /// @brief The SDL renderer.
             /// @return The renderer.
             SDL_Renderer* renderer() const { return m_renderer.get(); }

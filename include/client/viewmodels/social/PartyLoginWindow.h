@@ -10,7 +10,7 @@
 namespace client {
 
     /// @brief The qol client's form that logs another account in as a party member (PartyLoginWindow.xml).
-    /// @details Reached from the group window's Log in, with the Video tab's "Log in more accounts" on: the account, its password, the second character and manual battle commands. OK hands them to GameServices::partyLogIn and closes, or shows why not under the fields. Nothing typed is kept.
+    /// @details Reached from the group window's Log in, with the Video tab's "Log in more accounts" on: the account, its password and the second character (members always take manual battle commands). OK hands them to GameServices::partyLogIn and closes, or shows why not under the fields. Nothing typed is kept.
     class PartyLoginWindow {
         public:
             /// @brief Builds the form.

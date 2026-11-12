@@ -70,10 +70,9 @@ namespace client {
         std::function<core::Size()> desktopSize = [] { return core::Size{}; };
         std::function<bool(std::int32_t inviterId)> joinsTeamOf = [](std::int32_t) { return false; };
         std::function<bool(std::int32_t leaderId)> takesLeadFrom = [](std::int32_t) { return false; };
-        std::function<bool()> autoBattle = [] { return false; };
         std::function<void(int channel, const std::string& line, std::int32_t senderId)> chatHeard;
         std::function<bool(int typedChannel, const std::string& text)> partyChat;
-        std::function<std::string(const std::string& account, const std::string& password, int slot, bool autoBattle)> partyLogIn;
+        std::function<std::string(const std::string& account, const std::string& password, int slot)> partyLogIn;
         std::function<bool(std::int32_t playerId)> isPartyMember;
         std::function<void(std::int32_t playerId)> partyLogOut;
         std::function<void(bool centre, const std::string& text, int durationMs)> partyMessage;

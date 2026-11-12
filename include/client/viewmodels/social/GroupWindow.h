@@ -103,6 +103,11 @@ namespace client {
             /// @details Original RefreshTeamPage.
             void refresh();
 
+            /// @brief Offers the lead to a teammate at once, without asking first (right click on a party member's status row).
+            /// @details askLead's checks: the own player leads the team, the member is a teammate and mayOfferLead.
+            /// @param memberId The teammate's player id.
+            void appointLeader(std::int32_t memberId);
+
             /// @brief Forgets the pending offer to lead.
             /// @details Original FNewLeaderId := 0: the offer was answered or the team broke up.
             void leaderOfferEnded() { m_newLeaderId = 0; }

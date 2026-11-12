@@ -424,6 +424,10 @@ namespace client {
         if (m_itemPending && fight != 0 && fight != 4) { // fight state 4 keeps the wait for a supply
             m_itemPending = false;
         }
+        if (m_itemPending && fight == 0 && nowMs - m_itemPendingMs >= kSupplyWaitMs) {
+            // no HP / SP change came: the use was refused (or never sent), so the wait would last until the remote is reset
+            m_itemPending = false;
+        }
         if (!m_on) {
             return;
         }
@@ -443,6 +447,7 @@ namespace client {
                 if (const int slot = findSupply(true)) {
                     m_hooks.useBagItem(slot, hpLow.order);
                     m_itemPending = true;
+                    m_itemPendingMs = nowMs;
                     used = true;
                 } else {
                     nothing = true;
@@ -454,6 +459,7 @@ namespace client {
                     if (const int slot = findSupply(false)) {
                         m_hooks.useBagItem(slot, spLow.order);
                         m_itemPending = true;
+                        m_itemPendingMs = nowMs;
                     } else {
                         nothing = true;
                     }

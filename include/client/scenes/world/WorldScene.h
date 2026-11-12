@@ -376,6 +376,10 @@ namespace client {
             /// @return The id.
             std::int32_t ownId() const { return m_player.id; }
 
+            /// @brief Offers the lead to a teammate at once (the group window's checks, without its question).
+            /// @param memberId The teammate's player id.
+            void appointLeader(std::int32_t memberId) { m_groupWindow.appointLeader(memberId); }
+
             /// @brief The map the player is on.
             /// @return The map id (0 before one is loaded).
             int ownMapId() const { return mapId(); }

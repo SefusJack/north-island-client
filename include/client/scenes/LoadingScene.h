@@ -47,6 +47,7 @@ namespace client {
             ui::ProgressBar& m_progress;
             std::vector<std::function<void()>> m_steps;
             std::size_t m_nextStep = 0;
+            std::size_t m_driverSteps = 0; // the first steps, which try the other renderers: one an update, after frames are shown
     };
 
 }

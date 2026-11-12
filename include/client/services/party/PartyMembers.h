@@ -25,17 +25,15 @@ namespace client {
         std::string account;
         std::string password;
         int slot = 1;
-        bool autoBattle = true;
 
         /// @brief Compares all fields of two accounts.
         /// @param other The account to compare with.
-        /// @return True when account, password, slot and auto battle all match.
-        bool operator==(const PartyAccount& other) const {
-            return account == other.account && password == other.password && slot == other.slot && autoBattle == other.autoBattle;
-        }
+        /// @return True when account, password and slot all match.
+        bool operator==(const PartyAccount& other) const { return account == other.account && password == other.password && slot == other.slot; }
     };
 
-    /// @brief Parses the --accounts file: "account password [place] [auto|manual]" a line; blank and # lines are skipped; at most kMostMembers accounts.
+    /// @brief Parses the --accounts file: "account password [place]" a line; blank and # lines are skipped; at most kMostMembers accounts.
+    /// @details An "auto" or "manual" word after the place (older files) is accepted and ignored: members always take manual battle commands.
     /// @param lines The lines of the file.
     /// @param error Receives what is wrong with the file (nothing is returned then).
     /// @return The accounts, or nothing when a line is invalid.
@@ -59,7 +57,6 @@ namespace client {
         std::optional<CharacterLook> look;
         std::string reason;
         bool inTeam = false;
-        bool autoBattle = true;
         bool commanding = false;
         bool selected = false;
     };
@@ -83,7 +80,7 @@ namespace client {
     class WorldScene;
 
     /// @brief The qol client's several accounts at once: the played account leads, each member runs the login and world scenes unseen and follows through the server's own team.
-    /// @details Covers team invitations (13/7), auto battle, manual battle turns shown in the leader's place, member windows over the leader's screen, chat relay, leader swap and log in/out from the group window.
+    /// @details Covers team invitations (13/7), manual battle turns shown in the leader's place, member windows over the leader's screen, chat relay, leader swap and log in/out from the group window.
     class PartyMembers {
         public:
             static constexpr int kMostMembers = 3; // most members (extra accounts) in the party
@@ -185,6 +182,12 @@ namespace client {
             /// @param nowMs The current time in milliseconds.
             void move(std::uint64_t nowMs);
 
+            /// @brief Gives the members the next beat's time once the played account's beat has moved on.
+            /// @details update runs before the beat clock moves, so the time it copies is the beat now running: the
+            /// battle tween of a member's scene (shown while it takes its commands) then never tweened between beats.
+            /// @param nextBeatMs The next beat, ms.
+            void setNextBeat(std::uint64_t nextBeatMs);
+
             /// @brief Describes every member for the party panels.
             /// @return One view per member.
             std::vector<PartyMemberView> views() const;
@@ -197,6 +200,7 @@ namespace client {
 
             static constexpr std::uint64_t kLeaveWaitMs = 2000; // ms a logging-out member waits for its sends to finish before it is removed
             static constexpr std::uint64_t kAwayMs = 10000; // ms a member may stay on another map than the leader before it is logged out
+            static constexpr std::uint64_t kOutOfTeamMs = 25000; // ms a member on the leader's map may stay out of the leader's team (re-invited meanwhile) before it is logged out
 
             struct Member;
 
@@ -241,6 +245,14 @@ namespace client {
             /// @brief Switches a member to the scene its current scene asked for.
             /// @param member The member.
             void changeScene(Member& member);
+
+            /// @brief Watches that a member on the leader's map is in the leader's team: it leaves another team, gets new
+            /// invites (inviteToTeam) and is logged out after kOutOfTeamMs still outside. Battles pause the watch.
+            /// @param member The member, in the world.
+            /// @param leaderWorld The leader's world scene.
+            /// @param leaderMapId The leader's map.
+            /// @param nowMs The current time, ms.
+            void keepInTeam(Member& member, const WorldScene& leaderWorld, int leaderMapId, std::uint64_t nowMs);
 
             /// @brief Sends the leader's team invitation to a member, a few tries and kInviteGapMs apart.
             /// @param member The member to invite.

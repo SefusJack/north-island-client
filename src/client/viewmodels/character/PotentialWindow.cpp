@@ -454,7 +454,10 @@ namespace client {
         const auto mark = m_services.pictures.find("Icon_PotentialMark_1");
         const auto big = m_services.pictures.find("PotentialFire1");
         const auto small = m_services.pictures.find("PotentialFire2");
-        const auto step = [this](int index) {
+        const auto step = [this, &canvas](int index) {
+            if (!canvas.isAnimationFrame()) {
+                return; // one step a 30 ms beat, not one a painted frame
+            }
             int& frame = m_fireFrames[static_cast<std::size_t>(index)];
             ++frame;
             if (frame >= 12) { // number of frames in a flame animation

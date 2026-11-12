@@ -68,17 +68,16 @@ namespace client {
             words >> account.account >> account.password >> slot >> battle >> more;
             const std::string where = "line " + std::to_string(index + 1) + ": ";
             if (account.password.empty() || !more.empty()) {
-                error = where + "an account, its password, the character's place (1 or 2) and auto or manual are wanted";
+                error = where + "an account, its password and the character's place (1 or 2) are wanted";
                 return std::nullopt;
             }
             if (slot == "auto" || slot == "manual") {
                 battle = std::exchange(slot, std::string());
             }
             if (!battle.empty() && battle != "auto" && battle != "manual") {
-                error = where + "the battle commands are auto or manual";
+                error = where + "after the place, only auto or manual (older files; members always take manual commands)";
                 return std::nullopt;
             }
-            account.autoBattle = battle != "manual";
             if (!slot.empty()) {
                 const auto place = core::parseInt(slot);
                 if (!place || (*place != 1 && *place != 2)) {
@@ -113,7 +112,6 @@ namespace client {
         core::Rect view;
         int invites = 0;
         std::uint64_t invitedMs = 0;
-        bool autoBattle = account.autoBattle;
         // what each of the member's layouts is (kLayoutPopup, kLayoutHud, kLayoutWindow), worked out once: the filter asks for every layout three times a frame
         std::unordered_map<const ui::Element*, std::uint8_t> windowLayouts;
 
@@ -129,6 +127,8 @@ namespace client {
         std::optional<std::uint64_t> leavingSinceMs;
         std::string leavingReason;
         std::optional<std::uint64_t> awaySinceMs;
+        std::optional<std::uint64_t> outOfTeamSinceMs; // on the leader's map but not in the leader's team since then
+        std::uint64_t leftOtherTeamMs = 0; // when it last asked to leave another team, ms
     };
 
     PartyMembers::PartyMembers(
@@ -163,7 +163,6 @@ namespace client {
 
     void PartyMembers::setUpPlayed(GameServices& services) {
         services.unseenPartyMember = false;
-        services.autoBattle = [] { return false; };
         services.chatHeard = nullptr;
         services.partyMessage = nullptr;
         services.joinsTeamOf = [](std::int32_t) { return false; };
@@ -175,8 +174,8 @@ namespace client {
             m_members[static_cast<std::size_t>(m_selected)]->world->get().sayAsPartyMember(typedChannel, text);
             return true;
         };
-        services.partyLogIn = [this](const std::string& account, const std::string& password, int slot, bool autoBattle) {
-            return add({account, password, slot, autoBattle});
+        services.partyLogIn = [this](const std::string& account, const std::string& password, int slot) {
+            return add({account, password, slot});
         };
         services.isPartyMember = [this](std::int32_t playerId) { return isMember(playerId); };
         services.partyLogOut = [this](std::int32_t playerId) { logOut(playerId); };
@@ -217,7 +216,6 @@ namespace client {
             core::logInfo("party member ", member.account.account, ": message box: ", caption, " / ", text);
         };
         services.saveScreenshot = [](const std::filesystem::path&, const PhotoCheck&) {};
-        services.autoBattle = [&member] { return member.autoBattle; };
         services.chatHeard = [&member](int channel, const std::string& line, std::int32_t) { member.heard.push_back({channel, line, member.nowMs}); };
         services.partyMessage = [this](bool centre, const std::string& text, int durationMs) { m_messages.push_back({centre, text, durationMs}); };
         services.joinsTeamOf = [this](std::int32_t inviterId) { return m_teamLeaderId != 0 && inviterId == m_teamLeaderId; };
@@ -380,7 +378,7 @@ namespace client {
         if (!track.empty()) {
             member.bundle->music.playLooped(track, at);
         }
-        const PartyAccount oldAccount{old.session.loginName, old.session.password, old.session.playingSlot == 2 ? 2 : 1, member.autoBattle};
+        const PartyAccount oldAccount{old.session.loginName, old.session.password, old.session.playingSlot == 2 ? 2 : 1};
         core::logInfo("party member ", member.account.account, ": takes the lead, ", oldAccount.account, " is a member");
         std::swap(m_played, member.bundle);
         member.account = oldAccount;
@@ -538,6 +536,24 @@ namespace client {
                 return true;
             }
         }
+        if ((event.type == SDL_EVENT_MOUSE_BUTTON_DOWN || event.type == SDL_EVENT_MOUSE_BUTTON_UP) && event.button.button == SDL_BUTTON_RIGHT) {
+            // right click on a member's status row: make that member the team leader (the group window's appoint, unasked)
+            const core::Point point{static_cast<int>(event.button.x) - origin.x, static_cast<int>(event.button.y) - origin.y};
+            const int pressed = event.type == SDL_EVENT_MOUSE_BUTTON_DOWN ? m_panels->memberAt(point) : -1;
+            const int row = pressed < size() ? pressed : -1;
+            if (row >= 0) {
+                m_panelPressed = true;
+                const Member& member = *m_members[static_cast<std::size_t>(row)];
+                if (member.world && !member.leavingSinceMs && member.world->get().inWorld() && m_played->kind == SceneKind::World) {
+                    core::logInfo("party: ", member.account.account, " is offered the lead");
+                    static_cast<WorldScene&>(*m_played->scene).appointLeader(member.world->get().ownId());
+                }
+                return true;
+            }
+            if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && std::exchange(m_panelPressed, false)) {
+                return true;
+            }
+        }
         if (memberShown) {
             return false;
         }
@@ -634,7 +650,7 @@ namespace client {
         if (leaderDone) {
             for (int index = 0; index < size(); ++index) {
                 const Member& member = *m_members[static_cast<std::size_t>(index)];
-                if (member.world && !member.autoBattle && member.world->get().battleActor() != 0) {
+                if (member.world && member.world->get().battleActor() != 0) {
                     found = index;
                     break;
                 }
@@ -664,6 +680,38 @@ namespace client {
         ++member.invites;
         member.invitedMs = nowMs;
         core::logInfo("party member ", member.account.account, ": invited to the team (", member.invites, ")");
+    }
+
+    void PartyMembers::keepInTeam(Member& member, const WorldScene& leaderWorld, int leaderMapId, std::uint64_t nowMs) {
+        const WorldScene& world = member.world->get();
+        const std::int32_t memberId = world.ownId();
+        const std::optional<std::int32_t> leader = world.teams().leaderOf(memberId);
+        if (leader && *leader == m_teamLeaderId) {
+            if (member.outOfTeamSinceMs) {
+                core::logInfo("party member ", member.account.account, ": back in the team");
+            }
+            member.outOfTeamSinceMs.reset();
+            member.invites = 0; // in the team: a later fall out gets its invites again
+            return;
+        }
+        if (world.ownMapId() != leaderMapId || world.inBattle() || leaderWorld.inBattle()) {
+            member.outOfTeamSinceMs.reset(); // another map has its own rule; battles end first, then the wait starts over
+            return;
+        }
+        if (!member.outOfTeamSinceMs) {
+            member.outOfTeamSinceMs = nowMs;
+            member.invites = 0; // a fresh set of invites to get back in
+            core::logInfo("party member ", member.account.account, ": not in the leader's team, asking it back");
+        }
+        if (leader && nowMs - member.leftOtherTeamMs >= kInviteGapMs) {
+            // in another team (another player's invite): leave it, so the leader's invite can be taken
+            member.bundle->connection.send(protocol::leaveTeamRequest(*leader));
+            member.leftOtherTeamMs = nowMs;
+            core::logInfo("party member ", member.account.account, ": leaves another team");
+        }
+        if (nowMs - *member.outOfTeamSinceMs >= kOutOfTeamMs) {
+            beginLogOut(member, "not in the team");
+        }
     }
 
     void PartyMembers::update(std::uint64_t nowMs, std::optional<std::reference_wrapper<const WorldScene>> leaderWorld) {
@@ -726,6 +774,10 @@ namespace client {
             if (member.world) {
                 member.world->get().followView(nowMs);
                 if (leaderInWorld && !member.leavingSinceMs && member.world->get().inWorld() && played().session.ownPlayer) {
+                    keepInTeam(member, leaderWorld->get(), leaderMapId, nowMs);
+                    if (member.leavingSinceMs) {
+                        continue;
+                    }
                     inviteToTeam(member, leaderWorld->get(), nowMs);
                     if (member.world->get().ownMapId() == leaderMapId) {
                         member.awaySinceMs.reset();
@@ -736,6 +788,12 @@ namespace client {
                     }
                 }
             }
+        }
+    }
+
+    void PartyMembers::setNextBeat(std::uint64_t nextBeatMs) {
+        for (const auto& member : m_members) {
+            member->bundle->services.nextBeatMs = nextBeatMs;
         }
     }
 
@@ -752,7 +810,6 @@ namespace client {
         for (const auto& member : m_members) {
             PartyMemberView view;
             view.account = member->account.account;
-            view.autoBattle = member->autoBattle;
             view.commanding = static_cast<int>(views.size()) == m_commanding;
             view.selected = static_cast<int>(views.size()) == m_selected;
             if (member->leavingSinceMs) {

@@ -300,7 +300,7 @@ namespace client {
                 int& frame = m_fireFrames[static_cast<std::size_t>(level)];
                 // flame drawn 2 right and 11 up of the mark; 16x26 frames, 3 ticks per frame, 4 frames in the sheet
                 canvas.drawPicture(*big, {where.x + 2, where.y - 11}, core::Rect{0, frame / 3 * 26, 16, 26});
-                if (++frame >= 12) { // 12 ticks, then the flame starts over
+                if (canvas.isAnimationFrame() && ++frame >= 12) { // one tick a 30 ms beat; 12 ticks, then the flame starts over
                     frame = 0;
                 }
             }

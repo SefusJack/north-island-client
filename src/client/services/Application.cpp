@@ -270,6 +270,15 @@ namespace client {
             showError(std::string("cannot open the game window: ") + SDL_GetError());
             return 1;
         }
+        if (!live.renderer.empty() && m_options.renderMode == gfx::RenderMode::Accelerated && device->backendName() != live.renderer) {
+            // the saved renderer cannot start here (settings copied from another system): back to Default, in the file too
+            core::logWarning("the saved renderer ", live.renderer, " is not available here: the setting is now Default");
+            if (stored.renderer == live.renderer) {
+                stored.renderer.clear();
+                stored.save(extraFile);
+            }
+            live.renderer.clear();
+        }
         device->setPixelArtFilter(formats::pixelArtFilterNamed(live.pixelArt).value_or(formats::PixelArtFilter::None));
         device->setPixelArtPart(gfx::PixelArtPart::Pictures, live.pixelArtPictures);
         device->setPixelArtPart(gfx::PixelArtPart::Sprites, live.pixelArtSprites);
@@ -402,7 +411,7 @@ namespace client {
             services.saveScreenshot = [&photoRequest](const std::filesystem::path& file, const PhotoCheck& check) { photoRequest.emplace(file, check); };
             services.freeFrames = live.freeFrames();
             services.zoom.setGliding(live.freeFrames());
-            services.renderDrivers = gfx::RenderDevice::driverNames();
+            services.renderDrivers = gfx::RenderDevice::driverNames(); // the loading screen drops the ones that cannot start here
             services.rendererInUse = device->backendName();
             services.desktopSize = [&device] { return device->usableDesktop(); };
             services.videoSettings = [&live] { return live; };
@@ -641,6 +650,7 @@ namespace client {
                     }
                 }
                 played->services.nextBeatMs = beats.nextMs();
+                party.setNextBeat(played->services.nextBeatMs);
                 played->scene->move(frameStart);
                 party.move(frameStart);
                 if (!beat && !played->scene->freeFrames()) {

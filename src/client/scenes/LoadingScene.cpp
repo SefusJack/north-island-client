@@ -1,6 +1,10 @@
 #include "client/scenes/LoadingScene.h"
 
 #include "core/Log.h"
+#include "gfx/RenderDevice.h"
+
+#include <algorithm>
+#include <string>
 
 namespace client {
 
@@ -54,6 +58,19 @@ namespace client {
           m_screen(services.pictures),
           m_layout(m_screen.load(services.game.layout("LoadingScene.xml"), services.loadContext())),
           m_progress(m_screen.get<ui::ProgressBar>("Progress")) {
+        // the renderers in the build that cannot start on this machine leave the Video tab's list, one tried a step (first, while the bar (30 steps long) still moves)
+        for (const std::string& driver : m_services.renderDrivers) {
+            if (driver == m_services.rendererInUse || driver == "software") {
+                continue; // running already, or always there
+            }
+            m_steps.push_back([this, driver] {
+                if (!gfx::RenderDevice::driverStarts(driver)) {
+                    auto& drivers = m_services.renderDrivers;
+                    drivers.erase(std::remove(drivers.begin(), drivers.end(), driver), drivers.end());
+                }
+            });
+        }
+        m_driverSteps = m_steps.size();
         m_steps.push_back([this] { m_services.pictures.addDirectory(m_services.game.data("menu/skins/white")); });
         m_steps.push_back([this] { m_services.pictures.addDirectory(m_services.game.data("menu/skins/default")); });
         const bool shortMemory = m_services.startup.memory == formats::StartupInfo::MemoryMode::Short;
@@ -76,12 +93,22 @@ namespace client {
     void LoadingScene::update(std::uint64_t nowMs) {
         // every step at once: together they take about 12 ms, while one step a 30 ms beat held the bar up for 2.5 s
         // (most of the 84 steps are archive names an install does not have)
-        if (m_nextStep < m_steps.size()) {
+        // The renderer tries stay one an update, as before: run before the first frame is shown, they left Direct3D 11's
+        // present about twice as slow on a test PC (0.65 against 0.35 ms a frame) for the whole session.
+        if (m_nextStep < m_driverSteps) {
+            m_steps[m_nextStep++]();
+            m_progress.setValue(m_progress.value() + 1);
+        } else if (m_nextStep < m_steps.size()) {
             while (m_nextStep < m_steps.size()) {
                 m_steps[m_nextStep++]();
                 m_progress.setValue(m_progress.value() + 1);
             }
             core::logInfo("loading done: ", m_services.pictures.pictureCount(), " pictures in use");
+            std::string drivers;
+            for (const std::string& driver : m_services.renderDrivers) {
+                drivers += (drivers.empty() ? "" : ", ") + driver;
+            }
+            core::logInfo("renderers available: ", drivers);
         }
         m_screen.update(nowMs);
     }

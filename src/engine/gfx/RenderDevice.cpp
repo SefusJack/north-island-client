@@ -57,6 +57,11 @@ namespace gfx {
 
         const char* driver = settings.mode == RenderMode::Software ? "software" : settings.driver.empty() ? nullptr : settings.driver.c_str();
         device.m_renderer.reset(SDL_CreateRenderer(device.m_window.get(), driver));
+        if (!device.m_renderer && driver != nullptr && settings.mode == RenderMode::Accelerated) {
+            // the chosen driver is not in this build or cannot start here (settings copied from another system): SDL's choice
+            core::logWarning("the renderer ", settings.driver, " cannot start here (", SDL_GetError(), "), using the default renderer");
+            device.m_renderer.reset(SDL_CreateRenderer(device.m_window.get(), nullptr));
+        }
         if (!device.m_renderer && settings.mode == RenderMode::Accelerated) {
             core::logWarning("no accelerated renderer (", SDL_GetError(), "), using the software renderer");
             device.m_renderer.reset(SDL_CreateRenderer(device.m_window.get(), "software"));
@@ -87,6 +92,21 @@ namespace gfx {
             }
         }
         return names;
+    }
+
+    bool RenderDevice::driverStarts(const std::string& name) {
+        SDL_Window* probe = SDL_CreateWindow("renderer probe", 64, 64, SDL_WINDOW_HIDDEN);
+        if (probe == nullptr) {
+            return true; // cannot try it: keep it listed, as before
+        }
+        SDL_Renderer* renderer = SDL_CreateRenderer(probe, name.c_str());
+        if (renderer == nullptr) {
+            core::logInfo("renderer ", name, " cannot start here: ", SDL_GetError());
+        } else {
+            SDL_DestroyRenderer(renderer);
+        }
+        SDL_DestroyWindow(probe);
+        return renderer != nullptr;
     }
 
     void RenderDevice::setWindowSize(int width, int height, bool maximized) {

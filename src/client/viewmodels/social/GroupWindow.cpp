@@ -425,6 +425,14 @@ namespace client {
         return true;
     }
 
+    void GroupWindow::appointLeader(std::int32_t memberId) {
+        if (memberId == 0 || !m_players.mate(memberId) || m_players.ownId() != m_teams.leaderOf(m_players.ownId()).value_or(0) || !mayOfferLead()) {
+            return;
+        }
+        m_newLeaderId = memberId;
+        m_services.connection.send(protocol::offerLeadRequest(memberId));
+    }
+
     void GroupWindow::askLead(int slot) {
         const std::int32_t memberId = slot >= 1 && slot <= 3 ? m_memberIds[static_cast<std::size_t>(slot)] : 0; // valid slots are 1 to 3
         const auto mate = m_players.mate(memberId);

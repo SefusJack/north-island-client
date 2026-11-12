@@ -387,19 +387,43 @@ namespace client {
         const bool landed = m_kind != SceneEffectKind::Ribbons;
         const bool seen = m_kind == SceneEffectKind::Leaves || m_kind == SceneEffectKind::FallingLeaves || m_kind == SceneEffectKind::Rain ||
                           m_kind == SceneEffectKind::Stars || m_kind == SceneEffectKind::Ribbons;
-        for (SceneParticle& particle : m_particles) {
-            if (seen && particle.active && particle.arrived == landed) {
-                draw(canvas, particle, view, nowMs);
-            }
+        if (!seen) {
+            return;
         }
+        drawParticles(canvas, view, nowMs, [landed](const SceneParticle& particle) { return particle.active && particle.arrived == landed; });
     }
 
     void SceneEffect::drawOver(gfx::Canvas& canvas, core::Point view, std::uint64_t nowMs) {
-        for (SceneParticle& particle : m_particles) {
-            if (particle.active && !particle.arrived) {
-                draw(canvas, particle, view, nowMs);
+        drawParticles(canvas, view, nowMs, [](const SceneParticle& particle) { return particle.active && !particle.arrived; });
+    }
+
+    void SceneEffect::drawParticles(gfx::Canvas& canvas, core::Point view, std::uint64_t nowMs, const std::function<bool(const SceneParticle&)>& shown) {
+        const bool additive = m_kind == SceneEffectKind::Steam || m_kind == SceneEffectKind::Stars;
+        if (!additive) {
+            for (SceneParticle& particle : m_particles) {
+                if (shown(particle)) {
+                    draw(canvas, particle, view, nowMs);
+                }
+            }
+            return;
+        }
+        const bool stepping = canvas.isAnimationFrame();
+        if (swaying() && stepping) {
+            for (SceneParticle& particle : m_particles) {
+                if (shown(particle)) {
+                    sway(particle, nowMs); // in spawn order, as draw would
+                }
             }
         }
+        canvas.setAnimationFrame(false); // swayed above: draw only draws
+        for (int picture = 0; picture < static_cast<int>(kMostPictures); ++picture) {
+            for (SceneParticle& particle : m_particles) {
+                if (particle.picture == picture && shown(particle)) {
+                    draw(canvas, particle, view, nowMs);
+                }
+            }
+        }
+        canvas.setAnimationFrame(stepping);
     }
 
 }
