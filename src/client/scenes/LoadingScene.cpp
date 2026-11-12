@@ -74,12 +74,14 @@ namespace client {
     }
 
     void LoadingScene::update(std::uint64_t nowMs) {
+        // every step at once: together they take about 12 ms, while one step a 30 ms beat held the bar up for 2.5 s
+        // (most of the 84 steps are archive names an install does not have)
         if (m_nextStep < m_steps.size()) {
-            m_steps[m_nextStep++]();
-            m_progress.setValue(m_progress.value() + 1);
-            if (m_nextStep == m_steps.size()) {
-                core::logInfo("loading done: ", m_services.pictures.pictureCount(), " pictures in use");
+            while (m_nextStep < m_steps.size()) {
+                m_steps[m_nextStep++]();
+                m_progress.setValue(m_progress.value() + 1);
             }
+            core::logInfo("loading done: ", m_services.pictures.pictureCount(), " pictures in use");
         }
         m_screen.update(nowMs);
     }

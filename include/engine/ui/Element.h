@@ -10,6 +10,7 @@
 #include "ui/MouseButton.h"
 #include "ui/UiContext.h"
 
+#include <cstdint>
 #include <functional>
 #include <map>
 #include <memory>
@@ -130,7 +131,14 @@ namespace ui {
 
             /// @brief Appends a child, drawn after the element and over earlier children.
             /// @param child The child to take over.
-            void addChild(std::unique_ptr<Element> child) { m_children.push_back(std::move(child)); }
+            void addChild(std::unique_ptr<Element> child) {
+                m_children.push_back(std::move(child));
+                ++s_treeChanges;
+            }
+
+            /// @brief Counts every change to any element tree's shape, order or names, so a name lookup cache knows when to start over.
+            /// @return The change count.
+            static std::uint64_t treeChanges() { return s_treeChanges; }
 
             /// @brief The children in draw order.
             /// @return The child list.
@@ -341,6 +349,7 @@ namespace ui {
             std::set<std::string> m_events;
             std::map<std::string, std::string> m_handlers;
             std::vector<std::unique_ptr<Element>> m_children;
+            inline static std::uint64_t s_treeChanges = 0; // UI elements live on the main thread only
     };
 
 }

@@ -1,6 +1,7 @@
 #include "client/subsystems/battle/BattleGround.h"
 
 #include <algorithm>
+#include <chrono>
 #include <string>
 
 namespace client {
@@ -77,20 +78,62 @@ namespace client {
         if (!scene) {
             scene = scenes.find(kDefaultGround);
         }
+        m_pending.clear(); // waits for an earlier battle's pictures still decoding
         m_backdrop.reset();
         m_far.reset();
         m_near.reset();
+        m_tint = tint;
         if (!scene) {
             return;
         }
-        const auto picture = [&](int number, gfx::PictureLibrary::Source source) -> std::optional<gfx::PictureId> {
-            return number > 0 ? m_pictures.find(std::to_string(number), tint, source) : std::nullopt;
+        const auto picture = [&](int number, gfx::PictureLibrary::Source source, std::optional<gfx::PictureId> BattleGround::*layer) {
+            if (number <= 0) {
+                return;
+            }
+            const std::string name = std::to_string(number);
+            if (const auto loaded = m_pictures.findLoaded(name, tint, source)) {
+                this->*layer = loaded;
+                return;
+            }
+            auto raw = m_pictures.readRaw(name, tint, source);
+            if (!raw) {
+                this->*layer = m_pictures.find(name, tint, source); // missing, or a pack picture: loaded here as before
+                return;
+            }
+            Pending pending;
+            pending.raw = std::make_shared<const gfx::PictureLibrary::Raw>(std::move(*raw));
+            pending.source = source;
+            pending.layer = layer;
+            pending.image = std::async(std::launch::async, [bytes = pending.raw, tint] { return gfx::PictureLibrary::decodeRaw(*bytes, tint); });
+            m_pending.push_back(std::move(pending));
         };
-        m_near = picture(scene->battlePictures[0], gfx::PictureLibrary::Source::Bitmap);
-        m_far = picture(scene->battlePictures[1], gfx::PictureLibrary::Source::Bitmap);
-        m_backdrop = picture(scene->battlePictures[2], gfx::PictureLibrary::Source::Jpeg);
+        picture(scene->battlePictures[0], gfx::PictureLibrary::Source::Bitmap, &BattleGround::m_near);
+        picture(scene->battlePictures[1], gfx::PictureLibrary::Source::Bitmap, &BattleGround::m_far);
+        picture(scene->battlePictures[2], gfx::PictureLibrary::Source::Jpeg, &BattleGround::m_backdrop);
         m_nearY = scene->battleLayerY[0];
         m_farY = scene->battleLayerY[1];
+    }
+
+    void BattleGround::upload(Pending& pending) {
+        this->*pending.layer = m_pictures.storeDecoded(*pending.raw, m_tint, pending.source, pending.image.get());
+    }
+
+    bool BattleGround::poll() {
+        for (auto it = m_pending.begin(); it != m_pending.end(); ++it) {
+            if (it->image.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+                upload(*it);
+                m_pending.erase(it);
+                break; // one upload a frame
+            }
+        }
+        return m_pending.empty();
+    }
+
+    void BattleGround::finish() {
+        for (Pending& pending : m_pending) {
+            upload(pending);
+        }
+        m_pending.clear();
     }
 
     void BattleGround::draw(gfx::Canvas& canvas, const BattleCamera& camera, core::Point shake) const {

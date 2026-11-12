@@ -4,6 +4,7 @@
 #include "formats/Image.h"
 #include "gfx/Texture.h"
 
+#include <cstdint>
 #include <vector>
 
 namespace gfx {
@@ -13,12 +14,31 @@ namespace gfx {
         public:
             Picture() = default;
 
+            /// @brief Which pixels of a picture are opaque, made from its pixels on any thread before the upload.
+            struct Mask {
+                std::vector<std::uint64_t> bits; // one bit per pixel, row after row, 64 pixels per word
+                core::Color topLeft{0, 0, 0, 0};
+
+                /// @brief The mask of pixels at the logical size.
+                /// @param image The pixels (an HD picture's shrunk to the logical size).
+                /// @return The mask.
+                static Mask of(const formats::Image& image);
+            };
+
             /// @brief Makes a picture from its texture and pixels.
             /// @param texture The uploaded texture.
             /// @param image The pixels at the logical size (an HD picture's shrunk to it).
             Picture(
                 Texture texture,
                 const formats::Image& image
+            );
+
+            /// @brief Makes a picture from its texture and a mask made already (a prefetch worker's).
+            /// @param texture The uploaded texture.
+            /// @param mask The mask of its pixels at the logical size.
+            Picture(
+                Texture texture,
+                Mask mask
             );
 
             /// @brief The picture's texture.
@@ -45,7 +65,7 @@ namespace gfx {
 
         private:
             Texture m_texture;
-            std::vector<bool> m_opaque;
+            std::vector<std::uint64_t> m_opaque; // one bit per pixel, row after row, 64 pixels per word
             core::Color m_topLeft{0, 0, 0, 0};
     };
 

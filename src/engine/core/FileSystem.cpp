@@ -15,7 +15,19 @@ namespace core {
         if (!file) {
             return std::nullopt;
         }
-        return Bytes(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+        // one read of the whole file when its size is known (reading through istreambuf_iterator goes a byte at a time)
+        file.seekg(0, std::ios::end);
+        const std::streamoff size = file.tellg();
+        if (size < 0) {
+            file.clear();
+            file.seekg(0, std::ios::beg);
+            return Bytes(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+        }
+        file.seekg(0, std::ios::beg);
+        Bytes data(static_cast<std::size_t>(size));
+        file.read(reinterpret_cast<char*>(data.data()), static_cast<std::streamsize>(data.size()));
+        data.resize(static_cast<std::size_t>(file.gcount()));
+        return data;
     }
 
     std::optional<std::vector<std::string>> readLines(const fs::path& path) {

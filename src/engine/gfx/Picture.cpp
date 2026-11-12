@@ -1,5 +1,8 @@
 #include "gfx/Picture.h"
 
+#include "formats/GamePixels.h"
+
+#include <algorithm>
 #include <utility>
 
 namespace gfx {
@@ -8,21 +11,31 @@ namespace gfx {
         Texture texture,
         const formats::Image& image
     )
-        : m_texture(std::move(texture)) {
+        : Picture(std::move(texture), Mask::of(image)) {}
+
+    Picture::Picture(
+        Texture texture,
+        Mask mask
+    )
+        : m_texture(std::move(texture)),
+          m_opaque(std::move(mask.bits)),
+          m_topLeft(mask.topLeft) {}
+
+    Picture::Mask Picture::Mask::of(const formats::Image& image) {
+        Mask mask;
         if (!image.isEmpty()) {
-            m_topLeft = image.at(0, 0);
+            mask.topLeft = image.at(0, 0);
         }
-        m_opaque.reserve(image.pixels().size());
-        for (const core::Color& pixel : image.pixels()) {
-            m_opaque.push_back(pixel.a != 0);
-        }
+        mask.bits = formats::opaqueBits(image);
+        return mask;
     }
 
     bool Picture::isOpaque(int x, int y) const {
         if (x < 0 || y < 0 || x >= width() || y >= height()) {
             return false;
         }
-        return m_opaque[static_cast<std::size_t>(y) * static_cast<std::size_t>(width()) + static_cast<std::size_t>(x)];
+        const std::size_t index = static_cast<std::size_t>(y) * static_cast<std::size_t>(width()) + static_cast<std::size_t>(x);
+        return index / 64 < m_opaque.size() && ((m_opaque[index / 64] >> (index % 64)) & 1) != 0;
     }
 
 }

@@ -88,15 +88,18 @@ namespace gfx {
             /// @param at Top left of the character cell.
             /// @param cellWidth Width of the character cell.
             /// @param style Colour and effect.
+            /// @param batch Where to add the glyph's layers, to draw them in one call later; null draws them now.
             void drawGlyph(
                 const RenderDevice& device,
                 const Glyph& glyph,
                 core::Point at,
                 int cellWidth,
-                const TextStyle& style
+                const TextStyle& style,
+                std::vector<Texture::Quad>* batch
             ) const;
 
             Texture m_atlas;
+            mutable std::vector<Texture::Quad> m_batch; // the layers of the string being drawn, reused between strings
     };
 
 }

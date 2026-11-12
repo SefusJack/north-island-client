@@ -46,6 +46,7 @@ namespace ui {
         if (holder == m_children.end()) {
             return;
         }
+        ++s_treeChanges;
         if ((*holder)->isTopmost()) {
             std::rotate(holder, holder + 1, m_children.end());
             return;
@@ -62,6 +63,7 @@ namespace ui {
         const auto holder = std::find_if(m_children.begin(), m_children.end(), [id](const auto& child) { return child->contains(id); });
         if (holder != m_children.end()) {
             std::rotate(holder, holder + 1, m_children.end());
+            ++s_treeChanges;
         }
     }
 
@@ -69,6 +71,7 @@ namespace ui {
         (void)context;
         if (name == "Name") {
             m_name = value;
+            ++s_treeChanges;
         } else if (name == "Bounds") {
             m_bounds = LoadContext::parseRect(value);
             m_sizeGiven = true;

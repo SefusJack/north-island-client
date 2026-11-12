@@ -55,6 +55,55 @@ namespace gfx {
         drawScaled(device, {destination.x + shiftX, destination.y + shiftY, area.width, area.height}, area);
     }
 
+    void Texture::drawQuads(const RenderDevice& device, const std::vector<Quad>& quads) const {
+        if (!m_texture || quads.empty()) {
+            return;
+        }
+        float textureWidth = 0.0f;
+        float textureHeight = 0.0f;
+        SDL_GetTextureSize(m_texture.get(), &textureWidth, &textureHeight);
+        thread_local std::vector<SDL_Vertex> vertices;
+        thread_local std::vector<int> indices;
+        vertices.clear();
+        indices.clear();
+        for (const Quad& quad : quads) {
+            // as draw: clip the source to the texture and move the destination with it
+            const core::Rect area = quad.source.intersected({0, 0, m_width, m_height});
+            if (area.isEmpty()) {
+                continue;
+            }
+            const float minX = static_cast<float>(quad.destination.x + area.x - quad.source.x);
+            const float minY = static_cast<float>(quad.destination.y + area.y - quad.source.y);
+            const float maxX = minX + static_cast<float>(area.width);
+            const float maxY = minY + static_cast<float>(area.height);
+            // as SDL_RenderTexture: texture coordinates are source pixels over the texture size
+            const float fromX = static_cast<float>(area.x * m_detail);
+            const float fromY = static_cast<float>(area.y * m_detail);
+            const float minU = fromX / textureWidth;
+            const float minV = fromY / textureHeight;
+            const float maxU = (fromX + static_cast<float>(area.width * m_detail)) / textureWidth;
+            const float maxV = (fromY + static_cast<float>(area.height * m_detail)) / textureHeight;
+            // as SDL_SetTextureColorMod / SDL_SetTextureAlphaMod: each channel over 255
+            const SDL_FColor color{
+                static_cast<float>(quad.color.r) / 255.0f,
+                static_cast<float>(quad.color.g) / 255.0f,
+                static_cast<float>(quad.color.b) / 255.0f,
+                static_cast<float>(quad.color.a) / 255.0f
+            };
+            const int first = static_cast<int>(vertices.size());
+            vertices.push_back({{minX, minY}, color, {minU, minV}});
+            vertices.push_back({{maxX, minY}, color, {maxU, minV}});
+            vertices.push_back({{maxX, maxY}, color, {maxU, maxV}});
+            vertices.push_back({{minX, maxY}, color, {minU, maxV}});
+            for (const int corner : {0, 1, 2, 0, 2, 3}) { // SDL's own corner order for a rectangle
+                indices.push_back(first + corner);
+            }
+        }
+        if (!vertices.empty()) {
+            SDL_RenderGeometry(device.renderer(), m_texture.get(), vertices.data(), static_cast<int>(vertices.size()), indices.data(), static_cast<int>(indices.size()));
+        }
+    }
+
     void Texture::drawFlipped(
         const RenderDevice& device,
         core::Point destination,

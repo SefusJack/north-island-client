@@ -18,6 +18,7 @@
 #include <optional>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 
 namespace client {
 
@@ -461,6 +462,14 @@ namespace client {
                     return std::tie(bank, sprite, frame, digits, tint, marked, statusTint) <
                            std::tie(other.bank, other.sprite, other.frame, other.digits, other.tint, other.marked, other.statusTint);
                 }
+
+                /// @brief Whether two keys name the same texture.
+                /// @param other The key to compare with.
+                /// @return True when every field matches.
+                bool operator==(const FrameKey& other) const {
+                    return std::tie(sprite, frame, digits, tint, marked, statusTint, bank) ==
+                           std::tie(other.sprite, other.frame, other.digits, other.tint, other.marked, other.statusTint, other.bank);
+                }
             };
 
             /// @brief One sprite to draw: its bank, sprite id and extra drop.
@@ -522,6 +531,16 @@ namespace client {
             /// @return The layer, nothing when no bank holds the sprite.
             std::optional<Layer> npcLayer(int spriteId);
 
+            /// @brief Searches the banks for npcLayer, which remembers the answer.
+            /// @param spriteId NPC sprite id.
+            /// @return The layer, nothing when no bank holds the sprite.
+            std::optional<Layer> findNpcLayer(int spriteId);
+
+            /// @brief Searches the banks for petLayer, which remembers the answer.
+            /// @param roleSpriteId Pet role sprite id.
+            /// @return The layer, nothing when no bank holds the sprite.
+            std::optional<Layer> findPetLayer(int roleSpriteId);
+
             /// @brief Finds the 007 bank layer of a pet's role sprite.
             /// @details Original: FindSpriteBank for RoleShow_007; the later banks hold the sprites from their first one on.
             /// @param roleSpriteId Role sprite id.
@@ -555,8 +574,16 @@ namespace client {
             /// @return The texture, nothing when the frame has no pixels.
             std::optional<std::reference_wrapper<const gfx::Texture>> frameTexture(gfx::Canvas& canvas, const FrameKey& key, const formats::RoleSprite& sprite);
 
+            /// @brief Hashes a frame key for the texture cache, which is looked up for every drawn sprite layer each frame.
+            struct FrameKeyHash {
+                std::size_t operator()(const FrameKey& key) const;
+            };
+
             RoleSpriteLibrary& m_sprites;
-            std::map<FrameKey, std::optional<gfx::Texture>> m_textures;
+            std::unordered_map<FrameKey, std::optional<gfx::Texture>, FrameKeyHash> m_textures;
+            // the banks' contents never change, so which bank holds an NPC or pet sprite is worked out once per sprite id
+            std::unordered_map<int, std::optional<Layer>> m_npcLayers;
+            std::unordered_map<int, std::optional<Layer>> m_petLayers;
     };
 
 }

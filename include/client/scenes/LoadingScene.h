@@ -13,7 +13,7 @@
 
 namespace client {
 
-    /// @brief The loading screen: opens the picture sets one step per frame while the progress bar fills, then hands over to the login screen.
+    /// @brief The loading screen: opens the picture sets in its first update (the progress bar fills at once), then hands over to the login screen.
     /// @details Original: LoadingScene.xml layout.
     class LoadingScene : public Scene {
         public:
@@ -23,7 +23,7 @@ namespace client {
                 GameServices& services
             );
 
-            /// @brief Overrides Scene::update: runs the next loading step and advances the progress bar.
+            /// @brief Overrides Scene::update: runs every loading step and fills the progress bar.
             /// @param nowMs Current time in ms.
             void update(std::uint64_t nowMs) override;
 

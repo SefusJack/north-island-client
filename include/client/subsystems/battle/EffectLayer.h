@@ -78,6 +78,9 @@ namespace client {
             /// @return True for S60000.
             bool isCutIn() const { return m_name == "S60000"; }
 
+            /// @brief The picture the layer plays, once loaded.
+            const std::string& effectPicture() const { return m_name; }
+
             /// @brief Returns the number of frames of the strip.
             /// @return The frame count.
             int frameCount() const { return m_frameCount; }

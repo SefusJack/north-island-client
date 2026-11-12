@@ -5,8 +5,10 @@
 
 #include <filesystem>
 #include <functional>
+#include <mutex>
 #include <optional>
 #include <string>
+#include <unordered_map>
 
 namespace client {
 
@@ -54,6 +56,9 @@ namespace client {
             std::filesystem::path m_user;
             std::filesystem::path m_layouts;
             std::function<std::optional<std::filesystem::path>(const std::string&)> m_soundPacks;
+            // resolvePath checks the file system once per path part; files found once are remembered
+            mutable std::mutex m_resolvedLock;
+            mutable std::unordered_map<std::string, std::filesystem::path> m_resolved;
     };
 
 }

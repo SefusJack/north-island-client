@@ -31,6 +31,7 @@
 #include <functional>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -87,6 +88,12 @@ namespace client {
             /// @param scenes Scene table for the battle ground.
             /// @param tint Colour tint of the ground.
             void start(const protocol::BattleStart& start, std::int32_t ownId, const formats::SceneTable& scenes, core::Color tint);
+
+            /// @brief Uploads at most one ground picture that finished decoding; called each frame while the screen dims into the battle.
+            void pollGround() { m_ground.poll(); }
+
+            /// @brief Uploads the ground pictures still pending and gives the camera the ground's size; called when the battle is shown.
+            void finishGround();
 
             /// @brief Sets the battle type, which decides the command time.
             /// @details Original: RevBattleType; types 2, 4, 7, 8 and 9 give 30 seconds, the others 20.
@@ -620,6 +627,7 @@ namespace client {
             std::uint64_t m_zoomTickMs = 0;
             std::optional<std::optional<core::Rect>> m_zoomPresented; // the part between the two ticks while presenting
             std::uint64_t m_holdMs = 0;
+            std::unordered_map<int, std::string> m_soundFiles; // SEB sound number -> file, or "" when there is none
             std::uint64_t m_heldUntilMs = 0;
             std::array<std::optional<SkillAction>, BattleField::kSlots + 1> m_actions{};
             std::array<bool, BattleField::kSlots + 1> m_runningOff{};

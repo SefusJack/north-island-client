@@ -87,6 +87,7 @@ namespace client {
         GameServices& services
     )
         : m_services(services),
+          m_entryMapPicture(prefetchEntryMap(services)),
           m_screen(services.pictures),
           m_layout(m_screen.load(services.game.layout("WorldScene.xml"), services.loadContext())),
           m_backdrop(m_screen.get<ui::Element>("WorldBackdrop")),
@@ -1763,6 +1764,9 @@ namespace client {
         m_services.music.stop();
         const auto& record = m_services.session.ownPlayer;
         if (!record || !m_mapArchive || !m_objectArchive) {
+            if (m_entryMapPicture) {
+                m_services.pictures.cancelPrefetch(m_entryMapPicture->first, m_entryMapPicture->second);
+            }
             core::logError("cannot enter the world: ", record ? "the map archives are missing" : "no player record");
             m_next = SceneKind::Login;
             return;
@@ -1794,7 +1798,26 @@ namespace client {
         constexpr std::int32_t kSaveFileKey = 121; // XOR key that scrambles the player id in the saveNNN.dat file name
         m_compoundWindow.setSettingsFile(services.game.user("save" + std::to_string(m_player.id ^ kSaveFileKey) + ".dat"), m_player.id);
         enterMap(record->mapId, {record->x, record->y});
+        if (m_entryMapPicture) {
+            m_services.pictures.cancelPrefetch(m_entryMapPicture->first, m_entryMapPicture->second); // no-op when the map used it
+        }
         m_chat.add(0, "Welcome to[" + m_services.session.serverName + "]Server");
+    }
+
+    std::optional<std::pair<std::string, core::Color>> WorldScene::prefetchEntryMap(GameServices& services) {
+        const auto& record = services.session.ownPlayer;
+        if (!record || isHouseMap(record->mapId)) {
+            return std::nullopt; // a house room's map file and background depend on the room
+        }
+        auto maps = formats::DataArchive::open(services.game.data("Data/Ground.MMG"));
+        const auto data = maps ? maps->read(std::to_string(record->mapId) + ".map") : std::nullopt;
+        const auto file = data ? formats::MapFile::parse(*data) : std::nullopt;
+        if (!file) {
+            return std::nullopt;
+        }
+        auto picture = std::make_pair(std::to_string(file->backgroundId()), file->tint());
+        services.pictures.prefetch(picture.first, picture.second);
+        return picture;
     }
 
     void WorldScene::enterMap(int mapId, core::Point position) {
@@ -1838,12 +1861,15 @@ namespace client {
     void WorldScene::placeEventObjects() {
         m_npcs.clear();
         m_doors.clear();
+        m_doorMaps.clear();
+        cancelExitPrefetches(); // the new map is in: the one it used is no longer decoding
         const auto scene = m_events && m_map ? m_events->scene(mapFileOf(m_map->id())) : std::nullopt;
         if (!scene) {
             m_miniMap.setDoors(m_doors);
             return;
         }
         m_doors = scene->doors;
+        m_doorMaps = scene->doorMaps;
         for (const formats::SceneDoor& door : m_doors) {
             m_waymark.setDoor({door.area.x, door.area.y});
         }
@@ -1973,7 +1999,72 @@ namespace client {
             checkChase();
         }
         checkDoors();
+        prefetchNearExits();
         checkNearNpcs(nowMs);
+    }
+
+    void WorldScene::prefetchNearExits() {
+        constexpr int kNearExit = 160; // px around a door within which the map behind it is decoded ahead
+        constexpr std::size_t kMostExitPrefetches = 2; // most maps decoding ahead at once (each holds a decoded picture)
+        if (!m_map || !m_mapArchive || isHouseMap(m_map->id())) {
+            return;
+        }
+        // the maps behind the near doors, nearest door first
+        std::vector<std::pair<int, int>> near; // distance, map id
+        for (const formats::SceneDoor& door : m_doors) {
+            const auto maps = m_doorMaps.find(door.index);
+            if (maps == m_doorMaps.end()) {
+                continue;
+            }
+            const int dx = std::max({door.area.x - m_player.position.x, 0, m_player.position.x - (door.area.x + door.area.width)});
+            const int dy = std::max({door.area.y - m_player.position.y, 0, m_player.position.y - (door.area.y + door.area.height)});
+            if (dx > kNearExit || dy > kNearExit) {
+                continue;
+            }
+            for (const int mapId : maps->second) {
+                if (mapId != m_map->id() && !isHouseMap(mapId)) {
+                    near.emplace_back(std::max(dx, dy), mapId);
+                }
+            }
+        }
+        std::stable_sort(near.begin(), near.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
+        std::vector<std::pair<std::string, core::Color>> wanted;
+        for (const auto& [distance, mapId] : near) {
+            auto cached = m_mapPictures.find(mapId);
+            if (cached == m_mapPictures.end()) {
+                const auto data = m_mapArchive->read(std::to_string(mapFileOf(mapId)) + ".map");
+                const auto file = data ? formats::MapFile::parse(*data) : std::nullopt;
+                cached = m_mapPictures.emplace(mapId, file ? std::optional(std::make_pair(std::to_string(file->backgroundId()), file->tint())) : std::nullopt).first;
+            }
+            if (cached->second && std::find(wanted.begin(), wanted.end(), *cached->second) == wanted.end()) {
+                wanted.push_back(*cached->second);
+                if (wanted.size() == kMostExitPrefetches) {
+                    break;
+                }
+            }
+        }
+        // cancel the ones no longer near, start the new ones (prefetch skips a picture already loaded or decoding)
+        for (auto it = m_exitPrefetches.begin(); it != m_exitPrefetches.end();) {
+            if (std::find(wanted.begin(), wanted.end(), *it) == wanted.end()) {
+                m_services.pictures.cancelPrefetch(it->first, it->second);
+                it = m_exitPrefetches.erase(it);
+            } else {
+                ++it;
+            }
+        }
+        for (const auto& picture : wanted) {
+            if (std::find(m_exitPrefetches.begin(), m_exitPrefetches.end(), picture) == m_exitPrefetches.end() &&
+                m_services.pictures.prefetch(picture.first, picture.second)) {
+                m_exitPrefetches.push_back(picture);
+            }
+        }
+    }
+
+    void WorldScene::cancelExitPrefetches() {
+        for (const auto& [name, tint] : m_exitPrefetches) {
+            m_services.pictures.cancelPrefetch(name, tint);
+        }
+        m_exitPrefetches.clear();
     }
 
     void WorldScene::checkDoors() {
@@ -2454,6 +2545,7 @@ namespace client {
     }
 
     void WorldScene::showBattle() {
+        m_battle.finishGround();
         m_battleShown = true;
         m_dimStep = 0;
         m_dimTarget = 0;
@@ -5053,6 +5145,10 @@ namespace client {
     }
 
     void WorldScene::update(std::uint64_t nowMs) {
+        if (m_map) {
+            m_services.pictures.touch(m_map->background()); // kept while a battle hides the map, so leaving the battle does not load it again
+            m_services.pictures.touch(m_map->largeTile());
+        }
         m_services.zoom.setOutAllowed(!m_battle.isOn());
         followView(nowMs);
         m_nowMs = nowMs;
@@ -5103,8 +5199,12 @@ namespace client {
         if (m_battleShown) {
             m_view.setCursor(m_battle.cursor());
         }
-        if (m_battle.isOn() && !m_battleShown && m_dimTarget == kDarkStep && m_dimStep == kDarkStep) {
-            showBattle();
+        if (m_battle.isOn() && !m_battleShown) {
+            if (m_dimTarget == kDarkStep && m_dimStep == kDarkStep) {
+                showBattle();
+            } else {
+                m_battle.pollGround(); // the ground pictures decode while the screen dims; one is uploaded a frame
+            }
         }
         if (m_battleClosing && m_dimStep == 0) {
             m_battleClosing = false;

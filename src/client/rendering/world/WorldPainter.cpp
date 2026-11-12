@@ -243,19 +243,41 @@ namespace client {
                     standing.emplace_back(item.position.y + item.extra, GroundEntry{index, std::cref(item)});
                 }
             }
+            // the standing objects and tiles go after the moving things above, as one list stable-sorted by y would have them
+            std::vector<std::pair<int, Standing>> fixed;
             for (GroundObject& object : map.objects()) {
                 if (object.info.kind == kStandingKind) {
-                    standing.emplace_back(object.footY(), std::ref(object));
+                    fixed.emplace_back(object.footY(), std::ref(object));
                 }
             }
             for (const GroundTile& tile : map.tiles()) {
                 if (tile.object.isValid()) {
-                    standing.emplace_back(tile.sortY, std::cref(tile));
+                    fixed.emplace_back(tile.sortY, std::cref(tile));
                 }
             }
             const auto byY = [](const auto& a, const auto& b) { return a.first < b.first; };
             std::stable_sort(sceneObjects.begin(), sceneObjects.end(), byY);
             std::stable_sort(standing.begin(), standing.end(), byY);
+            // a stable sort's order is the one where (y, list position) rises strictly: keep last frame's while it still does
+            const auto rises = [&fixed](std::size_t a, std::size_t b) { return fixed[a].first < fixed[b].first || (fixed[a].first == fixed[b].first && a < b); };
+            bool ordered = m_fixedOrder.size() == fixed.size();
+            for (std::size_t k = 1; ordered && k < m_fixedOrder.size(); ++k) {
+                ordered = rises(m_fixedOrder[k - 1], m_fixedOrder[k]);
+            }
+            if (!ordered) {
+                m_fixedOrder.resize(fixed.size());
+                for (std::size_t k = 0; k < fixed.size(); ++k) {
+                    m_fixedOrder[k] = k;
+                }
+                std::sort(m_fixedOrder.begin(), m_fixedOrder.end(), rises);
+            }
+            const std::size_t moving = standing.size();
+            standing.reserve(moving + fixed.size());
+            for (const std::size_t k : m_fixedOrder) {
+                standing.push_back(std::move(fixed[k]));
+            }
+            // both halves are sorted; on equal y the moving things stay first, as they were earlier in the one list
+            std::inplace_merge(standing.begin(), standing.begin() + static_cast<std::ptrdiff_t>(moving), standing.end(), byY);
             using StandingList = std::vector<std::pair<int, Standing>>;
             for (StandingList& list : std::array<std::reference_wrapper<StandingList>, 2>{sceneObjects, standing}) {
                 for (auto& [y, thing] : list) {

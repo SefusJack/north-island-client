@@ -1,6 +1,10 @@
 #include "formats/GamePixels.h"
 
+#include "core/Bands.h"
+
 #include <algorithm>
+#include <array>
+#include <cstdint>
 
 namespace formats {
 
@@ -14,13 +18,22 @@ namespace formats {
             return static_cast<std::uint8_t>(std::min(255, value + add)); // channel maximum
         }
 
-        /// @brief Reduces a colour to RGB565 precision, keeping its alpha.
-        /// @param color Source colour.
-        /// @return The reduced colour.
-        core::Color to16Bit(core::Color color) {
-            core::Color reduced = core::Color::fromRgb565(color.toRgb565());
-            reduced.a = color.a;
-            return reduced;
+        /// @brief A channel lookup table: the output value for each 0..255 input.
+        using ChannelTable = std::array<std::uint8_t, 256>;
+
+        /// @brief Builds the table that adds an amount to a channel (clamped to 255), then reduces it to 5 or 6 bits by bit replication.
+        /// @details Matches addSaturated followed by the RGB565 round trip (Color::fromRgb565(toRgb565())) for one channel.
+        /// @param add Amount added before the reduction (0 for none).
+        /// @param bits Kept bits: 5 for red and blue, 6 for green.
+        /// @return The table.
+        ChannelTable reducedTable(std::uint8_t add, int bits) {
+            ChannelTable table{};
+            for (int value = 0; value < 256; ++value) {
+                const int sum = std::min(255, value + add); // channel maximum
+                const int kept = sum >> (8 - bits);
+                table[static_cast<std::size_t>(value)] = static_cast<std::uint8_t>((kept << (8 - bits)) | (kept >> (2 * bits - 8)));
+            }
+            return table;
         }
 
         /// @brief Computes one RGB565 field of the alpha fill.
@@ -42,46 +55,82 @@ namespace formats {
         /// @return The shifted value.
         int floorShift8(int value) { return value >= 0 ? value >> 8 : -((-value + 255) >> 8); } // 8: shift of the 8-bit alpha scale; 255: rounding bias
 
+        constexpr std::size_t kBandsFromPixels = 1000000; // pictures this large (the maps) are worked on in bands on several threads
+
     }
 
     void addColor(Image& image, core::Color colorAdd) {
-        for (core::Color& pixel : image.pixels()) {
-            if ((pixel.r | pixel.g | pixel.b) < 4) { // near-black threshold left untouched
-                continue;
-            }
-            pixel.r = addSaturated(pixel.r, colorAdd.r);
-            pixel.g = addSaturated(pixel.g, colorAdd.g);
-            pixel.b = addSaturated(pixel.b, colorAdd.b);
+        if (colorAdd.r == 0 && colorAdd.g == 0 && colorAdd.b == 0) {
+            return; // nothing to add
         }
+        core::Color* const pixels = image.pixels().data();
+        core::inBands(image.pixels().size(), kBandsFromPixels, [&](std::size_t begin, std::size_t end) {
+            for (std::size_t i = begin; i < end; ++i) {
+                core::Color& pixel = pixels[i];
+                if ((pixel.r | pixel.g | pixel.b) < 4) { // near-black threshold left untouched
+                    continue;
+                }
+                pixel.r = addSaturated(pixel.r, colorAdd.r);
+                pixel.g = addSaturated(pixel.g, colorAdd.g);
+                pixel.b = addSaturated(pixel.b, colorAdd.b);
+            }
+        });
     }
 
     void applyPictureRules(Image& image, core::Color colorAdd) {
-        for (core::Color& pixel : image.pixels()) {
-            if (pixel.r == kTransparentKey.r && pixel.g == kTransparentKey.g && pixel.b == kTransparentKey.b) {
-                pixel = {0, 0, 0, 0};
-                continue;
+        // per channel: the tint added, then the 16-bit reduction, looked up instead of computed per pixel
+        const ChannelTable red = reducedTable(colorAdd.r, 5);
+        const ChannelTable green = reducedTable(colorAdd.g, 6);
+        const ChannelTable blue = reducedTable(colorAdd.b, 5);
+        const std::uint8_t markerBlue = reducedTable(0, 5)[8]; // the near-black marker (0, 0, 8) reduced without the tint
+        core::Color* const pixels = image.pixels().data();
+        core::inBands(image.pixels().size(), kBandsFromPixels, [&](std::size_t begin, std::size_t end) {
+            for (std::size_t i = begin; i < end; ++i) {
+                core::Color& pixel = pixels[i];
+                if (pixel.r == kTransparentKey.r && pixel.g == kTransparentKey.g && pixel.b == kTransparentKey.b) {
+                    pixel = {0, 0, 0, 0};
+                    continue;
+                }
+                // 8: darkness threshold per channel; dark pixels get blue 8 so they stay visible
+                if (pixel.r < 8 && pixel.g < 8 && pixel.b < 8) {
+                    pixel.b = 8;
+                }
+                if (pixel.r == 0 && pixel.g == 0 && pixel.b == 8) { // the near-black marker colour (0, 0, 8): not tinted
+                    pixel = {0, 0, markerBlue, 255}; // 255: opaque
+                    continue;
+                }
+                pixel = {red[pixel.r], green[pixel.g], blue[pixel.b], 255}; // 255: opaque
             }
-            // 8: darkness threshold per channel; dark pixels get blue 8 so they stay visible
-            if (pixel.r < 8 && pixel.g < 8 && pixel.b < 8) {
-                pixel.b = 8;
-            }
-            if (pixel.r == 0 && pixel.g == 0 && pixel.b == 8) { // the near-black marker colour (0, 0, 8)
-                pixel.a = 255; // opaque
-                pixel = to16Bit(pixel);
-                continue;
-            }
-            pixel.r = addSaturated(pixel.r, colorAdd.r);
-            pixel.g = addSaturated(pixel.g, colorAdd.g);
-            pixel.b = addSaturated(pixel.b, colorAdd.b);
-            pixel.a = 255; // opaque
-            pixel = to16Bit(pixel);
-        }
+        });
     }
 
     void quantizeTo16Bit(Image& image) {
-        for (core::Color& pixel : image.pixels()) {
-            pixel = to16Bit(pixel);
-        }
+        const ChannelTable five = reducedTable(0, 5);
+        const ChannelTable six = reducedTable(0, 6);
+        core::Color* const pixels = image.pixels().data();
+        core::inBands(image.pixels().size(), kBandsFromPixels, [&](std::size_t begin, std::size_t end) {
+            for (std::size_t i = begin; i < end; ++i) {
+                core::Color& pixel = pixels[i];
+                pixel = {five[pixel.r], six[pixel.g], five[pixel.b], pixel.a};
+            }
+        });
+    }
+
+    std::vector<std::uint64_t> opaqueBits(const Image& image) {
+        const std::vector<core::Color>& pixels = image.pixels();
+        std::vector<std::uint64_t> bits((pixels.size() + 63) / 64, 0);
+        core::inBands(bits.size(), kBandsFromPixels / 64, [&](std::size_t begin, std::size_t end) {
+            for (std::size_t word = begin; word < end; ++word) {
+                const std::size_t first = word * 64;
+                const std::size_t count = std::min<std::size_t>(64, pixels.size() - first);
+                std::uint64_t value = 0;
+                for (std::size_t bit = 0; bit < count; ++bit) {
+                    value |= static_cast<std::uint64_t>(pixels[first + bit].a != 0) << bit;
+                }
+                bits[word] = value;
+            }
+        });
+        return bits;
     }
 
     void alphaFill16(Image& image, core::Color fill) {

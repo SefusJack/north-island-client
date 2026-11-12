@@ -162,6 +162,7 @@ namespace formats {
                 readPlaced(reader);
                 reader.skip(4 + 2 + 1 + 4);
             }
+            std::map<int, std::vector<int>> eventConveys; // by event index: the convey points its warp results name
             const int events = reader.u16();
             std::set<int> clickEvents;
             for (int i = 0; i < events && !reader.failed(); ++i) {
@@ -177,7 +178,18 @@ namespace formats {
                 const int conditions = reader.u8();
                 for (int c = 0; c < conditions && !reader.failed(); ++c) {
                     reader.skip(kConditionSize);
-                    reader.skip(reader.u8() * kResultSize);
+                    const int results = reader.u8();
+                    for (int r = 0; r < results && !reader.failed(); ++r) {
+                        // result: u8 step, u8 kind, u16 sub kind, u16 argument, then 16 bytes not needed here
+                        reader.skip(1);
+                        const int kind = reader.u8();
+                        const int subKind = reader.u16();
+                        const int argument = reader.u16();
+                        reader.skip(kResultSize - 6);
+                        if (kind == 1 && subKind == 3 && argument != 0) { // result 1/3: a warp through the convey point the argument names
+                            eventConveys[id].push_back(argument);
+                        }
+                    }
                 }
             }
             for (SceneDoor& door : scene.doors) {
@@ -188,9 +200,35 @@ namespace formats {
                 reader.skip(2 + kNameSize + 1 + 2 + 1 + 1); // group header: index (2), name, then 5 bytes not used
                 reader.skip(reader.u16() * kGroupMemberSize);
             }
+            std::map<int, int> conveyMaps; // by convey index: the map it leads to
             const int conveys = reader.u16();
             for (int i = 0; i < conveys && !reader.failed(); ++i) {
-                reader.skip(2 + kConveySize); // warp: index (2) and its record
+                // convey (warp point): u16 index, name, u16 target map, then i32 x, i32 y, u8 direction and 2 bytes
+                const int index = reader.u16();
+                reader.skip(kNameSize);
+                conveyMaps[index] = reader.u16();
+                reader.skip(kConveySize - kNameSize - 2);
+            }
+            if (reader.failed()) {
+                return;
+            }
+            for (const SceneDoor& door : scene.doors) {
+                std::vector<int> maps;
+                for (const int eventId : door.eventIds) {
+                    const auto named = eventConveys.find(eventId);
+                    if (named == eventConveys.end()) {
+                        continue;
+                    }
+                    for (const int convey : named->second) {
+                        const auto target = conveyMaps.find(convey);
+                        if (target != conveyMaps.end() && target->second != 0 && std::find(maps.begin(), maps.end(), target->second) == maps.end()) {
+                            maps.push_back(target->second);
+                        }
+                    }
+                }
+                if (!maps.empty()) {
+                    scene.doorMaps[door.index] = std::move(maps);
+                }
             }
         }
 

@@ -19,6 +19,7 @@
 #include <map>
 #include <set>
 #include <sstream>
+#include <unordered_map>
 #include <utility>
 
 namespace client {
@@ -38,6 +39,10 @@ namespace client {
         const std::set<std::string>
             kPopupLayouts{"TalkLayer", "PlayerMessages", "CentreMessages", "ItemInfoLayer", "PetInfoLayer", "RightClickMenuLayer", "MaidLayer"};
         const std::set<std::string> kHudLayouts{"MainStatus", "MainButtons", "FunctionButtons", "HotKeyBar", "TimeEffectLayer"};
+
+        constexpr std::uint8_t kLayoutPopup = 1; // a layout in kPopupLayouts
+        constexpr std::uint8_t kLayoutHud = 2; // a layout in kHudLayouts
+        constexpr std::uint8_t kLayoutWindow = 4; // a layout holding a window
 
         /// @brief Tells whether an SDL event type is a mouse motion, button or wheel event.
         /// @param type The SDL event type.
@@ -109,7 +114,8 @@ namespace client {
         int invites = 0;
         std::uint64_t invitedMs = 0;
         bool autoBattle = account.autoBattle;
-        std::map<const ui::Element*, bool> windowLayouts;
+        // what each of the member's layouts is (kLayoutPopup, kLayoutHud, kLayoutWindow), worked out once: the filter asks for every layout three times a frame
+        std::unordered_map<const ui::Element*, std::uint8_t> windowLayouts;
 
         /// @brief A chat line the member heard, and when.
         struct Heard {
@@ -445,14 +451,19 @@ namespace client {
         const bool selected = m_selected == index;
         screen.setHudScale(hudScale);
         screen.setLayoutFilter([&member, selected](const ui::Element& layout) {
-            if (kPopupLayouts.count(layout.name()) != 0 || (selected && kHudLayouts.count(layout.name()) != 0)) {
-                return true;
+            auto known = member.windowLayouts.find(&layout);
+            if (known == member.windowLayouts.end()) {
+                std::uint8_t kind = 0;
+                kind |= kPopupLayouts.count(layout.name()) != 0 ? kLayoutPopup : 0;
+                kind |= kHudLayouts.count(layout.name()) != 0 ? kLayoutHud : 0;
+                // popups are always kept, so they skip the window test
+                if ((kind & kLayoutPopup) == 0 && holdsWindow(layout)) {
+                    kind |= kLayoutWindow;
+                }
+                known = member.windowLayouts.emplace(&layout, kind).first;
             }
-            const auto known = member.windowLayouts.find(&layout);
-            if (known != member.windowLayouts.end()) {
-                return known->second;
-            }
-            return member.windowLayouts[&layout] = holdsWindow(layout);
+            const std::uint8_t kind = known->second;
+            return (kind & kLayoutPopup) != 0 || (selected && (kind & kLayoutHud) != 0) || (kind & kLayoutWindow) != 0;
         });
         call(screen);
         screen.setLayoutFilter({});

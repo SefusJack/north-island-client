@@ -11,10 +11,40 @@ namespace audio {
 
     void SoundEffects::AudioDeleter::operator()(MIX_Audio* audio) const { MIX_DestroyAudio(audio); }
 
+    SoundEffects::~SoundEffects() { settleLoading(); }
+
+    void SoundEffects::preload(const std::filesystem::path& file) {
+        if (!m_device.get().isOpen()) {
+            return;
+        }
+        std::string key = file.string();
+        if (m_sounds.count(key) != 0 || m_loading.count(key) != 0) {
+            return;
+        }
+        MIX_Mixer* mixer = m_device.get().mixer();
+        auto loading = std::async(std::launch::async, [mixer, key] { return MIX_LoadAudio(mixer, key.c_str(), true); }); // MIX_LoadAudio is safe on any thread
+        m_loading.emplace(std::move(key), std::move(loading));
+    }
+
+    void SoundEffects::settleLoading() {
+        for (auto& [key, loading] : m_loading) {
+            m_sounds.emplace(key, std::unique_ptr<MIX_Audio, AudioDeleter>(loading.get())); // a sound loaded twice keeps the first; the deleter frees the other
+        }
+        m_loading.clear();
+    }
+
     MIX_Audio* SoundEffects::audioOf(const std::filesystem::path& file) {
         const std::string key = file.string();
         auto found = m_sounds.find(key);
         if (found == m_sounds.end()) {
+            if (auto loading = m_loading.find(key); loading != m_loading.end()) {
+                std::unique_ptr<MIX_Audio, AudioDeleter> audio(loading->second.get()); // waits if the worker hasn't finished
+                m_loading.erase(loading);
+                if (!audio) {
+                    core::logWarning("cannot load the sound ", key);
+                }
+                return m_sounds.emplace(key, std::move(audio)).first->second.get();
+            }
             std::unique_ptr<MIX_Audio, AudioDeleter> audio(MIX_LoadAudio(m_device.get().mixer(), key.c_str(), true));
             if (!audio) {
                 core::logWarning("cannot load the sound ", key, ": ", SDL_GetError());
@@ -92,6 +122,7 @@ namespace audio {
 
     void SoundEffects::setDevice(const AudioDevice& device) {
         stopAll();
+        settleLoading();
         m_sounds.clear();
         m_device = std::cref(device);
     }

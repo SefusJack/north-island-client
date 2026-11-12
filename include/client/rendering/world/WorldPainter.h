@@ -380,6 +380,8 @@ namespace client {
             CharacterRenderer& m_characters;
             gfx::PictureLibrary& m_pictures;
             const formats::ItemTable& m_items;
+            // the last frame's y order of the standing objects and tiles, which do not move: checked each frame, sorted again only when it no longer holds
+            std::vector<std::size_t> m_fixedOrder;
     };
 
 }
