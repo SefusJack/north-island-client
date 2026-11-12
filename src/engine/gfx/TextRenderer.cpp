@@ -81,12 +81,17 @@ namespace gfx {
         const Glyph& glyph,
         core::Point at,
         int cellWidth,
-        const TextStyle& style
+        const TextStyle& style,
+        std::vector<Texture::Quad>* batch
     ) const {
         const auto layer = [&](Offset offset, core::Color color) {
             const int width = std::min(glyph.width, cellWidth - offset.dx);
             const int height = kHeight - offset.dy;
             if (width <= 0 || height <= 0) {
+                return;
+            }
+            if (batch) {
+                batch->push_back({{at.x + offset.dx, at.y + offset.dy}, core::Rect{glyph.atlasX, glyph.atlasY, width, height}, color});
                 return;
             }
             m_atlas.setColorMod(color);
@@ -128,6 +133,9 @@ namespace gfx {
         const int extra = style.effect == TextEffect::Outline ? 1 : 0;
         int x = position.x;
         int y = position.y;
+        // a background cell is filled before each glyph, between the glyphs' layers: those strings keep drawing glyph by glyph
+        std::vector<Texture::Quad>* batch = style.background && style.effect != TextEffect::Shadow ? nullptr : &m_batch;
+        m_batch.clear();
         for (std::size_t i = 0; i < text.size();) {
             const auto lead = static_cast<std::uint8_t>(text[i]);
             const std::optional<int> full = i + 1 < text.size() ? formats::BitmapFont::big5Glyph(lead, static_cast<std::uint8_t>(text[i + 1])) : std::nullopt;
@@ -138,7 +146,7 @@ namespace gfx {
                 }
                 const core::Point place = formats::FontAtlasLayout::forSmallFont().full(*full);
                 const Glyph glyph{place.x, place.y, formats::BitmapFont::kFullWidth};
-                drawGlyph(device, glyph, {x, y}, formats::BitmapFont::kFullWidth + 2 * extra, style);
+                drawGlyph(device, glyph, {x, y}, formats::BitmapFont::kFullWidth + 2 * extra, style, batch);
                 x += step * 2;
                 i += 2;
             } else {
@@ -147,10 +155,14 @@ namespace gfx {
                     y += lineHeight;
                 }
                 const Glyph glyph{formats::FontAtlasLayout::forSmallFont().half(lead).x, 0, formats::BitmapFont::kHalfWidth};
-                drawGlyph(device, glyph, {x, y}, formats::BitmapFont::kHalfWidth + extra, style);
+                drawGlyph(device, glyph, {x, y}, formats::BitmapFont::kHalfWidth + extra, style, batch);
                 x += step;
                 i += 1;
             }
+        }
+        if (batch) {
+            m_atlas.drawQuads(device, m_batch);
+            return y + lineHeight;
         }
         m_atlas.setColorMod({255, 255, 255, 255}); // back to the neutral colour modulation (opaque white)
         m_atlas.setAlphaMod(255); // back to fully opaque

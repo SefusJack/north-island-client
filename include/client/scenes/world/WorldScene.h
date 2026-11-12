@@ -271,6 +271,8 @@
 #include <map>
 #include <optional>
 #include <random>
+#include <string>
+#include <utility>
 #include <vector>
 
 namespace client {
@@ -527,6 +529,14 @@ namespace client {
             /// @brief Starts the event of a door clicked inside its area, when one of its events can start on a click (Original: HandleDoorClick).
             /// @param mapPoint The clicked map point.
             void clickDoorAt(core::Point mapPoint);
+
+            /// @brief Starts decoding the background pictures of the maps behind the doors near the player, so walking through one only uploads it.
+            /// @details The maps come from the doors' warp results in the event scene. At most kMostExitPrefetches maps are kept decoding;
+            /// the ones no longer near are cancelled, and placeEventObjects cancels the rest once a new map is in.
+            void prefetchNearExits();
+
+            /// @brief Cancels the exit prefetches still running (a no-op for the one the new map used).
+            void cancelExitPrefetches();
 
             /// @brief Checks the NPC an event sends back to its post (FChaseNpcIndex).
             void checkChase();
@@ -2661,6 +2671,11 @@ namespace client {
             /// @return True for a house map.
             static bool isHouseMap(int mapId);
 
+            /// @brief Starts decoding the background picture of the map the player enters the world on, so it decodes while the scene loads its windows.
+            /// @param services The shared game services.
+            /// @return The picture's name and tint, or nothing when none was started (no player record, a house map, no map file).
+            static std::optional<std::pair<std::string, core::Color>> prefetchEntryMap(GameServices& services);
+
             /// @brief The picture of a floor room's background by its size.
             /// @param mapId Map id.
             /// @return The background picture (0: the map file's own).
@@ -4107,6 +4122,7 @@ namespace client {
             void onUnhandled(protocol::MessageId id) override;
 
             GameServices& m_services;
+            std::optional<std::pair<std::string, core::Color>> m_entryMapPicture; // background picture prefetched for entering the world; cancelled once the map is loaded
             ui::Screen m_screen;
             ui::Element& m_layout;
             ui::Element& m_backdrop;
@@ -4164,6 +4180,9 @@ namespace client {
             std::uint64_t m_autoCollectMs = 0;
             std::int32_t m_teamTarget = 0;
             std::vector<formats::SceneDoor> m_doors;
+            std::map<int, std::vector<int>> m_doorMaps; // by door index: the maps behind the door (from the event scene)
+            std::map<int, std::optional<std::pair<std::string, core::Color>>> m_mapPictures; // by map id: its background picture and tint, read once
+            std::vector<std::pair<std::string, core::Color>> m_exitPrefetches; // background pictures this scene started decoding for nearby doors
             PlayerStatus m_status;
             Inventory m_inventory;
             Inventory m_bank;

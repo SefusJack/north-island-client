@@ -253,6 +253,7 @@ namespace client {
                 direction = 3 - direction;
             }
             caster.skillLayers[i + 1].load(layer, std::move(points), direction, camera);
+            context.pictures.prefetch(caster.skillLayers[i + 1].effectPicture()); // decoded on a worker before the layer starts
             if (caster.skillLayers[i + 1].isCutIn()) {
                 caster.cutIn = SkillCutIn{true, std::nullopt, 0, 0};
             }
@@ -637,6 +638,7 @@ namespace client {
                 direction = 3 - direction;
             }
             layers[i + 1].load(layer, std::move(points), direction, camera);
+            context.pictures.prefetch(layers[i + 1].effectPicture()); // decoded on a worker before the layer starts
         }
         constexpr int kSoundNumbers = 10000; // sound numbers are taken modulo this; the sound file number is the remainder
         for (const auto& bytes : motion.sounds) {

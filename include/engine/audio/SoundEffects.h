@@ -3,6 +3,7 @@
 
 #include <filesystem>
 #include <functional>
+#include <future>
 #include <map>
 #include <memory>
 #include <set>
@@ -26,6 +27,13 @@ namespace audio {
 
             SoundEffects(const SoundEffects&) = delete;
             SoundEffects& operator=(const SoundEffects&) = delete;
+
+            ~SoundEffects();
+
+            /// @brief Starts loading a sound on a worker thread, so its first play doesn't read and decode the file.
+            /// @details Does nothing when the sound is loaded or loading already, or the device is closed.
+            /// @param file Sound file, as play gets it.
+            void preload(const std::filesystem::path& file);
 
             /// @brief Plays a sound once on a free channel.
             /// @param file Sound file (sound\wav0151.wav ...).
@@ -68,6 +76,8 @@ namespace audio {
             /// @return The audio, null when it cannot be loaded.
             MIX_Audio* audioOf(const std::filesystem::path& file);
 
+            void settleLoading();
+
             /// @brief Finds the first effect channel that is quiet (as SDL_mixer 2's Mix_PlayChannel(-1) took).
             /// @return The channel, -1 when all are busy.
             int freeChannel() const;
@@ -81,6 +91,7 @@ namespace audio {
             std::reference_wrapper<const AudioDevice> m_device;
             std::set<int> m_loops;
             std::map<std::string, std::unique_ptr<MIX_Audio, AudioDeleter>> m_sounds;
+            std::map<std::string, std::future<MIX_Audio*>> m_loading;
             float m_gain = 1.0f;
     };
 

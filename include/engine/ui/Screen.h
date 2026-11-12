@@ -21,9 +21,16 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
+namespace xml {
+    class Node;
+}
+
 namespace ui {
+
+    class ListBox;
 
     /// @brief The window's UI: layout files stacked in load order, with mouse/keyboard routing between them.
     class Screen {
@@ -263,20 +270,35 @@ namespace ui {
 
             /// @brief Finds the topmost element that catches the mouse at a point.
             /// @param position Point in screen coordinates.
+            /// @param layout If given, gets the layout holding the element (nullptr for none).
             /// @return The element id, 0 for none.
-            int hitAt(core::Point position);
+            int hitAt(core::Point position, const Element** layout = nullptr);
 
             /// @brief Recomputes the hovered element from the mouse position.
             void refreshHover();
 
-            /// @brief Syncs every list box with its scroll bar, below an element.
+            /// @brief Syncs every list box with its scroll bar.
+            void syncScrollBars();
+
+            /// @brief Adds the list boxes below an element, in tree order, to m_listBoxes.
             /// @param element Element to start at.
-            void syncScrollBars(Element& element);
+            void collectListBoxes(Element& element);
 
             std::unique_ptr<Element> m_root;
+            // findByName's answers, until any element tree changes (Element::treeChanges); elements are never removed
+            std::unordered_map<std::string, Element*> m_named;
+            std::uint64_t m_namedAt = 0;
+            // every list box in tree order, until any element tree changes
+            std::vector<ListBox*> m_listBoxes;
+            std::uint64_t m_listBoxesAt = UINT64_MAX;
             // the game's 800 x 600 screen
             core::Rect m_view{0, 0, 800, 600};
             float m_hudScale = 1.0f;
+            /// @brief Starts decoding the pictures a layout names on workers, before the layout is built.
+            /// @param node A layout node; its children are visited too.
+            /// @param started Gets the names of the pictures started.
+            void prefetchPictures(const xml::Node& node, std::vector<std::string>& started);
+
             gfx::PictureLibrary& m_pictures;
             UiContext m_context;
             core::Point m_mouse;
@@ -284,6 +306,7 @@ namespace ui {
             std::function<bool(const KeyEvent&)> m_keyPreview;
             std::function<void()> m_textFallback;
             int m_hoveredId = 0;
+            const Element* m_hoveredLayout = nullptr; // the layout holding m_hoveredId
             int m_capturedId = 0;
             bool m_pressWasDouble = false;
             bool m_releaseConsumed = false;

@@ -332,7 +332,28 @@ namespace client {
         ); // heads start at sprite 100 of the body type's range
     }
 
+    std::size_t CharacterRenderer::FrameKeyHash::operator()(const FrameKey& key) const {
+        std::size_t hash = std::hash<std::string>{}(key.bank);
+        const auto mix = [&hash](std::size_t value) { hash ^= value + 0x9E3779B97F4A7C15ULL + (hash << 6) + (hash >> 2); }; // boost-style combine
+        mix(static_cast<std::size_t>(key.sprite));
+        mix(key.frame);
+        for (const std::uint8_t digit : key.digits) {
+            mix(digit);
+        }
+        mix(static_cast<std::size_t>(key.tint));
+        mix(key.marked ? 1 : 0);
+        mix(static_cast<std::size_t>(key.statusTint));
+        return hash;
+    }
+
     std::optional<CharacterRenderer::Layer> CharacterRenderer::npcLayer(int spriteId) {
+        if (const auto known = m_npcLayers.find(spriteId); known != m_npcLayers.end()) {
+            return known->second;
+        }
+        return m_npcLayers.emplace(spriteId, findNpcLayer(spriteId)).first->second;
+    }
+
+    std::optional<CharacterRenderer::Layer> CharacterRenderer::findNpcLayer(int spriteId) {
         /// @brief A later sprite bank and the first sprite id it holds.
         struct LaterBank {
             const char* name;
@@ -353,6 +374,13 @@ namespace client {
     }
 
     std::optional<CharacterRenderer::Layer> CharacterRenderer::petLayer(int roleSpriteId) {
+        if (const auto known = m_petLayers.find(roleSpriteId); known != m_petLayers.end()) {
+            return known->second;
+        }
+        return m_petLayers.emplace(roleSpriteId, findPetLayer(roleSpriteId)).first->second;
+    }
+
+    std::optional<CharacterRenderer::Layer> CharacterRenderer::findPetLayer(int roleSpriteId) {
         /// @brief A later sprite bank and the first sprite id it holds.
         struct LaterBank {
             const char* name;

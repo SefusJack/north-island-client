@@ -8,6 +8,7 @@
 #include "gfx/SdlDeleter.h"
 
 #include <optional>
+#include <vector>
 
 namespace gfx {
 
@@ -48,6 +49,19 @@ namespace gfx {
             /// @param destination Top left position.
             /// @param source Part to draw; everything when empty.
             void draw(const RenderDevice& device, core::Point destination, const std::optional<core::Rect>& source = std::nullopt) const;
+
+            /// @brief One part of the texture to draw unscaled, tinted as setColorMod and setAlphaMod would.
+            struct Quad {
+                core::Point destination;
+                core::Rect source;
+                core::Color color{255, 255, 255, 255};
+            };
+
+            /// @brief Draws many parts in one SDL call, in order; the same pixels as draw with each quad's colour and alpha mods.
+            /// @details SDL_RenderTexture becomes the same geometry inside SDL, with the mods as the vertex colour.
+            /// @param device The render device.
+            /// @param quads The parts, first drawn first.
+            void drawQuads(const RenderDevice& device, const std::vector<Quad>& quads) const;
 
             /// @brief Draws everything at destination, turned over left to right.
             /// @param device The render device.

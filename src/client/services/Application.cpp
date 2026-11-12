@@ -624,6 +624,7 @@ namespace client {
                         party.takeMessages();
                     }
                     played->scene->update(frameStart);
+                    pictures.collect(frameStart);
                     if (const auto next = played->scene->nextScene()) {
                         played->kind = *next;
                         played->zoom.reset();

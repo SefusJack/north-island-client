@@ -19,6 +19,7 @@ namespace formats {
         std::set<int> nearEvents;
         std::map<int, SceneSurface> surfaces;
         std::map<int, int> battleMusic;
+        std::map<int, std::vector<int>> doorMaps; // by door index: the maps its events can warp to (warp results 1/3 name a convey point, which names the map), in event order
     };
 
 }

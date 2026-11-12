@@ -7,7 +7,10 @@
 #include "gfx/Canvas.h"
 #include "gfx/PictureLibrary.h"
 
+#include <future>
+#include <memory>
 #include <optional>
+#include <vector>
 
 namespace client {
 
@@ -24,11 +27,19 @@ namespace client {
                 : m_pictures(pictures) {}
 
             /// @brief Loads the ground pictures in the map's tint.
-            /// @details Original: LoadBattleGround; SceneData 59000 + ground (59081 when there is none).
+            /// @details Original: LoadBattleGround; SceneData 59000 + ground (59081 when there is none). A picture not loaded before is read
+            /// here and decoded on a worker thread while the screen dims; poll and finish upload it.
             /// @param scenes Scene table.
             /// @param ground Ground number.
             /// @param tint Map tint.
             void load(const formats::SceneTable& scenes, int ground, core::Color tint);
+
+            /// @brief Uploads one ground picture whose decoding has finished, so the uploads spread over the frames of the dim.
+            /// @return True when no picture is pending any more.
+            bool poll();
+
+            /// @brief Waits for the pictures still decoding and uploads every pending one.
+            void finish();
 
             /// @brief Draws the ground; while the screen shakes the far layer moves by half the shake, the near one by all of it.
             /// @details Original: DrawBattleGround.
@@ -54,7 +65,21 @@ namespace client {
             int nearBottom() const { return size().y + m_nearY; }
 
         private:
+            /// @brief A ground picture decoding on a worker thread.
+            struct Pending {
+                std::shared_ptr<const gfx::PictureLibrary::Raw> raw;
+                gfx::PictureLibrary::Source source = gfx::PictureLibrary::Source::Any;
+                std::future<std::optional<formats::Image>> image;
+                std::optional<gfx::PictureId> BattleGround::*layer = nullptr;
+            };
+
+            /// @brief Uploads a decoded picture into its layer.
+            /// @param pending The picture; its decoding must have finished.
+            void upload(Pending& pending);
+
             gfx::PictureLibrary& m_pictures;
+            std::vector<Pending> m_pending;
+            core::Color m_tint{0, 0, 0, 0};
             std::optional<gfx::PictureId> m_backdrop;
             std::optional<gfx::PictureId> m_far;
             std::optional<gfx::PictureId> m_near;

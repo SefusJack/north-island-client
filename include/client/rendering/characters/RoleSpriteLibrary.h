@@ -11,6 +11,7 @@
 #include <optional>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 #include <utility>
 
 namespace client {
@@ -71,8 +72,16 @@ namespace client {
             std::optional<std::reference_wrapper<formats::RoleSpriteFile>> openBank(const std::string& bank);
 
             const GameDirectory& m_game;
-            std::map<std::string, std::optional<formats::RoleSpriteFile>> m_banks;
-            std::map<std::pair<std::string, int>, std::optional<formats::RoleSprite>> m_sprites;
+            /// @brief Hashes a (bank, sprite id) key; sprites are looked up for every NPC each frame.
+            struct SpriteKeyHash {
+                std::size_t operator()(const std::pair<std::string, int>& key) const {
+                    return std::hash<std::string>{}(key.first) ^ (std::hash<int>{}(key.second) * 0x9E3779B97F4A7C15ULL);
+                }
+            };
+
+            // node-based maps: the references find and openBank give stay valid as they grow
+            std::unordered_map<std::string, std::optional<formats::RoleSpriteFile>> m_banks;
+            std::unordered_map<std::pair<std::string, int>, std::optional<formats::RoleSprite>, SpriteKeyHash> m_sprites;
             std::map<FrameId, std::filesystem::path> m_hdFiles;
             std::map<FrameId, std::optional<formats::IndexedImage>> m_hdFrames;
     };

@@ -12,7 +12,19 @@ namespace client {
                 return std::move(*sound);
             }
         }
-        return core::resolvePath(m_data, relative);
+        {
+            std::lock_guard lock(m_resolvedLock);
+            if (const auto found = m_resolved.find(relative); found != m_resolved.end()) {
+                return found->second;
+            }
+        }
+        std::filesystem::path resolved = core::resolvePath(m_data, relative);
+        std::error_code error;
+        if (std::filesystem::exists(resolved, error)) { // only existing files: a missing one may still appear
+            std::lock_guard lock(m_resolvedLock);
+            m_resolved.emplace(relative, resolved);
+        }
+        return resolved;
     }
 
     ui::LayoutSource GameDirectory::layout(const std::string& fileName) const {

@@ -4,6 +4,9 @@
 #include "core/Color.h"
 #include "formats/Image.h"
 
+#include <cstdint>
+#include <vector>
+
 namespace formats {
 
     constexpr core::Color kTransparentKey{0, 255, 0, 255}; // pure green (R 0, G 255, B 0), opaque: the colour key treated as transparent
@@ -36,6 +39,11 @@ namespace formats {
     /// @param image Bitmap changed in place.
     /// @param fill Fill colour; its alpha is the strength.
     void fillAlpha16(Image& image, core::Color fill);
+
+    /// @brief One bit per pixel, set where the pixel is not fully transparent: row after row, 64 pixels per word (bit 0 first).
+    /// @param image The picture.
+    /// @return The bits.
+    std::vector<std::uint64_t> opaqueBits(const Image& image);
 
 }
 

@@ -11,6 +11,7 @@
 #include "xml/Parser.h"
 
 #include <cmath>
+#include <unordered_set>
 
 namespace ui {
 
@@ -111,13 +112,38 @@ namespace ui {
         return load(LayoutSource{layoutFile.filename().string(), core::toString(*data)}, loadContext);
     }
 
+    void Screen::prefetchPictures(const xml::Node& node, std::vector<std::string>& started) {
+        // the attributes that name pictures (Window, ImageButton, ImageView, CheckBox, ComboBox, IconGrid, Memo, Panel, ScrollBar, ...)
+        static const std::unordered_set<std::string> kPictureAttributes{
+            "Picture", "Animation", "Caret", "CellPicture", "CheckedPicture", "DropButton", "ScrollBar", "Skin", "Thumb", "Track"
+        };
+        for (const auto& [name, value] : node.attributes()) {
+            if (kPictureAttributes.count(name) != 0 && m_pictures.prefetch(value)) {
+                started.push_back(value);
+            }
+        }
+        for (const xml::Node& child : node.children()) {
+            prefetchPictures(child, started);
+        }
+    }
+
     Element& Screen::load(const LayoutSource& source, const LoadContext& loadContext) {
         std::unique_ptr<Element> layout;
+        std::vector<std::string> prefetched; // pictures decoding on workers while the layout is built
+        const auto forgetPrefetched = [&] {
+            for (const std::string& name : prefetched) {
+                m_pictures.cancelPrefetch(name); // no-op for the ones the layout used
+            }
+        };
         try {
-            layout = LayoutLoader::build(xml::Parser::parse(source.text), loadContext);
+            const xml::Node root = xml::Parser::parse(source.text);
+            prefetchPictures(root, prefetched);
+            layout = LayoutLoader::build(root, loadContext);
         } catch (const std::exception& error) {
+            forgetPrefetched();
             throw LayoutError(source.name + ": " + error.what());
         }
+        forgetPrefetched();
         assignIds(*layout, m_nextId);
         layout->applyView(m_view, {});
         Element& added = *layout;
@@ -134,10 +160,18 @@ namespace ui {
     }
 
     Element& Screen::findByName(const std::string& name) {
+        if (m_namedAt != Element::treeChanges()) {
+            m_named.clear(); // a tree grew, was reordered or renamed: the first match may differ now
+            m_namedAt = Element::treeChanges();
+        }
+        if (const auto known = m_named.find(name); known != m_named.end()) {
+            return *known->second;
+        }
         auto found = findNamed(*m_root, name);
         if (!found) {
             throw LayoutError("the layout has no element " + name);
         }
+        m_named.emplace(name, &found->get());
         return found->get();
     }
 
@@ -189,7 +223,10 @@ namespace ui {
         return {pivot.x + static_cast<int>(std::lround((point.x - pivot.x) * scale)), pivot.y + static_cast<int>(std::lround((point.y - pivot.y) * scale))};
     }
 
-    int Screen::hitAt(core::Point position) {
+    int Screen::hitAt(core::Point position, const Element** layoutOut) {
+        if (layoutOut != nullptr) {
+            *layoutOut = nullptr;
+        }
         const auto& layouts = m_root->children();
         for (const bool overlay : {true, false}) {
             for (auto layout = layouts.rbegin(); layout != layouts.rend(); ++layout) {
@@ -197,6 +234,9 @@ namespace ui {
                     continue;
                 }
                 if (const int id = topmostHit(**layout, {0, 0}, toLayout(position, std::cref(**layout)), m_pictures, overlay)) {
+                    if (layoutOut != nullptr) {
+                        *layoutOut = layout->get();
+                    }
                     return id;
                 }
             }
@@ -204,7 +244,7 @@ namespace ui {
         return 0;
     }
 
-    void Screen::refreshHover() { m_hoveredId = hitAt(m_mouse); }
+    void Screen::refreshHover() { m_hoveredId = hitAt(m_mouse, &m_hoveredLayout); }
 
     void Screen::focus(const std::string& name) { m_context.focusedId = findByName(name).id(); }
 
@@ -363,21 +403,32 @@ namespace ui {
         }
     }
 
-    void Screen::syncScrollBars(Element& element) {
+    void Screen::collectListBoxes(Element& element) {
         if (auto* list = dynamic_cast<ListBox*>(&element)) {
+            m_listBoxes.push_back(list);
+        }
+        for (const auto& child : element.children()) {
+            collectListBoxes(*child);
+        }
+    }
+
+    void Screen::syncScrollBars() {
+        if (m_listBoxesAt != Element::treeChanges()) {
+            m_listBoxes.clear(); // in tree order, as the scroll bars were synced before
+            collectListBoxes(*m_root);
+            m_listBoxesAt = Element::treeChanges();
+        }
+        for (ListBox* list : m_listBoxes) {
             if (!list->scrollBarName().empty()) {
                 list->syncScrollBar(get<ScrollBar>(list->scrollBarName()));
             }
-        }
-        for (const auto& child : element.children()) {
-            syncScrollBars(*child);
         }
     }
 
     void Screen::update(std::uint64_t nowMs) {
         m_context.nowMs = nowMs;
         m_root->update(m_context);
-        syncScrollBars(*m_root);
+        syncScrollBars();
         refreshHover();
     }
 

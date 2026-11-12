@@ -189,6 +189,13 @@ namespace client {
         }
     }
 
+    void Battle::finishGround() {
+        m_ground.finish();
+        if (const core::Point size = m_ground.size(); size.x > 0) {
+            m_camera.setGroundSize(size.x, size.y);
+        }
+    }
+
     void Battle::addFighter(const protocol::FighterRecord& record, bool showEnter, bool placeOthers) {
         // the grid has 4 rows and 4 columns
         if (record.row < 1 || record.row > 4 || record.col < 1 || record.col > 4) {
@@ -1111,9 +1118,18 @@ namespace client {
             m_services.skills,
             m_services.pictures,
             [this](int number) {
+                if (const auto known = m_soundFiles.find(number); known != m_soundFiles.end()) {
+                    return known->second;
+                }
                 std::ostringstream name;
                 name << "Sound/SEB" << std::setw(4) << std::setfill('0') << number << ".WAV";
-                return std::filesystem::exists(m_services.game.data(name.str())) ? name.str() : std::string();
+                const std::filesystem::path path = m_services.game.data(name.str());
+                std::string file = std::filesystem::exists(path) ? name.str() : std::string();
+                if (!file.empty()) {
+                    m_services.sounds.preload(path); // loaded on a worker before the sound's delay runs out
+                }
+                m_soundFiles.emplace(number, file);
+                return file;
             },
             // message display time in ms
             [this](const std::string& text) { m_messages.show(text, 1200); }, // message display time in ms
@@ -1532,6 +1548,7 @@ namespace client {
     }
 
     void Battle::update(std::uint64_t nowMs) {
+        m_services.pictures.pumpPrefetch(nowMs); // one finished effect picture a frame, before its layer starts
         updateTimeLimit(nowMs);
         if (!m_on) {
             m_tween.clear();
