@@ -36,7 +36,7 @@ namespace gfx {
         SDL_SetTextureBlendMode(texture.m_texture.get(), SDL_BLENDMODE_BLEND);
         if (detail > 1) {
             SDL_SetTextureScaleMode(texture.m_texture.get(), SDL_SCALEMODE_LINEAR);
-        } else if (device.pixelScale() == 1 || !SDL_SetTextureScaleMode(texture.m_texture.get(), SDL_SCALEMODE_PIXELART)) {
+        } else if (device.pixelScale() == 1 || !device.scalesPixelArtQuickly() || !SDL_SetTextureScaleMode(texture.m_texture.get(), SDL_SCALEMODE_PIXELART)) {
             SDL_SetTextureScaleMode(texture.m_texture.get(), SDL_SCALEMODE_NEAREST);
         }
         texture.m_width = image.width() / detail;

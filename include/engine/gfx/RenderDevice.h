@@ -89,6 +89,10 @@ namespace gfx {
             /// @return False for the Vulkan renderer, whose read back waits for the GPU (about 260 ms for 800 x 600).
             bool readsBackQuickly() const { return m_backendName != "vulkan"; }
 
+            /// @brief Whether textures may use SDL's pixel-art scale mode on this renderer.
+            /// @return False for Direct3D 11: SDL makes a new constant buffer for each draw whose texture size differs
+            bool scalesPixelArtQuickly() const { return m_backendName != "direct3d11"; }
+
             /// @brief Whether the renderer is GPU accelerated.
             /// @return True when accelerated.
             bool isAccelerated() const { return m_accelerated; }

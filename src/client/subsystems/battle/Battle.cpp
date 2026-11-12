@@ -1136,9 +1136,11 @@ namespace client {
             m_hooks.chat,
             m_ownId,
             nowMs,
-            [this](int ms) {
+            [this, nowMs](int ms) {
                 if (m_services.freeFrames) {
-                    m_holdMs += static_cast<std::uint64_t>(ms);
+                    // one tick is held at most one sleep (35 ms) however many fighters ask
+                    constexpr std::uint64_t kTickHoldMs = 35; // the longest hold of one tick, ms
+                    m_holdMs = std::max(m_holdMs, std::min(m_holdMs + static_cast<std::uint64_t>(ms), nowMs + kTickHoldMs));
                     m_heldUntilMs = std::max(m_heldUntilMs, m_holdMs);
                     return m_holdMs;
                 }

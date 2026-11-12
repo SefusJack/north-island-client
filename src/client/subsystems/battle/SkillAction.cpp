@@ -52,6 +52,26 @@ namespace client {
         /// @return The action number to use.
         int facing(const Fighter& fighter, int action) { return action + (fighter.side() == 1 ? 0 : 1); }
 
+        /// @brief Keeps a fallen fighter lying on its cell while a hit motion still runs for it.
+        /// @details With several attackers on one target the target can fall before the later hits' motions run; those would throw
+        /// the body along the hit path, walk it home and stand it up for a tick.
+        /// @param hit Fighter that is hit.
+        /// @param camera The battle camera's position (the cell is drawn moved by it while the camera is away from rest).
+        /// @return True when the fighter is fallen and was laid down.
+        bool layFallen(Fighter& hit, core::Point camera) {
+            if (hit.hp > 0) {
+                return false;
+            }
+            const core::Point cell = BattleField::cellPosition(hit.row, hit.col);
+            hit.position = {cell.x + BattleCamera::kRest.x - camera.x, cell.y + BattleCamera::kRest.y - camera.y};
+            hit.jumping = false;
+            hit.jumpHeight = 0;
+            hit.action = facing(hit, 26); // action 26: down (dead)
+            hit.fall();
+            hit.holdFrame = 255; // 255: hold the pose (hold-frame sentinel)
+            return true;
+        }
+
         /// @brief Adds or takes away an amount of the fighter's HP or SP, kept within 0 and its maximum.
         /// @details Original: AdjustFighterAttr; values 1 and 2 take away.
         /// @param fighter Fighter changed.
@@ -566,7 +586,7 @@ namespace client {
         }
         for (int slot = 1; slot <= BattleField::kSlots; ++slot) {
             const auto found = context.field.fighter(slot);
-            if (found && found->get().isHit && found->get().hitEffectOn && slot != m_attacker) {
+            if (found && found->get().isHit && found->get().hitEffectOn && slot != m_attacker && found->get().hp > 0) { // a fallen fighter keeps lying
                 found->get().action = facing(found->get(), 30); // action 30: the hit pose
                 found->get().holdFrame = 255; // 255: hold the pose (hold-frame sentinel)
             }
@@ -706,7 +726,9 @@ namespace client {
                 continue;
             }
             Fighter& fighter = *found;
-            fighter.action = stance(fighter);
+            if (fighter.hp > 0) { // a fallen fighter keeps its down pose while the camera moves
+                fighter.action = stance(fighter);
+            }
             const core::Point cell = BattleField::cellPosition(fighter.row, fighter.col);
             fighter.position = {cell.x + BattleCamera::kRest.x - camera.x, cell.y + BattleCamera::kRest.y - camera.y};
         }
@@ -1155,6 +1177,9 @@ namespace client {
                     continue;
                 }
                 updateHitMotion(context, slot);
+                if (slot != m_attacker) {
+                    layFallen(*found, context.camera.position()); // the motion still steps (the stages wait for it), the body does not move
+                }
                 FighterMotion& motion = found->get().hitMotion;
                 if (motion.pathEndReached() && motion.pathDone()) {
                     motion.restartMove(context.nowMs);
@@ -1176,6 +1201,9 @@ namespace client {
                 }
                 endHitMotion(context, slot);
                 Fighter& hit = *found;
+                if (slot != m_attacker) {
+                    layFallen(hit, context.camera.position()); // no walk home and no stance for a fallen fighter
+                }
                 for (int number = 1; number <= HitNumbers::kHits; ++number) {
                     if (hit.numbers.spShown(number) || hit.numbers.hpOf(number) == 0) {
                         continue;
@@ -1277,7 +1305,17 @@ namespace client {
                 continue;
             }
             Fighter& fighter = *found;
-            fighter.position = BattleField::cellPosition(fighter.row, fighter.col);
+            if (slot == m_target && slot != m_attacker && fighter.isHit && fighter.hitEffectOn) {
+                // another fighter's action leads and still moves this target along its hit motion: it puts the target back itself
+                // (putting it on its cell here made it jump there for a tick each time one of several attackers finished)
+                if (const int lead = leadSlot(context); lead != 0 && lead != m_attacker) {
+                    continue;
+                }
+            }
+            // the cell as the camera shows it now: another fighter's action may still hold the camera away from rest
+            const core::Point cell = BattleField::cellPosition(fighter.row, fighter.col);
+            const core::Point camera = context.camera.position();
+            fighter.position = {cell.x + BattleCamera::kRest.x - camera.x, cell.y + BattleCamera::kRest.y - camera.y};
             fighter.action = fighter.hp <= 0 ? facing(fighter, 26) : stance(fighter); // action 26: down (dead)
             if (fighter.hp <= 0) {
                 fighter.fall();
