@@ -5,6 +5,7 @@
 #include "core/Bytes.h"
 #include "core/FileSystem.h"
 #include "formats/PixelArtScale.h"
+#include "gfx/RenderDevice.h"
 
 #include <nlohmann/json.hpp>
 
@@ -147,7 +148,7 @@ namespace client {
         if (renderer == "software") {
             recommended.softwareEncodedTextures = true;
             recommended.softwareChangedAreas = true;
-            recommended.softwareScroll = true;
+            recommended.softwareScroll = gfx::RenderDevice::desktopIsComposited();
         }
         recommended.quietWorkers = std::thread::hardware_concurrency() == 1; // with more cores a worker has its own
         return recommended;
@@ -156,6 +157,9 @@ namespace client {
     core::Speedups ExtraSettings::speedupsFor(const std::string& renderer) const {
         core::Speedups chosen = speedupMode == SpeedupMode::Custom ? speedups : speedupMode == SpeedupMode::Auto ? recommendedSpeedups(renderer) : core::Speedups{};
         chosen.limiterSpinMs = speedups.limiterSpinMs;
+        if (!gfx::RenderDevice::desktopIsComposited()) {
+            chosen.softwareScroll = false; // the picture is seen half moved there, whatever was chosen
+        }
         return chosen;
     }
 

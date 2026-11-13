@@ -60,7 +60,8 @@ namespace client {
         int frameCap() const { return frames == Frames::Capped ? fpsCap : 0; }
 
         /// @brief Gives the speedups that run with a renderer: none, the recommended ones or the player's own, by the mode.
-        /// @details The busy wait (limiterSpinMs) is the player's in every mode.
+        /// @details The busy wait (limiterSpinMs) is the player's in every mode. Moving the picture on scroll is off in
+        /// every mode where the desktop is not composited (gfx::RenderDevice::desktopIsComposited).
         /// @param renderer The renderer's name ("direct3d11", "software", ...).
         /// @return The speedups.
         core::Speedups speedupsFor(const std::string& renderer) const;
@@ -106,7 +107,8 @@ namespace client {
 
     /// @brief Gives the speedups recommended for a renderer on this machine (the busy wait is left at its default).
     /// @details Every renderer: text pictures, quick SDL checks, pictures on first use, map backgrounds in parts and
-    /// remembered renderer checks. The software renderer also gets its three own ones. Quiet workers only with one processor core.
+    /// remembered renderer checks. The software renderer also gets its own ones (moving the picture on scroll only where the
+    /// desktop is composited). Quiet workers only with one processor core.
     /// @param renderer The renderer's name.
     /// @return The speedups.
     core::Speedups recommendedSpeedups(const std::string& renderer);

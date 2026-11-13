@@ -1,6 +1,7 @@
 #include "client/viewmodels/system/SettingsWindow.h"
 
 #include "core/Log.h"
+#include "gfx/RenderDevice.h"
 #include "gfx/TextRenderer.h"
 #include "gfx/TextStyle.h"
 #include "protocol/SystemRequests.h"
@@ -376,6 +377,10 @@ namespace client {
         }
         m_video = m_services.videoSettings();
         const auto member = kSpeedupBoxes[static_cast<std::size_t>(number - 1)];
+        if (member == &core::Speedups::softwareScroll && !gfx::RenderDevice::desktopIsComposited()) {
+            showVideo(); // cannot be on here: the box goes back to empty and nothing else changes
+            return;
+        }
         const bool checked = m_screen.get<ui::CheckBox>("SettingsSpeedup" + std::to_string(number)).isChecked();
         const std::string renderer = speedupRenderer(m_video);
         changeVideo([member, checked, renderer](ExtraSettings& video) {
@@ -506,6 +511,9 @@ namespace client {
         for (std::size_t i = 0; i < kSpeedupBoxes.size(); ++i) {
             m_screen.get<ui::CheckBox>("SettingsSpeedup" + std::to_string(i + 1)).setChecked(shown.*kSpeedupBoxes[i]);
         }
+        // the third box (move the picture on scroll) cannot be on where the desktop is not composited
+        m_screen.get<ui::Label>("SettingsSpeedupText3")
+            .setText(gfx::RenderDevice::desktopIsComposited() ? "Software: move picture on scroll" : "Move picture on scroll: not on this PC");
         m_screen.get<ui::Label>("SettingsSpeedupModeValue").setText(textOf(speedupModeChoices(m_video), speedupModeName(m_video.speedupMode)));
         m_screen.get<ui::Label>("SettingsSpeedupHelp1").setText(
             m_video.speedupMode == ExtraSettings::SpeedupMode::Auto     ? "The recommended ones for " + renderer + "."

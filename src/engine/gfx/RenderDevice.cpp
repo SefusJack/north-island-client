@@ -138,6 +138,21 @@ namespace gfx {
         return names;
     }
 
+    bool RenderDevice::desktopIsComposited() {
+#ifdef _WIN32
+        // dwmapi.dll is not there before Windows Vista: asked for by name so the Windows XP build still starts
+        using IsEnabled = HRESULT(WINAPI*)(BOOL*);
+        static const IsEnabled isEnabled = [] {
+            const HMODULE dwm = LoadLibraryW(L"dwmapi.dll");
+            return dwm != nullptr ? reinterpret_cast<IsEnabled>(GetProcAddress(dwm, "DwmIsCompositionEnabled")) : nullptr;
+        }();
+        BOOL enabled = FALSE;
+        return isEnabled != nullptr && SUCCEEDED(isEnabled(&enabled)) && enabled != FALSE;
+#else
+        return false;
+#endif
+    }
+
     bool RenderDevice::driverStarts(const std::string& name) {
         SDL_Window* probe = SDL_CreateWindow("renderer probe", 64, 64, SDL_WINDOW_HIDDEN);
         if (probe == nullptr) {

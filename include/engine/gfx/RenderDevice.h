@@ -61,6 +61,13 @@ namespace gfx {
             /// @return True when a renderer could be made with it.
             static bool driverStarts(const std::string& name);
 
+            /// @brief Tells whether the system puts each window's picture together off screen and shows it whole.
+            /// @details Windows 8 and later always do, Vista and 7 with Aero on, Windows XP never. Without it what a window
+            /// draws is on the monitor at once, so a picture changed piece by piece is seen half changed
+            /// (Speedups::softwareScroll looks wavy there).
+            /// @return True on Windows with desktop composition on; false elsewhere.
+            static bool desktopIsComposited();
+
             /// @brief The SDL renderer.
             /// @return The renderer.
             SDL_Renderer* renderer() const { return m_renderer.get(); }
