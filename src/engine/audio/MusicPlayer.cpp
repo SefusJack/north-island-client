@@ -1,6 +1,7 @@
 #include "audio/MusicPlayer.h"
 
 #include "audio/AudioDevice.h"
+#include "core/WorkerPriority.h"
 #include "core/Log.h"
 
 #include <SDL3/SDL.h>
@@ -34,7 +35,12 @@ namespace audio {
         m_loadingStartMs = startMs;
         const std::string name = file.string();
         MIX_Mixer* mixer = m_device.get().mixer();
-        m_loading.start([mixer, name] { return decode(mixer, name); });
+        m_loading.start([mixer, name] {
+            // decoding a whole music file took a single core from the frame being drawn for 100-190 ms when a battle
+            // starts; with quiet workers it runs in the few ms update gives it each frame
+            const core::LowPriorityScope low;
+            return decode(mixer, name);
+        });
     }
 
     std::uint64_t MusicPlayer::positionMs() const { return m_track ? m_clock.positionMs(SDL_GetTicks()) : 0; }
@@ -44,7 +50,7 @@ namespace audio {
             std::remove_if(m_dropped.begin(), m_dropped.end(), [](const core::BackgroundLoad<Loaded>& load) { return load.ready(); }),
             m_dropped.end()
         );
-        if (!m_loading.pending() || !m_loading.ready()) {
+        if (!m_loading.pending() || !m_loading.readyWithin(core::workerSliceMs())) {
             return;
         }
         Loaded loaded = m_loading.take();

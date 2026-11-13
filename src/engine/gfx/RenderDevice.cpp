@@ -1,13 +1,57 @@
 #include "gfx/RenderDevice.h"
 
 #include "core/Log.h"
+#include "core/Speedups.h"
 
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
+#include <cstring>
+
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#endif
 
 namespace gfx {
 
     namespace {
+
+#ifdef _WIN32
+        /// @brief Moves parts of the window's picture on the screen itself (the graphics card does it, also on Windows XP).
+        /// @param window The window.
+        /// @param parts The destination rectangles to fill with the picture that is now shift away from them, in an order
+        /// in which no part is filled before another part has read from its place.
+        /// @param shift How far the picture moves.
+        /// @param lost Gets what could not be moved (its source was covered by another window or off the screen).
+        /// @return False when nothing was moved.
+        bool moveOnScreen(SDL_Window* window, const std::vector<SDL_Rect>& parts, core::Point shift, std::vector<SDL_Rect>& lost) {
+            const HWND handle = static_cast<HWND>(SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr));
+            const HDC screen = handle != nullptr ? GetDC(handle) : nullptr;
+            if (screen == nullptr) {
+                return false;
+            }
+            for (const SDL_Rect& part : parts) {
+                // the part and where its picture comes from; only the part itself is written
+                RECT to{part.x, part.y, part.x + part.w, part.y + part.h};
+                RECT both{std::min(to.left, to.left - shift.x), std::min(to.top, to.top - shift.y), std::max(to.right, to.right - shift.x),
+                          std::max(to.bottom, to.bottom - shift.y)};
+                RECT missing{0, 0, 0, 0};
+                if (ScrollDC(screen, shift.x, shift.y, &both, &to, nullptr, &missing) == 0) {
+                    lost.push_back(part);
+                } else if (missing.right > missing.left && missing.bottom > missing.top) {
+                    lost.push_back({missing.left, missing.top, missing.right - missing.left, missing.bottom - missing.top});
+                }
+            }
+            ReleaseDC(handle, screen);
+            return true;
+        }
+#endif
 
         /// @brief Reads the renderer's pixels as an RGBA32 surface.
         /// @param renderer The renderer to read.
@@ -148,7 +192,183 @@ namespace gfx {
         SDL_RenderClear(m_renderer.get());
     }
 
-    void RenderDevice::present() { SDL_RenderPresent(m_renderer.get()); }
+    void RenderDevice::present() {
+        // Speedups::softwareChangedAreas: the software renderer copies only the changed parts of the frame to the screen.
+        SDL_Surface* frame = core::speedups().softwareChangedAreas && !m_accelerated ? SDL_GetWindowSurface(m_window.get()) : nullptr;
+        if (frame == nullptr || SDL_BYTESPERPIXEL(frame->format) != 4 || SDL_MUSTLOCK(frame)) {
+            SDL_RenderPresent(m_renderer.get());
+            return;
+        }
+        SDL_FlushRenderer(m_renderer.get());
+        constexpr int kTileWidth = 32; // px
+        constexpr int kTileHeight = 16; // px
+        const int width = frame->w;
+        const int height = frame->h;
+        const int pitch = frame->pitch;
+        const auto* pixels = static_cast<const std::uint8_t*>(frame->pixels);
+        const bool sized = m_shownWidth == width && m_shownHeight == height && m_shownPitch == pitch;
+        if (!sized) {
+            m_shownFrame.assign(static_cast<std::size_t>(pitch) * static_cast<std::size_t>(height), 0);
+            m_shownWidth = width;
+            m_shownHeight = height;
+            m_shownPitch = pitch;
+            m_presentAll = true;
+        }
+        // a scene that changes everywhere (the camera scrolls): the comparison finds nothing to leave out, so it is skipped
+        // for a while and the frame is only remembered every so often to notice when the scene settles
+        constexpr int kWholeLimit = 8; // changed-everywhere frames in a row before the comparison is skipped
+        constexpr int kProbeEvery = 16; // then one frame in this many is compared again
+        // Speedups::softwareScroll: when the scene moved (sceneMovedBy), the parts of the new frame that are the shown
+        // frame moved by that much are moved on the screen by the graphics card, and only the rest is copied
+        const bool scrollWanted = core::speedups().softwareScroll;
+        const core::Point shift = m_sceneShift;
+        m_sceneShift = {0, 0};
+        int windowWidth = 0;
+        int windowHeight = 0;
+        SDL_GetWindowSize(m_window.get(), &windowWidth, &windowHeight);
+        bool scrolled = false;
+#ifdef _WIN32
+        // a move of less than a tile: the parts are then moved in an order in which none reads what another has written
+        scrolled = scrollWanted && sized && (shift.x != 0 || shift.y != 0) && std::abs(shift.x) < kTileWidth && std::abs(shift.y) < kTileHeight &&
+                   windowWidth == width && windowHeight == height;
+#endif
+        if (scrolled && m_wholeFrames >= kWholeLimit && !m_presentAll) {
+            // the shown frame was not being remembered (everything changed, as it does while the camera moves): this frame is
+            // copied whole and remembered, the next one can be moved
+            m_presentAll = true;
+        }
+        if (scrolled && !m_presentAll) {
+            thread_local std::vector<SDL_Rect> moves;
+            thread_local std::vector<SDL_Rect> copies;
+            moves.clear();
+            copies.clear();
+            const auto add = [](std::vector<SDL_Rect>& list, int left, int top, int right, int bandHeight) {
+                if (!list.empty() && list.back().x == left && list.back().w == right - left && list.back().y + list.back().h == top) {
+                    list.back().h += bandHeight;
+                } else {
+                    list.push_back({left, top, right - left, bandHeight});
+                }
+            };
+            long long copied = 0;
+            for (int top = 0; top < height; top += kTileHeight) {
+                const int bandHeight = std::min(kTileHeight, height - top);
+                int runStart = 0;
+                bool runMoves = false;
+                for (int left = 0; left <= width; left += kTileWidth) {
+                    bool same = false;
+                    if (left < width) {
+                        const int tileWidth = std::min(kTileWidth, width - left);
+                        const std::size_t bytes = static_cast<std::size_t>(tileWidth) * 4;
+                        const int fromLeft = left - shift.x;
+                        const int fromTop = top - shift.y;
+                        same = fromLeft >= 0 && fromTop >= 0 && fromLeft + tileWidth <= width && fromTop + bandHeight <= height;
+                        for (int y = 0; y < bandHeight && same; ++y) {
+                            const std::size_t at = static_cast<std::size_t>(top + y) * static_cast<std::size_t>(pitch) + static_cast<std::size_t>(left) * 4;
+                            const std::size_t from = static_cast<std::size_t>(fromTop + y) * static_cast<std::size_t>(pitch) + static_cast<std::size_t>(fromLeft) * 4;
+                            same = std::memcmp(pixels + at, m_shownFrame.data() + from, bytes) == 0;
+                        }
+                        if (!same) {
+                            copied += static_cast<long long>(tileWidth) * bandHeight;
+                        }
+                    }
+                    if (left == 0) {
+                        runMoves = same;
+                    } else if (left >= width || same != runMoves) {
+                        if (runMoves) {
+                            moves.push_back({runStart, top, std::min(left, width) - runStart, bandHeight});
+                        } else {
+                            add(copies, runStart, top, std::min(left, width), bandHeight);
+                        }
+                        runStart = left;
+                        runMoves = same;
+                    }
+                }
+            }
+            std::memcpy(m_shownFrame.data(), pixels, m_shownFrame.size());
+            const long long all = static_cast<long long>(width) * height;
+            m_wholeFrames = copied * 10 >= all * 8 ? m_wholeFrames + 1 : 0;
+#ifdef _WIN32
+            thread_local std::vector<SDL_Rect> lost;
+            lost.clear();
+            // the picture moves down: the lowest parts first; to the right: the rightmost first
+            std::sort(moves.begin(), moves.end(), [shift](const SDL_Rect& a, const SDL_Rect& b) {
+                if (a.y != b.y) {
+                    return shift.y > 0 ? a.y > b.y : a.y < b.y;
+                }
+                return shift.x > 0 ? a.x > b.x : a.x < b.x;
+            });
+            const bool movedIt = moves.empty() || moveOnScreen(m_window.get(), moves, shift, lost);
+            if (!movedIt) {
+                SDL_UpdateWindowSurface(m_window.get()); // could not move it: the whole frame
+                return;
+            }
+            const SDL_Rect whole{0, 0, width, height};
+            for (const SDL_Rect& part : lost) {
+                SDL_Rect inside{};
+                if (SDL_GetRectIntersection(&part, &whole, &inside)) {
+                    copies.push_back(inside);
+                }
+            }
+#endif
+            if (!copies.empty()) {
+                SDL_UpdateWindowSurfaceRects(m_window.get(), copies.data(), static_cast<int>(copies.size()));
+            }
+            return;
+        }
+        if (m_presentAll || (m_wholeFrames >= kWholeLimit && (m_wholeFrames - kWholeLimit) % kProbeEvery != 0)) {
+            const bool remember = m_presentAll;
+            if (remember) {
+                std::memcpy(m_shownFrame.data(), pixels, m_shownFrame.size());
+                m_wholeFrames = 0;
+            } else {
+                ++m_wholeFrames;
+            }
+            m_presentAll = false;
+            SDL_UpdateWindowSurface(m_window.get());
+            return;
+        }
+        thread_local std::vector<SDL_Rect> rects;
+        rects.clear();
+        long long changed = 0;
+        for (int top = 0; top < height; top += kTileHeight) {
+            const int bandHeight = std::min(kTileHeight, height - top);
+            int runStart = -1;
+            for (int left = 0; left <= width; left += kTileWidth) {
+                bool dirty = false;
+                if (left < width) {
+                    const int tileWidth = std::min(kTileWidth, width - left);
+                    const std::size_t bytes = static_cast<std::size_t>(tileWidth) * 4;
+                    for (int y = top; y < top + bandHeight && !dirty; ++y) {
+                        const std::size_t at = static_cast<std::size_t>(y) * static_cast<std::size_t>(pitch) + static_cast<std::size_t>(left) * 4;
+                        dirty = std::memcmp(pixels + at, m_shownFrame.data() + at, bytes) != 0;
+                    }
+                    if (dirty) {
+                        for (int y = top; y < top + bandHeight; ++y) {
+                            const std::size_t at = static_cast<std::size_t>(y) * static_cast<std::size_t>(pitch) + static_cast<std::size_t>(left) * 4;
+                            std::memcpy(m_shownFrame.data() + at, pixels + at, bytes);
+                        }
+                        changed += static_cast<long long>(tileWidth) * bandHeight;
+                    }
+                }
+                if (dirty && runStart < 0) {
+                    runStart = left;
+                } else if (!dirty && runStart >= 0) {
+                    // joined with the band above when it is the same span, so a tall thing is one copy
+                    if (!rects.empty() && rects.back().x == runStart && rects.back().w == left - runStart && rects.back().y + rects.back().h == top) {
+                        rects.back().h += bandHeight;
+                    } else {
+                        rects.push_back({runStart, top, std::min(left, width) - runStart, bandHeight});
+                    }
+                    runStart = -1;
+                }
+            }
+        }
+        const long long all = static_cast<long long>(width) * height;
+        m_wholeFrames = changed * 10 >= all * 8 ? m_wholeFrames + 1 : 0; // 80 % or more changed
+        if (!rects.empty()) {
+            SDL_UpdateWindowSurfaceRects(m_window.get(), rects.data(), static_cast<int>(rects.size()));
+        }
+    }
 
     void RenderDevice::resize(int windowWidth, int windowHeight) {
         if (windowWidth == m_windowWidth && windowHeight == m_windowHeight) {

@@ -137,7 +137,9 @@ namespace ui {
         };
         try {
             const xml::Node root = xml::Parser::parse(source.text);
-            prefetchPictures(root, prefetched);
+            if (!m_pictures.defersLoading()) { // pictures read on first use are not decoded ahead
+                prefetchPictures(root, prefetched);
+            }
             layout = LayoutLoader::build(root, loadContext);
         } catch (const std::exception& error) {
             forgetPrefetched();

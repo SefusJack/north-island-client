@@ -9,7 +9,10 @@
 #include <nlohmann/json.hpp>
 
 #include <algorithm>
+#include <array>
 #include <system_error>
+#include <thread>
+#include <utility>
 
 namespace client {
 
@@ -56,6 +59,39 @@ namespace client {
             }
         }
 
+        /// @brief Reads a number key into a value clamped to a range, leaving it alone when the key is missing or of another kind.
+        /// @param object The JSON object.
+        /// @param key The key.
+        /// @param value The value to set.
+        /// @param least The smallest accepted value.
+        /// @param most The largest accepted value.
+        void readNumber(
+            const Json& object,
+            const char* key,
+            double& value,
+            double least,
+            double most
+        ) {
+            if (const auto found = object.find(key); found != object.end() && found->is_number()) {
+                value = std::clamp(found->get<double>(), least, most);
+            }
+        }
+
+        constexpr double kMostSpinMs = 5.0; // the longest busy wait before a capped frame, ms
+
+        /// @brief The on / off speedups by their names in the settings file.
+        constexpr std::array<std::pair<const char*, bool core::Speedups::*>, 9> kSpeedups{{
+            {"softwareEncodedTextures", &core::Speedups::softwareEncodedTextures},
+            {"softwareChangedAreas", &core::Speedups::softwareChangedAreas},
+            {"softwareScroll", &core::Speedups::softwareScroll},
+            {"textPictures", &core::Speedups::textPictures},
+            {"quickSdlChecks", &core::Speedups::quickSdlChecks},
+            {"picturesOnFirstUse", &core::Speedups::picturesOnFirstUse},
+            {"mapInParts", &core::Speedups::mapInParts},
+            {"quietWorkers", &core::Speedups::quietWorkers},
+            {"rememberRendererChecks", &core::Speedups::rememberRendererChecks}
+        }};
+
         /// @brief Finds the frame mode with a name.
         /// @param name The name as written in the settings file.
         /// @return The mode, or nothing for an unknown name.
@@ -92,6 +128,37 @@ namespace client {
         return "windowed";
     }
 
+    const char* speedupModeName(ExtraSettings::SpeedupMode mode) {
+        switch (mode) {
+            case ExtraSettings::SpeedupMode::Auto: return "auto"; // the recommended ones for the renderer
+            case ExtraSettings::SpeedupMode::Custom: return "custom"; // the player's own choice
+            case ExtraSettings::SpeedupMode::None: break; // all off: falls to "none"
+        }
+        return "none";
+    }
+
+    core::Speedups recommendedSpeedups(const std::string& renderer) {
+        core::Speedups recommended;
+        recommended.textPictures = true;
+        recommended.quickSdlChecks = true;
+        recommended.picturesOnFirstUse = true;
+        recommended.mapInParts = true;
+        recommended.rememberRendererChecks = true;
+        if (renderer == "software") {
+            recommended.softwareEncodedTextures = true;
+            recommended.softwareChangedAreas = true;
+            recommended.softwareScroll = true;
+        }
+        recommended.quietWorkers = std::thread::hardware_concurrency() == 1; // with more cores a worker has its own
+        return recommended;
+    }
+
+    core::Speedups ExtraSettings::speedupsFor(const std::string& renderer) const {
+        core::Speedups chosen = speedupMode == SpeedupMode::Custom ? speedups : speedupMode == SpeedupMode::Auto ? recommendedSpeedups(renderer) : core::Speedups{};
+        chosen.limiterSpinMs = speedups.limiterSpinMs;
+        return chosen;
+    }
+
     const char* frameModeName(ExtraSettings::Frames frames) {
         switch (frames) {
             case ExtraSettings::Frames::Vsync: return "vsync"; // frames wait for the display's vertical sync
@@ -103,12 +170,12 @@ namespace client {
     }
 
     bool ExtraSettings::operator==(const ExtraSettings& other) const {
-        return frames == other.frames && fpsCap == other.fpsCap && frameGraph == other.frameGraph && windowWidth == other.windowWidth &&
+        return frames == other.frames && fpsCap == other.fpsCap && perfOverlay == other.perfOverlay && windowWidth == other.windowWidth &&
                windowHeight == other.windowHeight && maximized == other.maximized && rememberWindow == other.rememberWindow && renderer == other.renderer &&
                pixelScale == other.pixelScale && pixelArt == other.pixelArt && pixelArtPictures == other.pixelArtPictures &&
                pixelArtSprites == other.pixelArtSprites && pixelArtText == other.pixelArtText && hudScale == other.hudScale && display == other.display &&
                loadingMusicVolume == other.loadingMusicVolume && loadingMusicOn == other.loadingMusicOn && loadingSoundVolume == other.loadingSoundVolume &&
-               loadingSoundOn == other.loadingSoundOn && sortButtons == other.sortButtons && partyLogin == other.partyLogin;
+               loadingSoundOn == other.loadingSoundOn && sortButtons == other.sortButtons && partyLogin == other.partyLogin && speedupMode == other.speedupMode && speedups == other.speedups;
     }
 
     std::filesystem::path ExtraSettings::fileIn(const std::filesystem::path& userRoot) { return userRoot / "extra-settings.json"; }
@@ -142,7 +209,10 @@ namespace client {
             readString(*video, "frames", frames);
             settings.frames = frameModeFrom(frames).value_or(settings.frames);
             readInt(*video, "fpsCap", settings.fpsCap, 30, 1000); // frame cap range in frames per second
-            readBool(*video, "frameGraph", settings.frameGraph);
+            bool oldGraph = false; // before the levels the overlay was the whole graph or nothing
+            readBool(*video, "frameGraph", oldGraph);
+            settings.perfOverlay = oldGraph ? 3 : 0;
+            readInt(*video, "perfOverlay", settings.perfOverlay, 0, 3); // overlay level 0 to 3
             readString(*video, "renderer", settings.renderer);
             readInt(*video, "pixelScale", settings.pixelScale, 1, 3); // window pixels per game pixel, 1 to 3
             readInt(*video, "hudScale", settings.hudScale, 100, 200); // HUD size in percent, 100 to 200
@@ -174,6 +244,22 @@ namespace client {
             readBool(*game, "sortButtons", settings.sortButtons);
             readBool(*game, "partyLogin", settings.partyLogin);
         }
+        if (const auto speedups = root.find("speedups"); speedups != root.end() && speedups->is_object()) {
+            for (const auto& [name, member] : kSpeedups) {
+                readBool(*speedups, name, settings.speedups.*member);
+            }
+            readNumber(*speedups, "limiterSpinMs", settings.speedups.limiterSpinMs, 0.0, kMostSpinMs);
+            std::string mode;
+            readString(*speedups, "mode", mode);
+            // a file from before the modes: its own choice when it has one
+            const bool any = std::any_of(kSpeedups.begin(), kSpeedups.end(), [&settings](const auto& entry) { return settings.speedups.*(entry.second); });
+            settings.speedupMode = any ? SpeedupMode::Custom : SpeedupMode::None;
+            for (const auto known : {SpeedupMode::None, SpeedupMode::Auto, SpeedupMode::Custom}) {
+                if (mode == speedupModeName(known)) {
+                    settings.speedupMode = known;
+                }
+            }
+        }
         return settings;
     }
 
@@ -182,7 +268,7 @@ namespace client {
         root["video"] = {
             {"frames", frameModeName(frames)},
             {"fpsCap", fpsCap},
-            {"frameGraph", frameGraph},
+            {"perfOverlay", perfOverlay},
             {"renderer", renderer},
             {"pixelScale", pixelScale},
             {"hudScale", hudScale},
@@ -200,6 +286,12 @@ namespace client {
             {"loadingSoundOn", loadingSoundOn}
         };
         root["game"] = {{"sortButtons", sortButtons}, {"partyLogin", partyLogin}};
+        Json& listed = root["speedups"];
+        listed["mode"] = speedupModeName(speedupMode);
+        for (const auto& [name, member] : kSpeedups) {
+            listed[name] = speedups.*member;
+        }
+        listed["limiterSpinMs"] = speedups.limiterSpinMs;
         return root.dump(2) + "\n";
     }
 
@@ -217,7 +309,7 @@ namespace client {
             }
         }
         if (options.showFrameGraph) {
-            frameGraph = true;
+            perfOverlay = 3; // --perf: everything
         }
         if (!options.rendererName.empty()) {
             renderer = options.rendererName;

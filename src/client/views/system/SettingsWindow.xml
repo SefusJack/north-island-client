@@ -121,7 +121,7 @@
             <CheckBox Name="SettingsVideoOpen2" Picture="Btn_ArrowR_1" CheckedPicture="Btn_ArrowDn_3" Position="12,4" Click="onSettingsVideoOpen"/>
             <Label Name="SettingsVideoTitle2" Position="36,6" Text="Performance" FontColor="#FFFF00" Effect="Shadow"/>
           </Panel>
-          <Panel Name="SettingsVideoBody2" Bounds="0,0,352,134">
+          <Panel Name="SettingsVideoBody2" Bounds="0,0,352,162">
             <Label Name="SettingsFramesText" Position="16,6" Text="Frame rate" Effect="Shadow"/>
             <ImageButton Name="SettingsVideoArrow1" Picture="Btn_ArrowL_4" Position="184,4" Click="onSettingsVideoArrow"/>
             <Panel Name="SettingsFramesField" Bounds="204,2,124,21" Skin="panel16" SkinSource="0,0,120,21" Borders="4,4,4,4">
@@ -136,9 +136,13 @@
             </Panel>
             <ImageButton Name="SettingsVideoArrow6" Picture="Btn_ArrowR_4" Position="330,58" Click="onSettingsVideoArrow"/>
             <Label Name="SettingsRendererHelp" Bounds="16,85,336,15" FontColor="#C8DCFF" Effect="Plain"/>
-            <Label Name="SettingsGraphText" Position="16,110" Text="Frame time graph (F11)" Effect="Shadow"/>
-            <CheckBox Name="SettingsGraph" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="330,109"
-                      Click="onSettingsGraph"/>
+            <Label Name="SettingsOverlayText" Position="16,114" Text="Overlay (F11)" Effect="Shadow"/>
+            <ImageButton Name="SettingsVideoArrow19" Picture="Btn_ArrowL_4" Position="184,112" Click="onSettingsVideoArrow"/>
+            <Panel Name="SettingsOverlayField" Bounds="204,110,124,21" Skin="panel16" SkinSource="0,0,120,21" Borders="4,4,4,4">
+              <Label Name="SettingsOverlayValue" Bounds="0,4,124,15" Align="Center" FontColor="#1E3C78" Effect="Plain"/>
+            </Panel>
+            <ImageButton Name="SettingsVideoArrow20" Picture="Btn_ArrowR_4" Position="330,112" Click="onSettingsVideoArrow"/>
+            <Label Name="SettingsOverlayHelp" Bounds="16,139,336,15" FontColor="#C8DCFF" Effect="Plain"/>
           </Panel>
           <Panel Name="SettingsVideoGroup3" Bounds="0,0,352,26">
             <DrawingArea Name="SettingsVideoHead3" Bounds="0,0,352,26" HitTest="true" MouseDown="onSettingsVideoHead" MouseWheel="onSettingsVideoWheel"/>
@@ -174,6 +178,56 @@
             <Label Name="SettingsPixelArtOnTextText" Position="32,174" Text="On text" Effect="Shadow"/>
             <CheckBox Name="SettingsPixelArtOnText" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="330,173"
                       Click="onSettingsPixelArtPart"/>
+          </Panel>
+          <!-- the optional speedups (extra-settings.json "speedups"): none, the recommended ones for the renderer, or the player's own;
+               the check boxes are numbered in the view model's order and show what the chosen way turns on -->
+          <Panel Name="SettingsVideoGroup4" Bounds="0,0,352,26">
+            <DrawingArea Name="SettingsVideoHead4" Bounds="0,0,352,26" HitTest="true" MouseDown="onSettingsVideoHead" MouseWheel="onSettingsVideoWheel"/>
+            <CheckBox Name="SettingsVideoOpen4" Picture="Btn_ArrowR_1" CheckedPicture="Btn_ArrowDn_3" Position="12,4" Click="onSettingsVideoOpen"/>
+            <Label Name="SettingsVideoTitle4" Position="36,6" Text="Speedups" FontColor="#FFFF00" Effect="Shadow"/>
+          </Panel>
+          <Panel Name="SettingsVideoBody4" Bounds="0,0,352,360">
+            <Label Name="SettingsSpeedupModeText" Position="16,6" Text="Speedups to use" Effect="Shadow"/>
+            <ImageButton Name="SettingsVideoArrow17" Picture="Btn_ArrowL_4" Position="184,4" Click="onSettingsVideoArrow"/>
+            <Panel Name="SettingsSpeedupModeField" Bounds="204,2,124,21" Skin="panel16" SkinSource="0,0,120,21" Borders="4,4,4,4">
+              <Label Name="SettingsSpeedupModeValue" Bounds="0,4,124,15" Align="Center" FontColor="#1E3C78" Effect="Plain"/>
+            </Panel>
+            <ImageButton Name="SettingsVideoArrow18" Picture="Btn_ArrowR_4" Position="330,4" Click="onSettingsVideoArrow"/>
+            <Label Name="SettingsSpeedupHelp1" Bounds="16,32,336,15" FontColor="#C8DCFF" Effect="Plain"/>
+            <Label Name="SettingsSpeedupHelp2" Bounds="16,48,336,15" Text="Same picture. Restart to apply." FontColor="#C8DCFF" Effect="Plain"/>
+            <Label Name="SettingsSpeedupText1" Position="16,76" Text="Software: store pictures encoded" Effect="Shadow"/>
+            <CheckBox Name="SettingsSpeedup1" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="330,75"
+                      Click="onSettingsSpeedup"/>
+            <Label Name="SettingsSpeedupText2" Position="16,104" Text="Software: copy only changed areas" Effect="Shadow"/>
+            <CheckBox Name="SettingsSpeedup2" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="330,103"
+                      Click="onSettingsSpeedup"/>
+            <Label Name="SettingsSpeedupText3" Position="16,132" Text="Software: move picture on scroll" Effect="Shadow"/>
+            <CheckBox Name="SettingsSpeedup3" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="330,131"
+                      Click="onSettingsSpeedup"/>
+            <Label Name="SettingsSpeedupText4" Position="16,160" Text="Keep lines of text as pictures" Effect="Shadow"/>
+            <CheckBox Name="SettingsSpeedup4" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="330,159"
+                      Click="onSettingsSpeedup"/>
+            <Label Name="SettingsSpeedupText5" Position="16,188" Text="Quick SDL checks" Effect="Shadow"/>
+            <CheckBox Name="SettingsSpeedup5" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="330,187"
+                      Click="onSettingsSpeedup"/>
+            <Label Name="SettingsSpeedupText6" Position="16,216" Text="Load window pictures on first use" Effect="Shadow"/>
+            <CheckBox Name="SettingsSpeedup6" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="330,215"
+                      Click="onSettingsSpeedup"/>
+            <Label Name="SettingsSpeedupText7" Position="16,244" Text="Load map backgrounds in parts" Effect="Shadow"/>
+            <CheckBox Name="SettingsSpeedup7" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="330,243"
+                      Click="onSettingsSpeedup"/>
+            <Label Name="SettingsSpeedupText8" Position="16,272" Text="Background loading at low priority" Effect="Shadow"/>
+            <CheckBox Name="SettingsSpeedup8" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="330,271"
+                      Click="onSettingsSpeedup"/>
+            <Label Name="SettingsSpeedupText9" Position="16,300" Text="Remember which renderers work" Effect="Shadow"/>
+            <CheckBox Name="SettingsSpeedup9" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="330,299"
+                      Click="onSettingsSpeedup"/>
+            <Label Name="SettingsSpinText" Position="16,330" Text="Frame cap busy wait" Effect="Shadow"/>
+            <ImageButton Name="SettingsVideoArrow15" Picture="Btn_ArrowL_4" Position="184,328" Click="onSettingsVideoArrow"/>
+            <Panel Name="SettingsSpinField" Bounds="204,326,124,21" Skin="panel16" SkinSource="0,0,120,21" Borders="4,4,4,4">
+              <Label Name="SettingsSpinValue" Bounds="0,4,124,15" Align="Center" FontColor="#1E3C78" Effect="Plain"/>
+            </Panel>
+            <ImageButton Name="SettingsVideoArrow16" Picture="Btn_ArrowR_4" Position="330,328" Click="onSettingsVideoArrow"/>
           </Panel>
         </Panel>
         <ScrollBar Name="SettingsVideoScroll" Bounds="352,4,17,242" Track="Rail_H5" TrackCap="16" Thumb="bar_H4"

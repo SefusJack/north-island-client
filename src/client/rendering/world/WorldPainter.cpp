@@ -3,6 +3,7 @@
 #include "client/rendering/world/CampSprite.h"
 #include "client/rendering/world/NpcHoverLight.h"
 #include "client/rendering/painters/EmblemPainter.h"
+#include "gfx/RenderDevice.h"
 #include "gfx/TextRenderer.h"
 #include "client/rendering/hud/GameNumbers.h"
 #include "client/rules/PvpRankText.h"
@@ -132,6 +133,15 @@ namespace client {
         const auto petNameShown = [&](const MapPet& pet) {
             return !pet.walker && petShown(pet) && (pet.ownerId == display.ownId ? display.ownPetNames : display.otherPetNames);
         };
+        {
+            // how far the map moved on the screen since the last frame of this map (the software renderer can move the shown picture)
+            const core::Point groundAt = camera.toScreen(map.file().backgroundPosition());
+            if (m_lastMap == &map) {
+                canvas.device().sceneMovedBy({groundAt.x - m_lastGroundAt.x, groundAt.y - m_lastGroundAt.y});
+            }
+            m_lastMap = &map;
+            m_lastGroundAt = groundAt;
+        }
         if (map.background().isValid()) {
             canvas.drawPicture(map.background(), camera.toScreen(map.file().backgroundPosition()));
         }

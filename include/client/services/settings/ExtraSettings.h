@@ -1,6 +1,8 @@
 #ifndef NORTH_ISLAND_CLIENT_SERVICES_SETTINGS_QOL_SETTINGS_H
 #define NORTH_ISLAND_CLIENT_SERVICES_SETTINGS_QOL_SETTINGS_H
 
+#include "core/Speedups.h"
+
 #include <filesystem>
 #include <optional>
 #include <string>
@@ -18,9 +20,12 @@ namespace client {
         /// @brief How the window is shown.
         enum class Display { Windowed, Borderless, Fullscreen };
 
+        /// @brief Which speedups run: none, the recommended ones for the renderer, or the player's own choice.
+        enum class SpeedupMode { None, Auto, Custom };
+
         Frames frames = Frames::Original;
         int fpsCap = 144; // default frame cap in frames per second
-        bool frameGraph = false;
+        int perfOverlay = 0; // the performance overlay: 0 off, 1 the frame rate, 2 with processor, graphics card and RAM use and the times, 3 with the graph
         int windowWidth = 800; // the original's window width in pixels
         int windowHeight = 600; // the original's window height in pixels
         bool maximized = false;
@@ -39,6 +44,8 @@ namespace client {
         bool loadingSoundOn = true;
         bool sortButtons = false;
         bool partyLogin = false;
+        SpeedupMode speedupMode = SpeedupMode::None; // which speedups run ("mode" under "speedups" in the file)
+        core::Speedups speedups; // the player's own choice (used in SpeedupMode::Custom) and, in every mode, the busy wait
 
         /// @brief Tells whether frames are paced by anything but the original's beat.
         /// @return True unless the mode is Frames::Original.
@@ -51,6 +58,12 @@ namespace client {
         /// @brief Gives the frames a second the loop waits for.
         /// @return The cap in Frames::Capped, else 0 (none).
         int frameCap() const { return frames == Frames::Capped ? fpsCap : 0; }
+
+        /// @brief Gives the speedups that run with a renderer: none, the recommended ones or the player's own, by the mode.
+        /// @details The busy wait (limiterSpinMs) is the player's in every mode.
+        /// @param renderer The renderer's name ("direct3d11", "software", ...).
+        /// @return The speedups.
+        core::Speedups speedupsFor(const std::string& renderer) const;
 
         /// @brief Gives the path of the settings file.
         /// @param userRoot The user folder.
@@ -90,6 +103,18 @@ namespace client {
         /// @return True when any setting differs.
         bool operator!=(const ExtraSettings& other) const { return !(*this == other); }
     };
+
+    /// @brief Gives the speedups recommended for a renderer on this machine (the busy wait is left at its default).
+    /// @details Every renderer: text pictures, quick SDL checks, pictures on first use, map backgrounds in parts and
+    /// remembered renderer checks. The software renderer also gets its three own ones. Quiet workers only with one processor core.
+    /// @param renderer The renderer's name.
+    /// @return The speedups.
+    core::Speedups recommendedSpeedups(const std::string& renderer);
+
+    /// @brief Gives the name of a speedup mode as written in the settings file.
+    /// @param mode The mode.
+    /// @return "none", "auto" or "custom".
+    const char* speedupModeName(ExtraSettings::SpeedupMode mode);
 
     /// @brief Gives the name of a frame mode as written in the settings file.
     /// @param frames The mode.

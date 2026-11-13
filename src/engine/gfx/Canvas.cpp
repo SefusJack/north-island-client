@@ -26,7 +26,21 @@ namespace gfx {
         if (!picture.isValid()) {
             return;
         }
-        m_pictures.picture(picture).texture().draw(m_device, at + m_origin, source);
+        const Picture& data = m_pictures.picture(picture);
+        if (data.isInParts()) {
+            // a map background decoded in parts: only the rows this draw shows are needed now (with some rows to spare)
+            constexpr int kSpareRows = 32;
+            const core::Rect shown = window();
+            const int sourceTop = source ? source->y : 0;
+            const int sourceHeight = source ? source->height : data.height();
+            const int top = sourceTop + std::max(0, shown.top() - at.y) - kSpareRows;
+            const int bottom = sourceTop + std::min(sourceHeight, shown.bottom() - at.y) + kSpareRows;
+            if (bottom > top) {
+                data.textureForRows(std::max(top, 0), std::min(bottom, data.height())).draw(m_device, at + m_origin, source);
+            }
+            return;
+        }
+        data.texture().draw(m_device, at + m_origin, source);
     }
 
     void Canvas::drawPictureFlipped(

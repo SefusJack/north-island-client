@@ -83,7 +83,7 @@ namespace client {
         std::function<void()> partyEventEnded; // the leader's event ended
         bool unseenPartyMember = false; // a party member's account, played without its own screen (qol)
         bool serverSorts = false;
-        std::array<bool, 3> videoGroupsOpen = {true, false, false}; // which groups of the settings Video tab are open, until the game closes
+        std::array<bool, 4> videoGroupsOpen = {true, false, false, false}; // which groups of the settings Video tab are open, until the game closes
 
         /// @brief Builds the UI load context (pictures, game file resolver, emote lookup).
         /// @return The load context.

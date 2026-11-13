@@ -25,6 +25,10 @@ namespace core {
             /// @return True when the result can be taken, false when nothing is pending.
             bool ready() const { return m_result.valid() && m_result.wait_for(std::chrono::seconds(0)) == std::future_status::ready; }
 
+            /// @brief Tells whether the work has ended, waiting up to some ms for it (the waiting lets a low-priority worker run).
+            /// @param ms The longest wait.
+            bool readyWithin(int ms) const { return m_result.valid() && m_result.wait_for(std::chrono::milliseconds(ms)) == std::future_status::ready; }
+
             /// @brief Takes the result of the work, waiting when it is not ready.
             /// @return The work's result.
             T take() { return m_result.get(); }

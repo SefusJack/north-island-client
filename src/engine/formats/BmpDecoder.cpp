@@ -88,6 +88,33 @@ namespace formats {
         };
 
         Image image(width, height);
+        // The two kinds the game's pictures come in (24 bits, and 8 bits with a palette) are read a row at a time into whole
+        // 32-bit pixels (bytes r, g, b, a: red is the low byte);
+        static_assert(sizeof(core::Color) == 4, "core::Color must be four bytes: r, g, b, a");
+        if (bitCount == 24 || bitCount == 8) {
+            std::uint32_t entries[256];
+            for (std::size_t i = 0; i < 256; ++i) {
+                const core::Color color = i < palette.size() ? palette[i] : core::Color{0, 0, 0, 255}; // opaque black for a missing entry
+                entries[i] = static_cast<std::uint32_t>(color.r) | (static_cast<std::uint32_t>(color.g) << 8) |
+                             (static_cast<std::uint32_t>(color.b) << 16) | 0xFF000000u;
+            }
+            auto* out = reinterpret_cast<std::uint32_t*>(image.pixels().data());
+            for (int y = 0; y < height; ++y) {
+                const int sourceRow = bottomUp ? height - 1 - y : y;
+                const std::uint8_t* from = data.data() + pixelStart + static_cast<std::size_t>(sourceRow) * rowBytes;
+                if (bitCount == 24) {
+                    for (int x = 0; x < width; ++x, from += 3) { // bytes are stored B, G, R
+                        *out++ = static_cast<std::uint32_t>(from[2]) | (static_cast<std::uint32_t>(from[1]) << 8) |
+                                 (static_cast<std::uint32_t>(from[0]) << 16) | 0xFF000000u;
+                    }
+                } else {
+                    for (int x = 0; x < width; ++x) {
+                        *out++ = entries[from[x]];
+                    }
+                }
+            }
+            return image;
+        }
         for (int y = 0; y < height; ++y) {
             const int sourceRow = bottomUp ? height - 1 - y : y;
             const std::size_t row = pixelStart + static_cast<std::size_t>(sourceRow) * rowBytes;

@@ -116,8 +116,12 @@ namespace client {
             void menu(int number);
 
             /// @brief Steps one of the Video tab's choices.
-            /// @param number The Video arrow number (1..14, two per row).
+            /// @param number The Video arrow number (1..20, two per row).
             void videoArrow(int number);
+
+            /// @brief Takes a speedup's check box (a restart applies it); from None or Auto this makes what was shown the player's own choice.
+            /// @param number The check box number (from 1, the order of the Speedups group).
+            void toggleSpeedup(int number);
 
             /// @brief Opens or closes a group of the Video tab.
             /// @param number The group number (from 1).
@@ -184,6 +188,26 @@ namespace client {
             /// @param now The current video settings (unused).
             /// @return The choices.
             std::vector<VideoChoice> hudChoices(const ExtraSettings& now) const;
+
+            /// @brief The performance overlay's levels: off, the frame rate, with use and times, with the graph.
+            /// @param now The current video settings (unused).
+            /// @return The choices.
+            std::vector<VideoChoice> overlayChoices(const ExtraSettings& now) const;
+
+            /// @brief The choices of which speedups run: none, the recommended ones, the player's own.
+            /// @param now The current video settings (unused).
+            /// @return The choices.
+            std::vector<VideoChoice> speedupModeChoices(const ExtraSettings& now) const;
+
+            /// @brief The renderer the recommended speedups are shown for: the chosen one, else the one in use.
+            /// @param video The current video settings.
+            /// @return The renderer's name.
+            std::string speedupRenderer(const ExtraSettings& video) const;
+
+            /// @brief The choices of how long a capped frame's wait ends in a busy wait.
+            /// @param now The current video settings (unused).
+            /// @return The choices.
+            std::vector<VideoChoice> spinChoices(const ExtraSettings& now) const;
 
             /// @brief The help line under the pixel-art choice.
             /// @param video The current video settings.

@@ -376,6 +376,8 @@ namespace client {
 
             std::map<std::int32_t, std::reference_wrapper<MapCharacter>> m_people;
             int m_sceneType = 0;
+            const WorldMap* m_lastMap = nullptr; // the map and where its ground was drawn in the last frame
+            core::Point m_lastGroundAt{0, 0};
 
             CharacterRenderer& m_characters;
             gfx::PictureLibrary& m_pictures;

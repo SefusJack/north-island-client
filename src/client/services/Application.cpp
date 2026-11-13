@@ -9,6 +9,7 @@
 #include "client/services/frame/FrameCost.h"
 #include "client/services/frame/FrameLog.h"
 #include "client/services/frame/FrameStats.h"
+#include "client/services/frame/MachineLoad.h"
 #include "client/services/GameDirectory.h"
 #include "client/services/GameServices.h"
 #include "client/services/input/InputScript.h"
@@ -25,9 +26,11 @@
 #include "client/scenes/LoadingScene.h"
 #include "client/scenes/LoginScene.h"
 #include "client/scenes/world/WorldScene.h"
+#include "core/Bytes.h"
 #include "core/Clock.h"
 #include "core/FileSystem.h"
 #include "core/Log.h"
+#include "core/Speedups.h"
 #include "formats/BitmapFont.h"
 #include "formats/LargeBitmapFont.h"
 #include "formats/PngCodec.h"
@@ -137,12 +140,13 @@ namespace client {
             return nullptr;
         }
 
-        /// @brief Sleeps to a moment of core::nowPreciseMs: whole milliseconds asleep, the last one waited out.
+        /// @brief Sleeps to a moment of core::nowPreciseMs: whole milliseconds asleep, the last one (Speedups::limiterSpinMs) waited out.
         /// @param targetMs The target time in core::nowPreciseMs.
         void waitUntil(double targetMs) {
             const double now = core::nowPreciseMs();
-            if (targetMs - now > 1.0) {
-                SDL_Delay(static_cast<Uint32>(targetMs - now - 1.0));
+            const double spinMs = core::speedups().limiterSpinMs;
+            if (targetMs - now > spinMs) {
+                SDL_Delay(static_cast<Uint32>(targetMs - now - spinMs));
             }
             while (core::nowPreciseMs() < targetMs) {}
         }
@@ -222,7 +226,14 @@ namespace client {
             return 1;
         }
         const net::NetworkSystem network;
-        const audio::AudioDevice audioDevice = m_options.background ? audio::AudioDevice(audio::AudioDevice::Silent{}) : audio::AudioDevice();
+        // built in place: VS 2017 (the XP toolset) does not elide the copy out of a conditional expression, and the device cannot be copied
+        std::optional<audio::AudioDevice> audioHolder;
+        if (m_options.background) {
+            audioHolder.emplace(audio::AudioDevice::Silent{});
+        } else {
+            audioHolder.emplace();
+        }
+        const audio::AudioDevice& audioDevice = *audioHolder;
 
         const std::filesystem::path extraFile = ExtraSettings::fileIn(m_options.userDirectory);
         const auto loadedExtra = ExtraSettings::loadIn(m_options.userDirectory);
@@ -234,7 +245,10 @@ namespace client {
             stored.save(extraFile);
         } else if (!std::filesystem::exists(extraFile, ignored)) {
             stored.save(extraFile); // migrated from the old file name: keep what it held, without this run's overrides
+        } else if (const auto written = core::readFile(extraFile); written && core::toString(*written).find("\"mode\"") == std::string::npos) {
+            stored.save(extraFile); // a file from before the speedups or their mode: they are listed in it now, so they can be found
         }
+        core::speedups().limiterSpinMs = live.speedups.limiterSpinMs;
         core::logInfo(
             "frames: ",
             frameModeName(live.frames),
@@ -279,6 +293,12 @@ namespace client {
             }
             live.renderer.clear();
         }
+        // the renderer is known now; the text, the pictures and the workers are made after this and read the speedups then
+        core::speedups() = live.speedupsFor(device->backendName());
+        if (core::speedups().quickSdlChecks) {
+            SDL_SetHint(SDL_HINT_INVALID_PARAM_CHECKS, "1");
+        }
+        core::logInfo("speedups: ", speedupModeName(live.speedupMode), " for ", device->backendName());
         device->setPixelArtFilter(formats::pixelArtFilterNamed(live.pixelArt).value_or(formats::PixelArtFilter::None));
         device->setPixelArtPart(gfx::PixelArtPart::Pictures, live.pixelArtPictures);
         device->setPixelArtPart(gfx::PixelArtPart::Sprites, live.pixelArtSprites);
@@ -469,7 +489,9 @@ namespace client {
                 frameLog.reset();
             }
         }
-        bool showFrameGraph = live.frameGraph;
+        int overlayLevel = live.perfOverlay; // F11 steps it for this run
+        FrameGraph overlay;
+        MachineLoad machineLoad;
 
         SDL_StartTextInput(device->window());
         const auto shownScene = [&]() -> Scene& {
@@ -529,13 +551,14 @@ namespace client {
                             core::logWarning("cannot change the display mode: ", SDL_GetError());
                         }
                     }
-                    if (changed.frameGraph != live.frameGraph) {
-                        showFrameGraph = changed.frameGraph;
+                    if (changed.perfOverlay != live.perfOverlay) {
+                        overlayLevel = changed.perfOverlay;
                     }
                     if (changed.pixelScale != live.pixelScale) {
                         device->setPixelScale(changed.pixelScale);
                     }
                     canvas.setExactAlphaFills(exactFillsFor(changed));
+                    core::speedups().limiterSpinMs = changed.speedups.limiterSpinMs; // the other speedups are read at the start only
                     live = changed;
                     applyView(*played->scene);
                     stored = changed;
@@ -557,7 +580,13 @@ namespace client {
                         live.renderer.empty() ? "default" : live.renderer
                     );
                 }
-                const bool measuring = showFrameGraph || frameLog;
+                const bool measuring = overlayLevel > 0 || frameLog;
+                // the frame rate alone needs no graphics card timing (on Direct3D 9 the timing itself costs a few percent)
+                const bool timingGpu = overlayLevel >= 2 || frameLog;
+                machineLoad.setWanted(overlayLevel >= 2);
+                if (overlayLevel >= 2) {
+                    machineLoad.update(frameStartPrecise);
+                }
                 FrameSample sample;
                 SDL_Event event;
                 Scene& steered = shownScene();
@@ -567,8 +596,11 @@ namespace client {
                 while (SDL_PollEvent(&event)) {
                     SDL_ConvertEventToRenderCoordinates(device->renderer(), &event);
                     if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_F11 && !event.key.repeat) {
-                        showFrameGraph = !showFrameGraph;
+                        overlayLevel = (overlayLevel + 1) % FrameGraph::kLevels; // off, 1, 2, 3, off
                         continue;
+                    }
+                    if (event.type >= SDL_EVENT_WINDOW_FIRST && event.type <= SDL_EVENT_WINDOW_LAST) {
+                        device->presentEverything(); // uncovered, moved, resized, shown: the screen may not hold the last frame any more
                     }
                     if (event.type == SDL_EVENT_WINDOW_RESIZED) {
                         dropGpuTimer();
@@ -669,7 +701,7 @@ namespace client {
                 const std::uint64_t drawStart = core::nowMs();
                 const double drawStartPrecise = core::nowPreciseMs();
                 sample.updateMs = drawStartPrecise - updateStart;
-                if (measuring && gpuTimer) {
+                if (timingGpu && gpuTimer) {
                     gpuTimer->beginFrame();
                 }
                 device->clear();
@@ -713,13 +745,13 @@ namespace client {
                     ); // 800 x 600: the game's screen size
                     photoRequest.reset();
                 }
-                if (showFrameGraph) {
+                if (overlayLevel > 0) {
                     const core::Point origin = canvas.origin();
                     canvas.setOrigin({});
-                    FrameGraph::draw(canvas, frameStats, device->backendName(), gpuTimer != nullptr, device->width());
+                    overlay.draw(canvas, frameStats, device->backendName(), gpuTimer != nullptr, device->width(), live.hudScale, overlayLevel, machineLoad.reading(), frameStart);
                     canvas.setOrigin(origin);
                 }
-                if (measuring && gpuTimer) {
+                if (timingGpu && gpuTimer) {
                     gpuTimer->endFrame();
                 }
                 const double presentStart = core::nowPreciseMs();
@@ -755,7 +787,7 @@ namespace client {
                     const double frameEnd = core::nowPreciseMs();
                     sample.waitMs = frameEnd - waitStart;
                     sample.totalMs = frameEnd - frameStartPrecise;
-                    if (gpuTimer) {
+                    if (timingGpu && gpuTimer) {
                         sample.gpuMs = gpuTimer->latestMs();
                     }
                     frameStats.add(sample);

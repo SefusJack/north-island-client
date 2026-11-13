@@ -5101,8 +5101,8 @@ namespace client {
         canvas.drawText(
             {corner.x + kRight - static_cast<int>(text.size()) * kCharWidth, y},
             text,
-            {{255, 255, 255, 255}, gfx::TextEffect::Shadow, std::nullopt}
-        ); // text colour: opaque white
+            {{255, 255, 255, 255}, gfx::TextEffect::Shadow, std::nullopt, true}
+        ); // text colour: opaque white; the coordinates change with every step
     }
 
     void WorldScene::onKicked(int reason) {

@@ -63,8 +63,14 @@ namespace formats {
         if (colorAdd.r == 0 && colorAdd.g == 0 && colorAdd.b == 0) {
             return; // nothing to add
         }
-        core::Color* const pixels = image.pixels().data();
-        core::inBands(image.pixels().size(), kBandsFromPixels, [&](std::size_t begin, std::size_t end) {
+        addColor(image.pixels().data(), image.pixels().size(), colorAdd);
+    }
+
+    void addColor(core::Color* pixels, std::size_t count, core::Color colorAdd) {
+        if (colorAdd.r == 0 && colorAdd.g == 0 && colorAdd.b == 0) {
+            return; // nothing to add
+        }
+        core::inBands(count, kBandsFromPixels, [&](std::size_t begin, std::size_t end) {
             for (std::size_t i = begin; i < end; ++i) {
                 core::Color& pixel = pixels[i];
                 if ((pixel.r | pixel.g | pixel.b) < 4) { // near-black threshold left untouched
@@ -83,35 +89,53 @@ namespace formats {
         const ChannelTable green = reducedTable(colorAdd.g, 6);
         const ChannelTable blue = reducedTable(colorAdd.b, 5);
         const std::uint8_t markerBlue = reducedTable(0, 5)[8]; // the near-black marker (0, 0, 8) reduced without the tint
-        core::Color* const pixels = image.pixels().data();
+        // A pixel is worked on as one 32-bit word (bytes r, g, b, a: red is the low byte) instead of byte by byte: the
+        // byte version took 25 ns a pixel on a Pentium 4, which made the long frames when a battle's effects load.
+        static_assert(sizeof(core::Color) == 4, "core::Color must be four bytes: r, g, b, a");
+        std::array<std::uint32_t, 256> redWord{};
+        std::array<std::uint32_t, 256> greenWord{};
+        std::array<std::uint32_t, 256> blueWord{};
+        for (std::size_t value = 0; value < 256; ++value) {
+            redWord[value] = red[value];
+            greenWord[value] = static_cast<std::uint32_t>(green[value]) << 8;
+            blueWord[value] = (static_cast<std::uint32_t>(blue[value]) << 16) | 0xFF000000u; // with the opaque alpha
+        }
+        const std::uint32_t key = static_cast<std::uint32_t>(kTransparentKey.r) | (static_cast<std::uint32_t>(kTransparentKey.g) << 8) |
+                                  (static_cast<std::uint32_t>(kTransparentKey.b) << 16);
+        const std::uint32_t markerWord = (static_cast<std::uint32_t>(markerBlue) << 16) | 0xFF000000u;
+        auto* const pixels = reinterpret_cast<std::uint32_t*>(image.pixels().data());
         core::inBands(image.pixels().size(), kBandsFromPixels, [&](std::size_t begin, std::size_t end) {
             for (std::size_t i = begin; i < end; ++i) {
-                core::Color& pixel = pixels[i];
-                if (pixel.r == kTransparentKey.r && pixel.g == kTransparentKey.g && pixel.b == kTransparentKey.b) {
-                    pixel = {0, 0, 0, 0};
+                std::uint32_t rgb = pixels[i] & 0x00FFFFFFu;
+                if (rgb == key) {
+                    pixels[i] = 0;
                     continue;
                 }
                 // 8: darkness threshold per channel; dark pixels get blue 8 so they stay visible
-                if (pixel.r < 8 && pixel.g < 8 && pixel.b < 8) {
-                    pixel.b = 8;
+                if ((rgb & 0x00F8F8F8u) == 0) {
+                    rgb = (rgb & 0x0000FFFFu) | 0x00080000u;
                 }
-                if (pixel.r == 0 && pixel.g == 0 && pixel.b == 8) { // the near-black marker colour (0, 0, 8): not tinted
-                    pixel = {0, 0, markerBlue, 255}; // 255: opaque
+                if (rgb == 0x00080000u) { // the near-black marker colour (0, 0, 8): not tinted
+                    pixels[i] = markerWord;
                     continue;
                 }
-                pixel = {red[pixel.r], green[pixel.g], blue[pixel.b], 255}; // 255: opaque
+                pixels[i] = redWord[rgb & 0xFF] | greenWord[(rgb >> 8) & 0xFF] | blueWord[rgb >> 16];
             }
         });
     }
 
     void quantizeTo16Bit(Image& image) {
-        const ChannelTable five = reducedTable(0, 5);
-        const ChannelTable six = reducedTable(0, 6);
-        core::Color* const pixels = image.pixels().data();
-        core::inBands(image.pixels().size(), kBandsFromPixels, [&](std::size_t begin, std::size_t end) {
+        quantizeTo16Bit(image.pixels().data(), image.pixels().size());
+    }
+
+    void quantizeTo16Bit(core::Color* colors, std::size_t count) {
+        // the same values as reducedTable(0, 5) and (0, 6) give, on the whole pixel at once (bytes r, g, b, a: red is the low
+        // byte): red and blue keep their top 5 bits and repeat the top 3 below them, green keeps 6 and repeats 2
+        auto* const pixels = reinterpret_cast<std::uint32_t*>(colors);
+        core::inBands(count, kBandsFromPixels, [&](std::size_t begin, std::size_t end) {
             for (std::size_t i = begin; i < end; ++i) {
-                core::Color& pixel = pixels[i];
-                pixel = {five[pixel.r], six[pixel.g], five[pixel.b], pixel.a};
+                const std::uint32_t pixel = pixels[i];
+                pixels[i] = (pixel & 0xFFF8FCF8u) | ((pixel >> 5) & 0x00070007u) | ((pixel >> 6) & 0x00000300u);
             }
         });
     }

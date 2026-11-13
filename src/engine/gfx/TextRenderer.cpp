@@ -1,8 +1,11 @@
 #include "gfx/TextRenderer.h"
 
+#include "core/Log.h"
+#include "core/Speedups.h"
 #include "gfx/RenderDevice.h"
 
 #include <algorithm>
+#include <iterator>
 
 namespace gfx {
 
@@ -35,6 +38,18 @@ namespace gfx {
         }
         TextRenderer renderer;
         renderer.m_atlas = std::move(*texture);
+        // string pictures: they give the same pixels only when every glyph pixel is plain white or fully clear, so a
+        // layer's colour lands as it is
+        if (core::speedups().textPictures) {
+            bool plain = true;
+            for (const core::Color& pixel : atlas.pixels()) {
+                plain = plain && (pixel.a == 0 || (pixel.a == 255 && pixel.r == 255 && pixel.g == 255 && pixel.b == 255));
+            }
+            if (plain) {
+                renderer.m_atlasPixels = atlas;
+            }
+            core::logInfo("text: string pictures ", plain ? "on" : "off (the glyph atlas is not plain white)");
+        }
         if (const int detail = device.pixelArtDetail(PixelArtPart::Text); detail > 1) {
             renderer.useHdAtlas(device, layout.scaledCells(atlas, detail, [&device, detail](const formats::Image& cell) {
                 return formats::scalePixelArt(cell, device.pixelArtFilter(), detail);
@@ -55,7 +70,49 @@ namespace gfx {
             return false;
         }
         m_atlas = std::move(*texture);
+        m_atlasPixels = formats::Image(); // an HD atlas is smoothed when drawn: no string pictures
+        m_strings.clear();
+        m_dropped.clear();
         return true;
+    }
+
+    std::optional<int> TextRenderer::drawCached(const RenderDevice& device, core::Point position, const std::string& key) const {
+        // the clock is only read every so many strings: reading it costs as much as drawing one (before Windows 7 above all)
+        constexpr int kStringsAClockRead = 64;
+        constexpr std::uint64_t kSweepMs = 2000; // how often the strings seen but not kept are forgotten
+        constexpr std::uint64_t kKeepMs = 5000; // a picture not drawn for this long is dropped
+        if (m_clockAge++ % kStringsAClockRead == 0) {
+            m_clockMs = SDL_GetTicks();
+            // One picture may be made and one freed per clock read: Direct3D 12 and Vulkan take about 1 ms to make a
+            // texture and 0.4 ms to free one (they wait for the graphics card), so many at once would hold a frame up.
+            m_mayMake = true;
+            if (!m_dropped.empty()) {
+                m_dropped.pop_back();
+            }
+        }
+        const std::uint64_t nowMs = m_clockMs;
+        if (nowMs - m_sweptMs > kSweepMs) {
+            m_sweptMs = nowMs;
+            for (auto it = m_strings.begin(); it != m_strings.end();) {
+                if (nowMs - it->second.usedMs > kKeepMs) {
+                    m_dropped.push_back(std::move(it->second.texture)); // freed one at a time, above
+                    it = m_strings.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+            for (auto it = m_seen.begin(); it != m_seen.end();) {
+                it = nowMs - it->second > kSweepMs ? m_seen.erase(it) : std::next(it);
+            }
+        }
+        if (const auto found = m_strings.find(key); found != m_strings.end()) {
+            found->second.usedMs = nowMs;
+            if (found->second.texture.isValid()) {
+                found->second.texture.draw(device, {position.x + found->second.offset.x, position.y + found->second.offset.y});
+            }
+            return position.y + found->second.endY;
+        }
+        return std::nullopt;
     }
 
     core::Color TextRenderer::edgeColorFor(core::Color text) {
@@ -136,6 +193,24 @@ namespace gfx {
         // a background cell is filled before each glyph, between the glyphs' layers: those strings keep drawing glyph by glyph
         std::vector<Texture::Quad>* batch = style.background && style.effect != TextEffect::Shadow ? nullptr : &m_batch;
         m_batch.clear();
+        std::string key;
+        // with a GPU renderer only at pixel scale 1: a scaled picture's edges between glyphs can be smoothed differently
+        const bool pictures = batch != nullptr && !m_atlasPixels.isEmpty() && style.color.a == 255 && !text.empty() &&
+                              (!device.isAccelerated() || device.pixelScale() == 1) &&
+                              (!style.changing || device.makesTexturesQuickly()); // changing words: a picture each time only where that is cheap
+        if (pictures) {
+            key.reserve(text.size() + 16);
+            key.append(text);
+            key.push_back('\x1f');
+            for (const int part : {static_cast<int>(style.color.r), static_cast<int>(style.color.g), static_cast<int>(style.color.b),
+                                   static_cast<int>(style.effect), maxWidth, lineHeight}) {
+                key.append(std::to_string(part));
+                key.push_back(',');
+            }
+            if (const std::optional<int> end = drawCached(device, position, key)) {
+                return *end;
+            }
+        }
         for (std::size_t i = 0; i < text.size();) {
             const auto lead = static_cast<std::uint8_t>(text[i]);
             const std::optional<int> full = i + 1 < text.size() ? formats::BitmapFont::big5Glyph(lead, static_cast<std::uint8_t>(text[i + 1])) : std::nullopt;
@@ -161,6 +236,55 @@ namespace gfx {
             }
         }
         if (batch) {
+            if (pictures && !m_batch.empty()) {
+                const std::uint64_t nowMs = m_clockMs;
+                const auto seen = m_seen.find(key);
+                if (seen == m_seen.end()) {
+                    m_seen.emplace(key, nowMs); // drawn the usual way this once: a string that changes every frame gets no picture
+                } else if (m_mayMake) {
+                    // seen before: the layers are put into one picture, last drawn on top, as the quads would be
+                    m_mayMake = false;
+                    int left = m_batch.front().destination.x;
+                    int top = m_batch.front().destination.y;
+                    int right = left;
+                    int bottom = top;
+                    for (const Texture::Quad& quad : m_batch) {
+                        left = std::min(left, quad.destination.x);
+                        top = std::min(top, quad.destination.y);
+                        right = std::max(right, quad.destination.x + quad.source.width);
+                        bottom = std::max(bottom, quad.destination.y + quad.source.height);
+                    }
+                    formats::Image picture(right - left, bottom - top);
+                    for (const Texture::Quad& quad : m_batch) {
+                        for (int row = 0; row < quad.source.height; ++row) {
+                            const int fromY = quad.source.y + row;
+                            if (fromY < 0 || fromY >= m_atlasPixels.height()) {
+                                continue;
+                            }
+                            for (int column = 0; column < quad.source.width; ++column) {
+                                const int fromX = quad.source.x + column;
+                                if (fromX < 0 || fromX >= m_atlasPixels.width() || m_atlasPixels.at(fromX, fromY).a == 0) {
+                                    continue;
+                                }
+                                picture.at(quad.destination.x - left + column, quad.destination.y - top + row) = {quad.color.r, quad.color.g, quad.color.b, 255};
+                            }
+                        }
+                    }
+                    CachedString made;
+                    if (auto texture = Texture::create(device, picture)) {
+                        made.texture = std::move(*texture);
+                    }
+                    made.offset = {left - position.x, top - position.y};
+                    made.endY = y + lineHeight - position.y;
+                    made.usedMs = nowMs;
+                    m_seen.erase(seen);
+                    const auto placed = m_strings.emplace(key, std::move(made)).first;
+                    if (placed->second.texture.isValid()) {
+                        placed->second.texture.draw(device, {left, top});
+                        return y + lineHeight;
+                    }
+                }
+            }
             m_atlas.drawQuads(device, m_batch);
             return y + lineHeight;
         }

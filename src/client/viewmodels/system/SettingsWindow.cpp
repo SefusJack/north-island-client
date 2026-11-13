@@ -11,6 +11,7 @@
 #include "ui/ScrollBar.h"
 
 #include <algorithm>
+#include <cmath>
 #include <string>
 #include <utility>
 
@@ -27,6 +28,20 @@ namespace client {
         constexpr int kColorRowStep = 26; // vertical distance between chat colour rows, px
         constexpr int kVideoGroupsTop = 4; // y of the first group of the Video tab, px
         constexpr std::array<int, 8> kCaps = {30, 40, 60, 80, 120, 144, 165, 240}; // frame rate cap choices, frames per second
+
+        /// @brief The speedups of the Speedups group's check boxes, SettingsSpeedup1 first.
+        constexpr std::array<bool core::Speedups::*, 9> kSpeedupBoxes = {
+            &core::Speedups::softwareEncodedTextures,
+            &core::Speedups::softwareChangedAreas,
+            &core::Speedups::softwareScroll,
+            &core::Speedups::textPictures,
+            &core::Speedups::quickSdlChecks,
+            &core::Speedups::picturesOnFirstUse,
+            &core::Speedups::mapInParts,
+            &core::Speedups::quietWorkers,
+            &core::Speedups::rememberRendererChecks
+        };
+        constexpr std::array<double, 4> kSpinChoicesMs = {1.0, 0.5, 0.2, 0.0}; // busy wait choices, ms (1 as the client always had)
         // window size choices, width x height in px (sizes larger than the desktop are left out)
         constexpr std::array<core::Size, 26> kWindowSizes = {{{800, 600},   {1024, 768},  {1152, 864},  {1280, 720},  {1280, 800},  {1280, 960},  {1280, 1024},
                                                               {1366, 768},  {1400, 1050}, {1440, 900},  {1600, 900},  {1600, 1200}, {1680, 1050}, {1800, 1440},
@@ -53,6 +68,17 @@ namespace client {
         /// @param height Height in pixels.
         /// @return The text.
         std::string sizeText(int width, int height) { return std::to_string(width) + " x " + std::to_string(height); }
+
+        /// @brief Words a busy wait.
+        /// @param ms The wait in ms.
+        /// @return "None" for 0, else the ms with one decimal when it has one ("0.5 ms", "1 ms").
+        std::string spinText(double ms) {
+            const int tenths = static_cast<int>(std::lround(ms * 10.0)); // the settings file's value to a tenth of a ms
+            if (tenths <= 0) {
+                return "None";
+            }
+            return std::to_string(tenths / 10) + (tenths % 10 != 0 ? "." + std::to_string(tenths % 10) : std::string()) + " ms";
+        }
 
         /// @brief The help line under the frame rate choice.
         /// @param video The current video settings.
@@ -108,6 +134,7 @@ namespace client {
             }
         });
         screen.on("onSettingsVideoArrow", [this](const ui::EventArgs& args) { videoArrow(numberAfter(args.source, "SettingsVideoArrow")); });
+        screen.on("onSettingsSpeedup", [this](const ui::EventArgs& args) { toggleSpeedup(numberAfter(args.source, "SettingsSpeedup")); });
         screen.on("onSettingsVideoScroll", [this](const ui::EventArgs& args) { m_videoRows.scrollTo(args.index); });
         screen.on("onSettingsVideoWheel", [this](const ui::EventArgs& args) { m_videoRows.wheel(args.index); });
         screen.on("onSettingsGameScroll", [this](const ui::EventArgs& args) { m_gameRows.scrollTo(args.index); });
@@ -123,11 +150,6 @@ namespace client {
             m_video = m_services.videoSettings();
             const bool checked = m_screen.get<ui::CheckBox>("SettingsRemember").isChecked();
             changeVideo([checked](ExtraSettings& video) { video.rememberWindow = checked; });
-        });
-        screen.on("onSettingsGraph", [this](const ui::EventArgs&) {
-            m_video = m_services.videoSettings();
-            const bool checked = m_screen.get<ui::CheckBox>("SettingsGraph").isChecked();
-            changeVideo([checked](ExtraSettings& video) { video.frameGraph = checked; });
         });
         screen.on("onSettingsSort", [this](const ui::EventArgs&) {
             m_video = m_services.videoSettings();
@@ -348,6 +370,28 @@ namespace client {
         layoutVideo();
     }
 
+    void SettingsWindow::toggleSpeedup(int number) {
+        if (number < 1 || number > static_cast<int>(kSpeedupBoxes.size())) {
+            return;
+        }
+        m_video = m_services.videoSettings();
+        const auto member = kSpeedupBoxes[static_cast<std::size_t>(number - 1)];
+        const bool checked = m_screen.get<ui::CheckBox>("SettingsSpeedup" + std::to_string(number)).isChecked();
+        const std::string renderer = speedupRenderer(m_video);
+        changeVideo([member, checked, renderer](ExtraSettings& video) {
+            // a box taken while none or the recommended ones run: what was shown becomes the player's own choice
+            video.speedups = video.speedupsFor(renderer);
+            video.speedupMode = ExtraSettings::SpeedupMode::Custom;
+            video.speedups.*member = checked;
+            // moving the picture on scroll works on top of copying only the changed areas
+            if (video.speedups.softwareScroll && member == &core::Speedups::softwareScroll) {
+                video.speedups.softwareChangedAreas = true;
+            } else if (!video.speedups.softwareChangedAreas) {
+                video.speedups.softwareScroll = false;
+            }
+        });
+    }
+
     void SettingsWindow::layoutVideo() {
         int y = kVideoGroupsTop;
         for (std::size_t group = 0; group < m_services.videoGroupsOpen.size(); ++group) {
@@ -368,20 +412,23 @@ namespace client {
     }
 
     void SettingsWindow::videoArrow(int number) {
-        // 14 video arrows: two (left, right) for each of 7 rows
-        if (number < 1 || number > 14) {
+        // 20 video arrows: two (left, right) for each of 10 rows
+        if (number < 1 || number > 20) {
             return;
         }
         const int step = number % 2 != 0 ? -1 : 1;
         m_video = m_services.videoSettings();
-        // arrow number ranges per row: 1-2 frames, 3-4 window, 5-6 renderer, 7-8 scale, 9-10 pixel art, 11-12 display, 13-14 HUD
+        // arrow number ranges per row: 1-2 frames, 3-4 window, 5-6 renderer, 7-8 scale, 9-10 pixel art, 11-12 display, 13-14 HUD, 15-16 busy wait, 17-18 which speedups, 19-20 overlay
         const std::vector<VideoChoice> choices = number <= 2    ? frameChoices(m_video)
                                                  : number <= 4  ? windowChoices(m_video)
                                                  : number <= 6  ? rendererChoices(m_video)
                                                  : number <= 8  ? scaleChoices(m_video)
                                                  : number <= 10 ? pixelArtChoices(m_video)
                                                  : number <= 12 ? displayChoices(m_video)
-                                                                : hudChoices(m_video);
+                                                 : number <= 14 ? hudChoices(m_video)
+                                                 : number <= 16 ? spinChoices(m_video)
+                                                 : number <= 18 ? speedupModeChoices(m_video)
+                                                                : overlayChoices(m_video);
         if (choices.empty()) {
             return;
         }
@@ -442,12 +489,69 @@ namespace client {
         m_screen.get<ui::Label>("SettingsPixelArtHelp").setText(pixelArtHelp(m_video));
         m_screen.get<ui::Label>("SettingsRendererHelp").setText("Using " + m_services.rendererInUse + "; changes need a restart");
         m_screen.get<ui::CheckBox>("SettingsRemember").setChecked(m_video.rememberWindow);
-        m_screen.get<ui::CheckBox>("SettingsGraph").setChecked(m_video.frameGraph);
+        m_screen.get<ui::Label>("SettingsOverlayValue").setText(textOf(overlayChoices(m_video), "Level " + std::to_string(m_video.perfOverlay)));
+        m_screen.get<ui::Label>("SettingsOverlayHelp").setText(
+            m_video.perfOverlay == 1   ? "Frames a second."
+            : m_video.perfOverlay == 2 ? "FPS, CPU / GPU / RAM use, CPU / GPU time."
+            : m_video.perfOverlay == 3 ? "Level 2 and the frame time graph."
+                                       : "No numbers on the screen."
+        );
         m_screen.get<ui::CheckBox>("SettingsSort").setChecked(m_video.sortButtons);
         m_screen.get<ui::CheckBox>("SettingsPartyLogin").setChecked(m_video.partyLogin);
         m_screen.get<ui::CheckBox>("SettingsPixelArtOnPictures").setChecked(m_video.pixelArtPictures);
         m_screen.get<ui::CheckBox>("SettingsPixelArtOnSprites").setChecked(m_video.pixelArtSprites);
         m_screen.get<ui::CheckBox>("SettingsPixelArtOnText").setChecked(m_video.pixelArtText);
+        const std::string renderer = speedupRenderer(m_video);
+        const core::Speedups shown = m_video.speedupsFor(renderer);
+        for (std::size_t i = 0; i < kSpeedupBoxes.size(); ++i) {
+            m_screen.get<ui::CheckBox>("SettingsSpeedup" + std::to_string(i + 1)).setChecked(shown.*kSpeedupBoxes[i]);
+        }
+        m_screen.get<ui::Label>("SettingsSpeedupModeValue").setText(textOf(speedupModeChoices(m_video), speedupModeName(m_video.speedupMode)));
+        m_screen.get<ui::Label>("SettingsSpeedupHelp1").setText(
+            m_video.speedupMode == ExtraSettings::SpeedupMode::Auto     ? "The recommended ones for " + renderer + "."
+            : m_video.speedupMode == ExtraSettings::SpeedupMode::Custom ? "Your own choice of faster ways."
+                                                                         : "All off, as the game always was."
+        );
+        m_screen.get<ui::Label>("SettingsSpinValue").setText(textOf(spinChoices(m_video), spinText(m_video.speedups.limiterSpinMs)));
+    }
+
+    std::vector<SettingsWindow::VideoChoice> SettingsWindow::overlayChoices(const ExtraSettings&) const {
+        std::vector<VideoChoice> choices;
+        for (int level = 0; level <= 3; ++level) { // off and levels 1 to 3
+            choices.push_back(
+                {level == 0 ? std::string("Off") : "Level " + std::to_string(level),
+                 [level](ExtraSettings& video) { video.perfOverlay = level; },
+                 [level](const ExtraSettings& video) { return video.perfOverlay == level; }}
+            );
+        }
+        return choices;
+    }
+
+    std::string SettingsWindow::speedupRenderer(const ExtraSettings& video) const { return video.renderer.empty() ? m_services.rendererInUse : video.renderer; }
+
+    std::vector<SettingsWindow::VideoChoice> SettingsWindow::speedupModeChoices(const ExtraSettings&) const {
+        using Mode = ExtraSettings::SpeedupMode;
+        std::vector<VideoChoice> choices;
+        const std::array<std::pair<Mode, const char*>, 3> modes = {{{Mode::None, "None"}, {Mode::Auto, "Auto"}, {Mode::Custom, "Custom"}}};
+        for (const auto& entry : modes) {
+            const Mode mode = entry.first;
+            choices.push_back(
+                {entry.second, [mode](ExtraSettings& video) { video.speedupMode = mode; }, [mode](const ExtraSettings& video) { return video.speedupMode == mode; }}
+            );
+        }
+        return choices;
+    }
+
+    std::vector<SettingsWindow::VideoChoice> SettingsWindow::spinChoices(const ExtraSettings&) const {
+        std::vector<VideoChoice> choices;
+        for (const double ms : kSpinChoicesMs) {
+            choices.push_back(
+                {ms == kSpinChoicesMs.front() ? spinText(ms) + " (default)" : spinText(ms),
+                 [ms](ExtraSettings& video) { video.speedups.limiterSpinMs = ms; },
+                 [ms](const ExtraSettings& video) { return std::abs(video.speedups.limiterSpinMs - ms) < 0.01; }} // 0.01 ms: the same choice
+            );
+        }
+        return choices;
     }
 
     std::vector<SettingsWindow::VideoChoice> SettingsWindow::frameChoices(const ExtraSettings& now) const {
