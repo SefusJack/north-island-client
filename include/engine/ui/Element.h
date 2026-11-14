@@ -187,6 +187,48 @@ namespace ui {
             /// @return The shift.
             core::Point viewShift() const { return m_viewShift; }
 
+            /// @brief How far a layout is drawn from its place while it slides off the screen or back (a HUD bar hiding).
+            /// @return The shift in screen pixels.
+            core::Point slide() const { return m_slide; }
+
+            /// @brief Whether a layout has slid off the screen altogether: it is not drawn.
+            /// @return True when slid away.
+            bool isSlidAway() const { return m_slidAway; }
+
+            /// @brief The size of the cells a game pad's pointer steps through on this element (the PadCells attribute).
+            /// @details A list drawn by hand gives its row height as "0,26": one column of rows that high. A grid gives both.
+            /// @return The cell size; 0,0 when the element is one place (or none) for the pad.
+            core::Point padCells() const { return m_padCells; }
+
+            /// @brief The scroll bar that tells how far this element's cells scroll (the PadScroll attribute).
+            /// @return The scroll bar's name, empty for none.
+            const std::string& padScroll() const { return m_padScroll; }
+
+            /// @brief Whether a game pad's pointer passes this element and what is on it by (the PadSkip attribute).
+            /// @return True when skipped.
+            bool padSkip() const { return m_padSkip; }
+
+            /// @brief Whether a game pad treats this element as a window: its pointer steps through the controls in it (the PadWindow attribute, for a pop-up that is no Window).
+            /// @return True when it counts as a window.
+            bool padWindow() const { return m_padWindow; }
+
+            /// @brief Whether a game pad treats this element as a window that stays where it lies among the layouts (the PadPage
+            /// attribute, for a page that fills the screen under what opens over it): unlike a PadWindow it does not come to the front when shown.
+            /// @return True for a page.
+            bool padPage() const { return m_padPage; }
+
+            /// @brief Whether the element is a slider a game pad moves with left and right while its pointer is on it (the PadSlider attribute).
+            /// @return True for a slider.
+            bool padSlider() const { return m_padSlider; }
+
+            /// @brief Slides a layout: the screen draws it shifted and keeps the mouse off it until it is back in its place.
+            /// @param slide The shift in screen pixels (0,0: in its place).
+            /// @param away True when it is off the screen altogether.
+            void setSlide(core::Point slide, bool away) {
+                m_slide = slide;
+                m_slidAway = away;
+            }
+
             /// @brief Reads one attribute of the layout; throws LayoutError for unknown ones.
             /// @param name The attribute name.
             /// @param value The attribute text.
@@ -341,6 +383,14 @@ namespace ui {
             Anchor m_anchor = Anchor::None;
             core::Point m_viewShift;
             core::Point m_viewGrowth;
+            core::Point m_slide;
+            bool m_slidAway = false;
+            core::Point m_padCells;
+            std::string m_padScroll;
+            bool m_padSkip = false;
+            bool m_padWindow = false;
+            bool m_padPage = false;
+            bool m_padSlider = false;
             bool m_raisesOnPress = false;
             CursorKind m_cursor = CursorKind::Normal;
             std::string m_clickSound;

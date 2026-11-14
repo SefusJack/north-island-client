@@ -5,7 +5,7 @@
      draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of TTH_ExpressForm.Create (the bag grid
      comes first, from TRe_ItemGridForm). -->
 <Panel Name="ExpressLayer" Bounds="0,0,800,600">
-  <Window Name="Express" AbovePopups="true" Picture="Form_Express_1" Position="250,70" Visible="false">
+  <Window Name="Express" PadShoulders="ExpressListUp,ExpressListDown" AbovePopups="true" Picture="Form_Express_1" Position="250,70" Visible="false">
     <!-- DrawControl: the pet and its name -->
     <DrawingArea Name="ExpressPaint" Bounds="0,0,299,460">
       <!-- the pet's anchor, and the pet name line: the x it is centred on and its y -->

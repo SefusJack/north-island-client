@@ -86,6 +86,22 @@ namespace formats {
         return data;
     }
 
+    std::optional<core::Bytes> MrgArchive::readStart(const std::string& name, std::size_t most, std::size_t& fullSize) {
+        const auto found = m_entries.find(keyFor(name));
+        if (found == m_entries.end()) {
+            return std::nullopt;
+        }
+        fullSize = found->second.size;
+        core::Bytes data(std::min<std::size_t>(found->second.size, most));
+        m_file.clear();
+        m_file.seekg(found->second.offset);
+        m_file.read(reinterpret_cast<char*>(data.data()), static_cast<std::streamsize>(data.size()));
+        if (!m_file) {
+            return std::nullopt;
+        }
+        return data;
+    }
+
     std::vector<std::string> MrgArchive::names() const {
         std::vector<std::string> result;
         for (const auto& item : m_entries) {

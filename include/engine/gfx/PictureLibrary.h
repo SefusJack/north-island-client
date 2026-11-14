@@ -2,6 +2,8 @@
 #define NORTH_ISLAND_GFX_PICTURE_LIBRARY_H
 
 #include "core/Color.h"
+#include "core/Speedups.h"
+#include "formats/JpegDecoder.h"
 #include "formats/MrgArchive.h"
 #include "gfx/Picture.h"
 #include "gfx/PictureId.h"
@@ -173,7 +175,7 @@ namespace gfx {
                 const auto index = static_cast<std::size_t>(id.value);
                 if (index < m_lastUse.size()) {
                     m_lastUse[index] = m_clockMs;
-                    if (m_freedCount != 0 && !m_pictures[index].texture().isValid()) {
+                    if (m_freedCount != 0 && !m_pictures[index].hasTexture() && !m_pictures[index].isDeferred()) {
                         const_cast<PictureLibrary*>(this)->reloadFreed(id.value); // a large picture collect freed: load it again
                     }
                 }
@@ -192,6 +194,19 @@ namespace gfx {
             /// @details Call once a frame: it also keeps the clock picture uses are stamped with, and looks at the large pictures every few seconds.
             /// @param nowMs The current time, ms.
             void collect(std::uint64_t nowMs);
+
+            /// @brief Loads the pixels of a picture find handed out with only its size (Picture calls this on first use).
+            /// @param id The picture.
+            void loadDeferred(int id);
+
+            /// @brief Decodes the rows of a picture in parts that a draw needs now (Picture calls this).
+            /// @param id The picture.
+            /// @param top The first row needed.
+            /// @param bottom One past the last row needed.
+            void needRows(int id, int top, int bottom);
+
+            /// @brief Tells whether find hands pictures out with only their size, loading the pixels on first use.
+            bool defersLoading() const { return m_defer; }
 
             static constexpr std::size_t kLargePixels = 2000000; // pictures this many pixels or more (8 MB of texture) may be freed
             static constexpr std::uint64_t kFreeAfterMs = 120000; // a large picture unused this long is freed, ms
@@ -220,6 +235,11 @@ namespace gfx {
             /// @param jpeg Set to whether the bytes are a JPEG.
             /// @return The bytes, or nothing.
             std::optional<core::Bytes> readData(const std::string& name, Source source, bool& jpeg);
+
+            /// @brief Reads the first bytes of a named picture's file, as readData finds it.
+            /// @param most The most bytes to read.
+            /// @param fullSize Gets the file's whole size.
+            std::optional<core::Bytes> readDataStart(const std::string& name, Source source, bool& jpeg, std::size_t most, std::size_t& fullSize);
 
             /// @brief Whether readData would find a picture, without reading it.
             bool hasData(const std::string& name, Source source) const;
@@ -299,6 +319,30 @@ namespace gfx {
             std::unordered_map<std::string, Replacement> m_replacements;
             mutable std::vector<std::uint64_t> m_lastUse; // by picture: m_clockMs when picture last returned it
             std::unordered_map<int, Recipe> m_large; // pictures of at least kLargePixels that collect may free, by id
+            std::unordered_map<int, Recipe> m_deferred; // pictures handed out with only their size, by id
+            bool m_defer = core::speedups().picturesOnFirstUse;
+            /// @brief A large JPEG (a map background) decoded some rows at a time: what a draw shows first, the rest a few ms a beat.
+            struct InParts {
+                Recipe recipe;
+                core::Bytes data; // the JPEG file, kept until every band is decoded
+                formats::JpegBands bands;
+                std::vector<char> done; // by band
+                int left = 0; // bands still to decode
+                int near = 0; // the band a draw last asked for: the bands around it are decoded first
+            };
+            /// @brief Makes a picture in parts from a JPEG's bytes, when it is large and can be split.
+            std::optional<PictureId> storeInParts(const std::string& key, const Recipe& recipe, core::Bytes& data);
+            /// @brief Decodes bands first to last (one past) of a picture in parts that are not decoded yet.
+            void decodeBands(int id, InParts& parts, int first, int last);
+            /// @brief Forgets a picture in parts whose bands are all decoded.
+            void settleParts(int id);
+            /// @brief Decodes pixels read already (colour rules, tint, pixel-art scaling, pack replacement), as load does.
+            std::optional<Pixels> loadFrom(const std::string& name, core::Color tint, Source source, const std::optional<core::Bytes>& data, bool jpeg);
+            std::unordered_map<int, InParts> m_inParts; // by id
+            std::unordered_map<std::string, bool> m_partsKnown; // by key: whether prefetch found it to be a picture in parts
+            std::uint64_t m_partsWarmedAtMs = 0; // the frame time collect last decoded bands ahead at, ms
+            bool m_partsWanted = core::speedups().mapInParts;
+            std::uint64_t m_warmedAtMs = 0; // the frame time collect last loaded a deferred picture at, ms
             std::size_t m_freedCount = 0; // large pictures freed now
             std::uint64_t m_clockMs = 0; // the time collect was last given, ms
             std::uint64_t m_lookedAtMs = 0; // when collect last looked at the large pictures, ms

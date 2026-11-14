@@ -5,7 +5,7 @@
      game draws a form's controls from the last created to the first: the controls here are in
      drawing order, the reverse of TCY_TradeFNpcMenu.Create. -->
 <Panel Name="PetTradeLayer" Bounds="0,0,800,600">
-  <Window Name="PetTrade" Picture="Form_TradePet_1" Position="337,120" Visible="false">
+  <Window Name="PetTrade" PadShoulders="PetTradePrevious,PetTradeNext" Picture="Form_TradePet_1" Position="337,120" Visible="false">
     <!-- DrawControl: the gear frames, the pets, their level, HP and amity -->
     <DrawingArea Name="PetTradePaint" Bounds="0,0,463,455">
       <!-- the text colour, in RGB565 2113, and the name colour of a fixed pet, in RGB565 64512 -->

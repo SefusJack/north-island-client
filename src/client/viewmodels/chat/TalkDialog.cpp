@@ -109,6 +109,7 @@ namespace client {
         m_onSaid = nullptr;
         m_onOk = onOk ? std::move(onOk) : [] {};
         m_onCancel = onCancel ? std::move(onCancel) : [] {};
+        m_padNo = false;
         show(text, speaker, std::move(timing));
     }
 
@@ -350,6 +351,62 @@ namespace client {
 
     void TalkDialog::finish() { close(); }
 
+    bool TalkDialog::padAsk(PadAsk ask) {
+        if (!isOpen()) {
+            return false;
+        }
+        const bool steps = ask == PadAsk::Up || ask == PadAsk::Down || ask == PadAsk::Left || ask == PadAsk::Right;
+        if (m_zoom) {
+            return !steps; // still opening: there is nothing to answer yet
+        }
+        if (m_onChoice) {
+            switch (ask) {
+                case PadAsk::Up:
+                case PadAsk::Down:
+                    m_choices.stepPadRow(ask == PadAsk::Up ? -1 : 1);
+                    m_choices.syncScrollBar(m_choiceScroll);
+                    break;
+                case PadAsk::Accept:
+                    if (m_choices.padRow() >= 0) {
+                        pick(m_choices.padRow());
+                    } else {
+                        m_choices.stepPadRow(1); // nothing marked yet: mark the first entry
+                    }
+                    break;
+                case PadAsk::Cancel:
+                    if (m_onClose && m_close.isVisible()) {
+                        dismiss();
+                    }
+                    break;
+                default: // Interact: the box is in the way
+                    break;
+            }
+            return true;
+        }
+        if (steps) {
+            if (m_onOk && m_onCancel) { // a question: left and right go between Confirm and Cancel
+                if (ask == PadAsk::Left || ask == PadAsk::Right) {
+                    m_padNo = ask == PadAsk::Right;
+                }
+                return true;
+            }
+            return false;
+        }
+        if (ask == PadAsk::Interact) {
+            return true; // the box is in the way
+        }
+        if (m_onOk || m_onCancel || m_onClose) {
+            if (ask == PadAsk::Accept ? m_onOk != nullptr : m_onCancel != nullptr) {
+                answer(ask == PadAsk::Accept && !(m_padNo && m_onCancel != nullptr));
+            } else if (m_onClose) {
+                dismiss();
+            }
+            return true;
+        }
+        clicked(); // words without buttons go on
+        return true;
+    }
+
     void TalkDialog::pick(int choice) {
         const std::function<void(int)> handler = m_onChoice;
         finish();
@@ -371,6 +428,14 @@ namespace client {
         if (isOpen()) {
             openStep(nowMs);
         }
+        // for a game pad a question shows the answer its accept button takes
+        const bool focused = m_padOn && isOpen() && !m_zoom && m_onOk != nullptr && m_onCancel != nullptr && m_ok.isVisible();
+        if (focused) {
+            m_screen.setPadFocus(m_padNo ? "TalkCancel" : "TalkOk", m_padHand);
+        } else if (m_padFocused) {
+            m_screen.setPadFocus({});
+        }
+        m_padFocused = focused;
         if (!isOpen() || m_timing.timeoutMs == 0) {
             return;
         }

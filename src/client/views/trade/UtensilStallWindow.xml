@@ -5,7 +5,7 @@
      the marked one out again.  Set a Stall opens it (23/65), End Stall pulls it (23/66).  The game draws a form's controls from the
      last created to the first: the controls here are in drawing order, the reverse of TTH_UtensilStallForm.Create. -->
 <Panel Name="UtensilStallLayer" Bounds="0,0,800,600">
-  <Window Name="UtensilStall" Escape="onUtensilStallEscape" Picture="Form_KeepUtensilStall" Position="15,75" Visible="false">
+  <Window Name="UtensilStall" PadShoulders="UtensilStallPrevious,UtensilStallNext" Escape="onUtensilStallEscape" Picture="Form_KeepUtensilStall" Position="15,75" Visible="false">
     <!-- DrawControl: the memos of the chosen piece and of each place -->
     <DrawingArea Name="UtensilStallPaint" Bounds="0,0,781,461">
       <!-- the memo text: text box width and line height, blue (RGB565 31) -->

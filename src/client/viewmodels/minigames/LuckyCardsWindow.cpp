@@ -42,6 +42,16 @@ namespace client {
           m_faceSpot(screen.get<ui::Spot>("LuckyCardsFace")),
           m_resultSpot(screen.get<ui::Spot>("LuckyCardsResult")),
           m_hintSpot(screen.get<ui::Spot>("LuckyCardsHint")) {
+        screen.get<ui::DrawingArea>("LuckyCardsPage").setPadPoints([this] {
+            // a game pad's pointer steps from card to card
+            std::vector<core::Point> cards;
+            for (int card = 1; card <= LuckyCards::kCards; ++card) {
+                if (m_cards.cardVisible(card)) {
+                    cards.push_back(cardAt(card) + core::Point{m_cardSpot.rect().width / 2, m_cardSpot.rect().height / 2});
+                }
+            }
+            return cards;
+        });
         screen.get<ui::DrawingArea>("LuckyCardsPage").setPainter([this](gfx::Canvas& canvas, core::Point at, std::uint64_t nowMs) {
             paint(canvas, at, nowMs);
         });

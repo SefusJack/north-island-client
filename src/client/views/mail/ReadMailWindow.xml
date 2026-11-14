@@ -5,7 +5,7 @@
      controls from the last created to the first: the controls here are in drawing order, the
      reverse of TSe_ReadMailForm.Create. -->
 <Panel Name="ReadMailLayer" Bounds="0,0,800,600">
-  <Window Name="ReadMail" Escape="onReadMailClose" Picture="form_MailReceive_1" Position="10,50" Visible="false">
+  <Window Name="ReadMail" PadShoulders="ReadMailPrevious,ReadMailNext" Escape="onReadMailClose" Picture="form_MailReceive_1" Position="10,50" Visible="false">
     <!-- DrawControl: DrawMailSenderPreview, the invitation card, the arrows under hidden buttons -->
     <DrawingArea Name="ReadMailPaint" Bounds="0,0,253,371">
       <!-- where the send date and the sender's name are written; the sender's face -->

@@ -45,6 +45,15 @@ namespace client {
           m_cardNumberSpot(screen.get<ui::Spot>("MemoryGameCardNumber")),
           m_heart(services.pictures.find("icon_heart").value_or(gfx::PictureId{})) {
         screen.get<ui::DrawingArea>("MemoryGamePage").setPainter([this](gfx::Canvas& canvas, core::Point, std::uint64_t nowMs) { paint(canvas, nowMs); });
+        screen.get<ui::DrawingArea>("MemoryGamePage").setPadPoints([this] {
+            // a game pad's pointer steps from card to card
+            std::vector<core::Point> cards;
+            for (int index = 1; index <= m_game.positionCount(); ++index) {
+                const MemoryGame::Card& card = m_game.card(index);
+                cards.push_back({card.x + MemoryGame::kCardWidth / 2, card.y + MemoryGame::kCardHeight / 2});
+            }
+            return cards;
+        });
         screen.on("onMemoryGameDown", [this](const ui::EventArgs& args) { m_game.clicked(args.position, m_frameMs); });
         screen.on("onMemoryGameLeave", [this](const ui::EventArgs&) { m_game.leave(); });
     }

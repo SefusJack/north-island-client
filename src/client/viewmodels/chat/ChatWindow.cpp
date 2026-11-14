@@ -148,7 +148,8 @@ namespace client {
         });
         screen.get<ui::DrawingArea>("ChatMarquee").setPainter([this](gfx::Canvas& canvas, core::Point at, std::uint64_t) {
             if (!m_marquee.text().empty()) {
-                canvas.drawText(at, m_marquee.text(), {m_systemSpot.color(), gfx::TextEffect::Shadow, std::nullopt}, m_marqueeArea.bounds().width);
+                // the line scrolls a character at a time: changing text
+                canvas.drawText(at, m_marquee.text(), {m_systemSpot.color(), gfx::TextEffect::Shadow, std::nullopt, true}, m_marqueeArea.bounds().width);
             }
         });
         screen.get<ui::DrawingArea>("ChatAnnounce").setPainter([this](gfx::Canvas& canvas, core::Point, std::uint64_t) { paintAnnounce(canvas); });

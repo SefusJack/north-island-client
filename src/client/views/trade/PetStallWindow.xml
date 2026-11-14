@@ -8,7 +8,7 @@
      in drawing order, the reverse of TTH_PetStallForm.Create (the places that take clicks come
      first, under everything). -->
 <Panel Name="PetStallLayer" Bounds="0,0,800,600">
-  <Window Name="PetStall" Picture="Form_KeepPETStall_1" Position="10,30" Visible="false">
+  <Window Name="PetStall" PadShoulders="PetStallPrevious,PetStallNext" Picture="Form_KeepPETStall_1" Position="10,30" Visible="false">
     <!-- DrawControl: the pets, their numbers, the marks over the places -->
     <DrawingArea Name="PetStallPaint" Bounds="0,0,781,441">
       <!-- the text colour, in RGB565 2113, and the name colour of a fixed pet, in RGB565 64512 -->

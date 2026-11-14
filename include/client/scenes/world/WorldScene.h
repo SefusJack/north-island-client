@@ -229,6 +229,7 @@
 #include "client/viewmodels/chat/PlayerMessages.h"
 #include "client/viewmodels/character/SkillWindow.h"
 #include "client/viewmodels/social/SocialWindow.h"
+#include "client/viewmodels/system/PadKeyboard.h"
 #include "client/viewmodels/system/SettingsWindow.h"
 #include "client/viewmodels/events/Top100Window.h"
 #include "client/viewmodels/chat/TalkDialog.h"
@@ -343,6 +344,69 @@ namespace client {
             /// @brief The scene to switch to, if any.
             /// @return The next scene kind, or none.
             std::optional<SceneKind> nextScene() const override { return m_next; }
+
+            /// @brief Does what a game pad asks for: answers the talk box, or talks to the NPC in front (Scene::padAsk).
+            /// @param ask What is asked.
+            /// @return True when it was taken.
+            bool padAsk(PadAsk ask) override;
+
+            /// @brief Whether the talk box shows a list of choices (Scene::wantsPadSteps).
+            /// @return True while choosing.
+            bool wantsPadSteps() const override { return m_padKeyboard.isOpen() || m_maid.padSteps() || m_talk.padSteps() || (!m_talk.isOpen() && padTurnsRing()); }
+
+            /// @brief Whether a game pad turns the battle's command ring now: the ring is up and no window lies over the fight.
+            /// @return True while left and right turn the ring.
+            bool padTurnsRing() const { return m_battleShown && m_battleMain.padTurns() && m_screen.shownWindows().empty(); }
+
+            /// @brief Takes whether a game pad is played with (Scene::setPadInUse): the battle's command ring turns for it.
+            /// @param on True in controller mode.
+            void setPadInUse(bool on) override {
+                m_padInUse = on;
+                m_battleMain.setPad(on, m_padHand);
+                m_talk.setPad(on, m_padHand);
+                m_padKeyboard.setPad(on);
+            }
+
+            /// @brief Gives the fighters the battle's command in progress can be aimed at (Scene::padSpots).
+            /// @return A point on each, the one to start on first.
+            std::vector<core::Point> padSpots() override;
+
+            /// @brief Takes whether the pad plays without the pointer, and the hand that marks the NPC in front (Scene::setPadAim).
+            /// @param on True when PadAsk::Interact is what the click button does.
+            /// @param hand The hand, pointing down.
+            void setPadAim(bool on, const ui::PadPointer& hand) override {
+                m_padAim = on;
+                if (hand.picture != nullptr) {
+                    m_padHand = hand; // kept for the battle's ring, which shows it whatever the pointer does
+                }
+            }
+
+            /// @brief Finds the NPC a game pad talks to: the nearest shown one within reach on the side the player faces, or one he all but touches.
+            /// @return The NPC's index, or none.
+            std::optional<int> npcInFront() const;
+
+            /// @brief What a game pad's accept button would reach.
+            struct PadTarget {
+                enum class Kind { None, Npc, Thing };
+                Kind kind = Kind::None;
+                int npc = -1; // the NPC's index (Npc)
+                core::Point click; // where the mouse would click it, on screen (Thing)
+                core::Point mark; // its top, on screen, where the hand points (Thing)
+                bool takesBack = false; // the right mouse button takes it back (the own tent, a piece of the own furniture)
+            };
+
+            /// @brief Finds what a game pad's accept button reaches: the nearest of all that can be clicked on the map within
+            /// reach on the side the player faces. While someone is being picked (to fight, to team up, to trade) it is a player.
+            /// @return The target; Kind::None when there is nothing.
+            PadTarget padTarget();
+
+            /// @brief Hands the pad the click asked for (Scene::takePadClick).
+            /// @return The click, or none.
+            std::optional<PadClick> takePadClick() override;
+
+            /// @brief Whether a game pad's talk button would reach the world now: no battle, talk box or window is in the way.
+            /// @return True when PadAsk::Interact goes to the NPC in front.
+            bool padReachesWorld();
 
             /// @brief The test-script probe of this scene (the scene itself).
             /// @return A reference to the script probe.
@@ -4411,6 +4475,7 @@ namespace client {
             PetInfoPopup m_petInfo;
             RightClickMenu m_rightClickMenu;
             TalkDialog m_talk;
+            PadKeyboard m_padKeyboard;
             RoleIntroWindow m_roleIntro;
             EventRunner m_eventRunner;
             RebornWish m_rebornWish;
@@ -4459,6 +4524,9 @@ namespace client {
             bool m_isGm = false;
             bool m_moveLocked = false;
             bool m_inputLocked = false;
+            std::optional<PadClick> m_padClick; // the click on a thing the pad is to make
+            bool m_padAim = false; // a game pad plays without the pointer: the NPC in front is marked
+            ui::PadPointer m_padHand; // the hand that marks it
             int m_currentDoor = 0;
             std::uint64_t m_doorCheckMs = 0;
             std::int32_t m_innPrice = 0;
@@ -4479,6 +4547,9 @@ namespace client {
             core::Point m_mouse;
             std::uint64_t m_lastWalkMs = 0;
             std::uint64_t m_keyWalkMs = 0;
+            bool m_padInUse = false; // a game pad is the input in use
+            std::filesystem::path m_musicBeforeStars; // the music the star book took over from (empty: none remembered)
+            int m_keyWalkWays = 0; // the arrow keys held at the last look, a bit each
             std::optional<core::Point> m_lastWalkSent;
             std::mt19937 m_random{std::random_device{}()};
             PlayerEffectLights m_effectLights;

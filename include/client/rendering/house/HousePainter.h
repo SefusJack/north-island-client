@@ -12,6 +12,7 @@
 #include "gfx/Canvas.h"
 #include "gfx/PictureId.h"
 
+#include <utility>
 #include <array>
 #include <cstdint>
 #include <functional>
@@ -96,6 +97,11 @@ namespace client {
             /// @param mouse Screen point.
             /// @return Utensil slot, 0 for none.
             int pieceSlotAt(const gfx::PictureLibrary& pictures, const Camera& camera, core::Point mouse) const;
+
+            /// @brief Gives where the furniture of the room shown is drawn, for a game pad to find a piece in front of the player.
+            /// @param camera The camera.
+            /// @return The slot of each shown piece with its picture on screen.
+            std::vector<std::pair<int, core::Rect>> pieceAreas(const Camera& camera) const;
 
             /// @brief Where a shelf item lies on the screen.
             /// @param number Shelf item number.

@@ -1,14 +1,17 @@
 #include "gfx/PictureLibrary.h"
 
+#include "core/Clock.h"
 #include "core/FileSystem.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include "core/WorkerPriority.h"
 #include "formats/BmpDecoder.h"
 #include "formats/GamePixels.h"
 #include "formats/JpegDecoder.h"
 #include "formats/PngCodec.h"
 #include "gfx/RenderDevice.h"
 
+#include <fstream>
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -69,6 +72,60 @@ namespace gfx {
             formats::Image big = formats::scalePixelArt(image, filter, detail);
             return PictureLibrary::Pixels{std::move(big), detail, std::move(image)};
         }
+
+    }
+
+    namespace {
+
+        /// @brief The size of a picture file from its header, when it is a kind the decoders read.
+        /// @param data The file's bytes.
+        /// @param jpeg True for a JPEG, false for a Windows bitmap.
+        /// @return The size, or nothing (the picture is then loaded at once, as before).
+        std::optional<core::Size> headerSize(const core::Bytes& data, bool jpeg) {
+            const auto u16 = [&](std::size_t at) { return static_cast<std::uint32_t>(data[at]) | (static_cast<std::uint32_t>(data[at + 1]) << 8); };
+            const auto u32 = [&](std::size_t at) { return u16(at) | (u16(at + 2) << 16); };
+            const auto be16 = [&](std::size_t at) { return (static_cast<int>(data[at]) << 8) | static_cast<int>(data[at + 1]); };
+            if (!jpeg) {
+                // BITMAPFILEHEADER (14 bytes) then BITMAPINFOHEADER: size, width, height, planes, bit count, compression
+                if (data.size() < 54 || data[0] != 'B' || data[1] != 'M' || u32(14) < 40) {
+                    return std::nullopt;
+                }
+                const auto width = static_cast<std::int32_t>(u32(18));
+                const auto height = static_cast<std::int32_t>(u32(22));
+                const std::uint32_t bits = u16(28);
+                const std::uint32_t compression = u32(30);
+                const bool known = compression == 0 || (compression == 3 && (bits == 16 || bits == 32));
+                if (width <= 0 || height == 0 || !known || (bits != 1 && bits != 4 && bits != 8 && bits != 16 && bits != 24 && bits != 32)) {
+                    return std::nullopt;
+                }
+                return core::Size{width, height < 0 ? -height : height};
+            }
+            if (data.size() < 4 || data[0] != 0xFF || data[1] != 0xD8) {
+                return std::nullopt;
+            }
+            for (std::size_t at = 2; at + 9 < data.size();) {
+                if (data[at] != 0xFF) {
+                    return std::nullopt;
+                }
+                const std::uint8_t marker = data[at + 1];
+                if (marker == 0xC0 || marker == 0xC2) { // baseline or progressive frame header: precision, height, width
+                    const int height = be16(at + 5);
+                    const int width = be16(at + 7);
+                    return width > 0 && height > 0 ? std::optional<core::Size>(core::Size{width, height}) : std::nullopt;
+                }
+                if (marker == 0xD9 || marker == 0xDA || (marker >= 0xC1 && marker <= 0xCF && marker != 0xC4 && marker != 0xC8 && marker != 0xCC)) {
+                    return std::nullopt; // end, scan data before a frame header, or a kind of JPEG the decoder does not read
+                }
+                at += 2 + static_cast<std::size_t>(be16(at + 2));
+            }
+            return std::nullopt;
+        }
+
+    }
+
+    namespace {
+
+        constexpr std::size_t kPartsFromBytes = 1000000; // JPEG files this large (the map backgrounds) may be decoded in parts
 
     }
 
@@ -185,6 +242,45 @@ namespace gfx {
 
     void PictureLibrary::collect(std::uint64_t nowMs) {
         m_clockMs = nowMs;
+        if (!m_deferred.empty() && nowMs != m_warmedAtMs) {
+            // a few ms of deferred pictures a call, so everything is loaded soon after the scene opened without holding it up
+            m_warmedAtMs = nowMs;
+            constexpr double kWarmBudgetMs = 6.0; // per call (a beat is 30 ms)
+            const double startMs = core::nowPreciseMs();
+            while (!m_deferred.empty() && core::nowPreciseMs() - startMs < kWarmBudgetMs) {
+                const int id = m_deferred.begin()->first;
+                m_pictures[static_cast<std::size_t>(id)].texture();
+            }
+        }
+        if (!m_inParts.empty() && nowMs != m_partsWarmedAtMs) {
+            // a few ms of a map background's remaining rows a call, nearest the rows last drawn first
+            m_partsWarmedAtMs = nowMs;
+            constexpr double kPartsBudgetMs = 6.0; // per call (a beat is 30 ms)
+            constexpr int kBandsAtOnce = 2; // bands a decode
+            const double startMs = core::nowPreciseMs();
+            const int id = m_inParts.begin()->first;
+            InParts& parts = m_inParts.begin()->second;
+            const int count = parts.bands.count();
+            while (parts.left > 0 && core::nowPreciseMs() - startMs < kPartsBudgetMs) {
+                int next = -1;
+                for (int away = 0; away < count && next < 0; ++away) {
+                    const int below = parts.near + away;
+                    const int above = parts.near - away;
+                    if (below < count && below >= 0 && parts.done[static_cast<std::size_t>(below)] == 0) {
+                        next = below;
+                    } else if (above >= 0 && above < count && parts.done[static_cast<std::size_t>(above)] == 0) {
+                        next = above;
+                    }
+                }
+                if (next < 0) {
+                    break;
+                }
+                decodeBands(id, parts, next, std::min(count, next + kBandsAtOnce));
+            }
+            if (parts.left <= 0) {
+                settleParts(id);
+            }
+        }
         constexpr std::uint64_t kLookEveryMs = 5000; // how often the large pictures are looked at, ms
         if (nowMs - m_lookedAtMs < kLookEveryMs) {
             return;
@@ -193,6 +289,7 @@ namespace gfx {
         for (auto& [id, recipe] : m_large) {
             const auto index = static_cast<std::size_t>(id);
             if (!recipe.freed && nowMs - m_lastUse[index] >= kFreeAfterMs) {
+                m_inParts.erase(id); // a picture in parts is loaded whole when it is needed again
                 core::logInfo("freed picture ", recipe.name, " (unused for ", (nowMs - m_lastUse[index]) / 1000, " s)");
                 m_pictures[index] = Picture{}; // drops the texture and the pixel mask; the slot and its id stay
                 recipe.freed = true;
@@ -320,6 +417,34 @@ namespace gfx {
         return std::nullopt;
     }
 
+    std::optional<core::Bytes> PictureLibrary::readDataStart(const std::string& name, Source source, bool& jpeg, std::size_t most, std::size_t& fullSize) {
+        jpeg = false;
+        if (const auto file = m_files.find(core::toLower(name)); source != Source::Jpeg && file != m_files.end()) {
+            std::ifstream in(file->second, std::ios::binary | std::ios::ate);
+            if (in) {
+                fullSize = static_cast<std::size_t>(in.tellg());
+                core::Bytes data(std::min(fullSize, most));
+                in.seekg(0);
+                in.read(reinterpret_cast<char*>(data.data()), static_cast<std::streamsize>(data.size()));
+                if (in) {
+                    return data;
+                }
+            }
+        }
+        const std::lock_guard<std::mutex> lock(m_archiveLock);
+        for (auto archive = m_archives.rbegin(); archive != m_archives.rend(); ++archive) {
+            const bool isJpeg = archive->kind() == formats::MrgArchive::Kind::Jpeg;
+            if ((source == Source::Bitmap && isJpeg) || (source == Source::Jpeg && !isJpeg)) {
+                continue;
+            }
+            if (auto data = archive->readStart(name, most, fullSize)) {
+                jpeg = isJpeg;
+                return data;
+            }
+        }
+        return std::nullopt;
+    }
+
     bool PictureLibrary::hasData(const std::string& name, Source source) const {
         if (source != Source::Jpeg && m_files.count(core::toLower(name)) != 0) {
             return true;
@@ -344,6 +469,19 @@ namespace gfx {
         if (m_prefetch.count(key) != 0 || m_loaded.count(key) != 0 || m_missing.count(key) != 0 || !hasData(name, source)) {
             return false; // started, loaded, or missing: find handles it
         }
+        if (m_partsWanted) {
+            // a large map background is not decoded whole on a worker: find makes it a picture in parts
+            auto known = m_partsKnown.find(key);
+            if (known == m_partsKnown.end()) {
+                bool jpeg = false;
+                const auto data = readData(name, source, jpeg);
+                const bool inParts = data && jpeg && data->size() >= kPartsFromBytes && formats::JpegBands::parse(*data).has_value();
+                known = m_partsKnown.emplace(key, inParts).first;
+            }
+            if (known->second) {
+                return false;
+            }
+        }
         Prefetch prefetch;
         prefetch.tint = tint;
         prefetch.source = source;
@@ -353,6 +491,7 @@ namespace gfx {
         // the worker only reads m_files and m_archives (under m_archiveLock); addFile, addArchive and the destructor let it finish first.
         // It also does the pixel-art scaling and the pixel mask, so the frame that needs the picture only uploads it.
         prefetch.decoded = std::async(std::launch::async, [this, name, tint, source, detail, filter] {
+            const core::LowPriorityScope low;
             Decoded decoded;
             decoded.raw.name = name;
             if (auto data = readData(name, source, decoded.raw.jpeg)) {
@@ -391,8 +530,12 @@ namespace gfx {
         if (m_pumpedAtMs == nowMs) {
             return; // this frame has had its upload (another party member's battle)
         }
+        // with quiet workers the first picture still decoding gets a few ms of this frame
+        int slice = core::workerSliceMs();
         for (auto it = m_prefetch.begin(); it != m_prefetch.end(); ++it) {
-            if (it->second.decoded.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+            const int waitMs = slice;
+            slice = 0;
+            if (it->second.decoded.wait_for(std::chrono::milliseconds(waitMs)) == std::future_status::ready) {
                 settlePrefetch(it);
                 m_pumpedAtMs = nowMs;
                 return; // one upload a frame
@@ -414,7 +557,48 @@ namespace gfx {
         if (const auto prefetch = m_prefetch.find(key); prefetch != m_prefetch.end()) {
             return settlePrefetch(prefetch); // waits if the worker hasn't finished
         }
-        const auto pixels = load(name, tint, source);
+        std::optional<Pixels> pixels;
+        if ((m_defer || m_partsWanted) && m_replacements.empty()) {
+            bool jpeg = false;
+            // a picture handed out with only its size has just the start of its file read
+            constexpr std::size_t kStartBytes = 2048; // a bitmap's header is 54 bytes; a JPEG's size comes after its tables
+            if (m_defer) {
+                std::size_t fullSize = 0;
+                const auto start = readDataStart(name, source, jpeg, kStartBytes, fullSize);
+                const bool whole = start && (start->size() == fullSize || (jpeg && m_partsWanted && fullSize >= kPartsFromBytes));
+                if (start && !whole) {
+                    if (const auto size = headerSize(*start, jpeg)) {
+                        const int id = static_cast<int>(m_pictures.size());
+                        m_pictures.push_back(Picture::deferred(size->width, size->height, this, id));
+                        m_lastUse.push_back(m_clockMs);
+                        m_loaded.emplace(key, id);
+                        m_deferred.emplace(id, Recipe{name, tint, source});
+                        return PictureId{id};
+                    }
+                }
+            }
+            std::optional<core::Bytes> data = readData(name, source, jpeg);
+            if (data && jpeg && m_partsWanted) {
+                // a large map background: the rows a draw shows are decoded then, the rest a few ms a beat
+                if (const auto id = storeInParts(key, Recipe{name, tint, source}, *data)) {
+                    return id;
+                }
+            }
+            if (data && m_defer) {
+                // only the size is read now (the layouts place things by it); the pixels are decoded and uploaded on first use
+                if (const auto size = headerSize(*data, jpeg)) {
+                    const int id = static_cast<int>(m_pictures.size());
+                    m_pictures.push_back(Picture::deferred(size->width, size->height, this, id));
+                    m_lastUse.push_back(m_clockMs);
+                    m_loaded.emplace(key, id);
+                    m_deferred.emplace(id, Recipe{name, tint, source});
+                    return PictureId{id};
+                }
+            }
+            pixels = loadFrom(name, tint, source, data, jpeg);
+        } else {
+            pixels = load(name, tint, source);
+        }
         if (!pixels) {
             core::logWarning("picture ", name, " does not exist");
             m_missing.insert(key);
@@ -422,6 +606,32 @@ namespace gfx {
         }
         const Recipe recipe{name, tint, source};
         return store(key, *pixels, &recipe);
+    }
+
+    void PictureLibrary::loadDeferred(int id) {
+        const auto found = m_deferred.find(id);
+        if (found == m_deferred.end()) {
+            return;
+        }
+        const Recipe recipe = found->second;
+        m_deferred.erase(found);
+        const auto index = static_cast<std::size_t>(id);
+        const int width = m_pictures[index].width();
+        const int height = m_pictures[index].height();
+        const auto pixels = load(recipe.name, recipe.tint, recipe.source);
+        auto texture = pixels ? Texture::create(m_device, pixels->image, pixels->detail) : std::nullopt;
+        if (!texture) {
+            core::logWarning("cannot load the picture ", recipe.name);
+            m_pictures[index] = Picture{}; // drawn as nothing
+            return;
+        }
+        if (texture->width() != width || texture->height() != height) {
+            core::logWarning("picture ", recipe.name, " is ", texture->width(), "x", texture->height(), ", its header said ", width, "x", height);
+        }
+        m_pictures[index] = makePicture(std::move(*texture), *pixels);
+        if (pixels->image.pixels().size() >= kLargePixels) {
+            m_large.emplace(id, recipe);
+        }
     }
 
     std::optional<PictureId> PictureLibrary::findStretched(const std::string& name, int width, int height) {
@@ -496,7 +706,111 @@ namespace gfx {
 
     std::optional<PictureLibrary::Pixels> PictureLibrary::load(const std::string& name, core::Color tint, Source source) {
         bool jpeg = false;
-        std::optional<core::Bytes> data = readData(name, source, jpeg);
+        const std::optional<core::Bytes> data = readData(name, source, jpeg);
+        return loadFrom(name, tint, source, data, jpeg);
+    }
+
+    std::optional<PictureId> PictureLibrary::storeInParts(const std::string& key, const Recipe& recipe, core::Bytes& data) {
+        if (data.size() < kPartsFromBytes) {
+            return std::nullopt;
+        }
+        auto bands = formats::JpegBands::parse(data);
+        auto texture = bands ? Texture::createOpaque(m_device, bands->width(), bands->height()) : std::nullopt;
+        if (!texture) {
+            return std::nullopt; // decoded whole, as before
+        }
+        const int id = static_cast<int>(m_pictures.size());
+        const std::size_t pixelCount = static_cast<std::size_t>(bands->width()) * static_cast<std::size_t>(bands->height());
+        core::logInfo("load: picture ", recipe.name, " ", bands->width(), "x", bands->height(), " is decoded in parts: ", bands->count(), " bands of ", bands->bandRows(), " rows");
+        m_pictures.push_back(Picture::inParts(std::move(*texture), this, id));
+        m_lastUse.push_back(m_clockMs);
+        m_loaded.emplace(key, id);
+        if (pixelCount >= kLargePixels) {
+            m_large.emplace(id, recipe);
+        }
+        InParts parts;
+        parts.recipe = recipe;
+        parts.done.assign(static_cast<std::size_t>(bands->count()), 0);
+        parts.left = bands->count();
+        parts.bands = std::move(*bands);
+        parts.data = std::move(data);
+        m_inParts.emplace(id, std::move(parts));
+        return PictureId{id};
+    }
+
+    void PictureLibrary::needRows(int id, int top, int bottom) {
+        const auto found = m_inParts.find(id);
+        if (found == m_inParts.end()) {
+            return;
+        }
+        InParts& parts = found->second;
+        const int rows = parts.bands.bandRows();
+        const int count = parts.bands.count();
+        const int first = std::clamp(top / rows, 0, count - 1);
+        const int last = std::clamp((bottom + rows - 1) / rows, first + 1, count);
+        parts.near = (first + last) / 2;
+        decodeBands(id, parts, first, last);
+        if (parts.left <= 0) {
+            settleParts(id);
+        }
+    }
+
+    void PictureLibrary::decodeBands(int id, InParts& parts, int first, int last) {
+        thread_local std::vector<core::Color> rowsBuffer;
+        const std::size_t width = static_cast<std::size_t>(parts.bands.width());
+        for (int band = first; band < last; ++band) {
+            if (parts.done[static_cast<std::size_t>(band)] != 0) {
+                continue;
+            }
+            int end = band + 1; // one past the run of bands not decoded yet
+            while (end < last && parts.done[static_cast<std::size_t>(end)] == 0) {
+                ++end;
+            }
+            const int top = parts.bands.top(band);
+            const int rows = parts.bands.top(end) - top;
+            const std::size_t count = width * static_cast<std::size_t>(rows);
+            rowsBuffer.resize(count);
+            if (!parts.bands.decode(parts.data, band, end, rowsBuffer.data())) {
+                core::logWarning("cannot decode rows ", top, " to ", top + rows, " of picture ", parts.recipe.name);
+                std::fill(rowsBuffer.begin(), rowsBuffer.begin() + static_cast<std::ptrdiff_t>(count), core::Color{0, 0, 0, 255}); // opaque black
+            }
+            formats::addColor(rowsBuffer.data(), count, parts.recipe.tint);
+            formats::quantizeTo16Bit(rowsBuffer.data(), count);
+            Picture& picture = m_pictures[static_cast<std::size_t>(id)];
+            if (band == 0) {
+                picture.setTopLeft(rowsBuffer[0]);
+            }
+            picture.textureAsIs().setRows(top, rows, rowsBuffer.data());
+            for (int i = band; i < end; ++i) {
+                parts.done[static_cast<std::size_t>(i)] = 1;
+            }
+            parts.left -= end - band;
+            band = end - 1;
+        }
+        constexpr std::size_t kKeptPixels = 1000000; // a larger buffer (everything left decoded at once) is given back
+        if (rowsBuffer.capacity() > kKeptPixels) {
+            std::vector<core::Color>().swap(rowsBuffer);
+        }
+    }
+
+    void PictureLibrary::settleParts(int id) {
+        const auto found = m_inParts.find(id);
+        if (found == m_inParts.end()) {
+            return;
+        }
+        core::logInfo("load: picture ", found->second.recipe.name, " has all its rows now");
+        m_pictures[static_cast<std::size_t>(id)].partsDone();
+        m_inParts.erase(found);
+    }
+
+    std::optional<PictureLibrary::Pixels> PictureLibrary::loadFrom(
+        const std::string& name,
+        core::Color tint,
+        Source source,
+        const std::optional<core::Bytes>& data,
+        bool jpeg
+    ) {
+        (void)source; // the bytes are read already
         std::optional<formats::Image> image;
         if (data) {
             image = jpeg ? formats::decodeJpeg(*data) : formats::decodeBmp(*data);

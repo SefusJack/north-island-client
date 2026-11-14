@@ -6,7 +6,7 @@
      created to the first: the controls here are in drawing order, the reverse of
      TMailSaveBoxForm.Create. -->
 <Panel Name="MailBoxLayer" Bounds="0,0,800,600">
-  <Window Name="MailBox" Escape="onMailBoxClose" Picture="Form_MailBox_1" Position="99,104" Visible="false">
+  <Window Name="MailBox" PadTabs="MailBoxTab1,MailBoxTab2" Escape="onMailBoxClose" Picture="Form_MailBox_1" Position="99,104" Visible="false">
     <!-- DrawControl: the rows, the page numbers and the hover and choice bars -->
     <DrawingArea Name="MailBoxPaint" Bounds="0,0,602,391">
       <!-- the Icon_MailBoxTitleMash_1 picture on the first tab -->
@@ -27,7 +27,7 @@
       <Spot Name="MailBoxUnread" Color="#FFFF00"/>
       <Spot Name="MailBoxRead" Color="#ADAE00"/>
     </DrawingArea>
-    <DrawingArea Name="MailBoxRows" Bounds="19,95,563,200" HitTest="true" MouseDown="onMailBoxPress"
+    <DrawingArea Name="MailBoxRows" PadCells="0,20" Bounds="19,95,563,200" HitTest="true" MouseDown="onMailBoxPress"
                  MouseUp="onMailBoxRelease"/>
     <ImageButton Name="MailBoxTab2" Picture="Btn_MailBoxTab_2" Position="79,48" Size="64,21" Click="onMailBoxTab"/>
     <ImageButton Name="MailBoxTab1" Picture="Btn_MailBoxTab_1" Position="15,48" Size="64,21" Click="onMailBoxTab"/>

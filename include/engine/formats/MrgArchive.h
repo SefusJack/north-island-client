@@ -40,6 +40,13 @@ namespace formats {
             /// @return The bytes, or nothing when missing or unreadable.
             std::optional<core::Bytes> read(const std::string& name);
 
+            /// @brief Reads the first bytes of a file (a picture's header, for its size).
+            /// @param name File name.
+            /// @param most The most bytes to read.
+            /// @param fullSize Gets the file's whole size.
+            /// @return The bytes, or nothing when the archive has no such file.
+            std::optional<core::Bytes> readStart(const std::string& name, std::size_t most, std::size_t& fullSize);
+
             /// @brief Lists the archive's files.
             /// @return Entry names without extension.
             std::vector<std::string> names() const;

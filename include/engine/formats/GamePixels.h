@@ -21,6 +21,17 @@ namespace formats {
     /// @param image Bitmap changed in place.
     void quantizeTo16Bit(Image& image);
 
+    /// @brief Adds a colour to a run of pixels, as addColor does to a whole picture.
+    /// @param pixels The first pixel.
+    /// @param count How many pixels.
+    /// @param colorAdd The colour to add.
+    void addColor(core::Color* pixels, std::size_t count, core::Color colorAdd);
+
+    /// @brief Reduces a run of pixels to RGB565 precision (part of a picture).
+    /// @param colors The first pixel.
+    /// @param count How many pixels.
+    void quantizeTo16Bit(core::Color* colors, std::size_t count);
+
     /// @brief Adds a colour to every pixel, saturating at 255 (a JPEG background in a tinted map).
     /// @details Original: TIJL_JpgToBmp.DecodeRegionTo16; pixels whose channels all stay under 4 are left as they are.
     /// @param image Bitmap changed in place.

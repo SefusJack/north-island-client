@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Character select (TSe_SelectCharacter); view model: viewmodels/CharacterSelectForm.cpp.
      Two slots, each drawn from origin 40,135 (slot 1) or 420,135 (slot 2). -->
-<Panel Name="CharacterSelectForm" Bounds="0,0,800,600" Visible="false">
+<Panel Name="CharacterSelectForm" Bounds="0,0,800,600" PadPage="true" Visible="false">
   <Image Name="CharacterSelectTitle" Picture="Icon_SelectRole_1" Position="282,80"/>
 
   <!-- slot 1 -->

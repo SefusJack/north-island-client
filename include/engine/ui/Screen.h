@@ -31,6 +31,34 @@ namespace xml {
 namespace ui {
 
     class ListBox;
+    class TextBox;
+
+    /// @brief A pointing hand drawn at the element a game pad highlights.
+    struct PadPointer {
+        const gfx::Texture* picture = nullptr; // none: a frame is drawn around the element instead
+        core::Point tip; // the fingertip in the picture
+        bool below = false; // the hand stands below the element and points up; otherwise above it, pointing down
+    };
+
+    /// @brief A place in the topmost window a game pad's pointer steps to: a control, a row of a list or a cell of a grid.
+    struct PadSpot {
+        core::Point point; // where the pointer stands, in screen coordinates
+        int elementId = 0;
+        bool cell = false; // a row or a cell
+        bool scrollsUp = false; // going up from here first scrolls the list
+        bool scrollsDown = false; // going down from here first scrolls the list
+        int scrollBarId = 0; // the scroll bar that scrolls it; 0 when the mouse wheel over the place does
+        bool slider = false; // left and right move along it (within reach) and click there, instead of leaving it
+        int reach = 0; // how far the place goes on to the left and right of its point, px: what lies above or below any part of it is straight on
+        bool loose = false; // one of the places a view model names, which need not stand in rows and columns: the nearest that way is the next
+    };
+
+    /// @brief What a game pad finds under its pointer in a grid of things.
+    struct PadGridCell {
+        bool filled = false; // the cell shows a thing
+        bool draggable = false; // the grid's things can be picked up
+        bool doubleClick = false; // a double click uses a thing
+    };
 
     /// @brief The window's UI: layout files stacked in load order, with mouse/keyboard routing between them.
     class Screen {
@@ -141,6 +169,17 @@ namespace ui {
             /// @return True when the key is held.
             bool isKeyHeld(Key key) const { return m_heldKeys.count(key) != 0; }
 
+            /// @brief Holds or lets go a key for isKeyHeld alone: no element and no key preview hears of it (a game pad's stick walking as the arrows do).
+            /// @param key The key.
+            /// @param held True to hold it.
+            void holdKey(Key key, bool held) {
+                if (held) {
+                    m_heldKeys.insert(key);
+                } else {
+                    m_heldKeys.erase(key);
+                }
+            }
+
             /// @brief Tells whether the keyboard goes to a text field.
             /// @return True when it does.
             bool isTyping();
@@ -155,6 +194,107 @@ namespace ui {
             /// @param position Point in screen coordinates.
             /// @return True when that element is the topmost one there.
             bool isTopmostAt(const std::string& name, core::Point position);
+
+            /// @brief Gives where a shown element lies on the screen, at the size it is drawn (HUD bars at the HUD size), without its layout's slide.
+            /// @param name Element name.
+            /// @return The rectangle in screen coordinates, nothing when there is no such element or it is not shown.
+            std::optional<core::Rect> screenRectOf(const std::string& name);
+
+            /// @brief Slides a layout off its place (Element::setSlide), by the layout's name.
+            /// @param layoutName The layout root's name.
+            /// @param slide The shift in screen pixels.
+            /// @param away True when it is off the screen altogether.
+            void slideLayout(const std::string& layoutName, core::Point slide, bool away);
+
+            /// @brief Gives how far a layout is slid off its place now (Element::slide), by the layout's name.
+            /// @param layoutName The layout's root element name.
+            /// @return The shift in screen pixels; none for a layout this screen does not have.
+            core::Point layoutSlide(const std::string& layoutName) const;
+
+            /// @brief Whether a layout has slid off the screen altogether (Element::isSlidAway), by the layout's name.
+            /// @param layoutName The layout's root element name.
+            /// @return True when it is away; false for a layout this screen does not have.
+            bool layoutAway(const std::string& layoutName) const;
+
+            /// @brief Highlights an element for a game pad: it shows its mouse-over look and its hint, with a hand pointing at it, wherever the mouse is.
+            /// @param name Element name; empty takes the highlight away.
+            /// @param pointer The hand to draw; it must stay alive while the highlight is shown. Without a picture a frame is drawn around the element.
+            void setPadFocus(const std::string& name, const PadPointer& pointer = {});
+
+            /// @brief Presses the highlighted element as a click would (its click sound, then its Click).
+            /// @return False when nothing is highlighted or it is no button.
+            bool pressPadFocus();
+
+            /// @brief Gives the topmost shown window, the one a game pad's pointer steps through.
+            /// @return The window's element id, 0 without a window.
+            int padWindowId();
+
+            /// @brief Lists the places of the topmost window a game pad's pointer steps to: its buttons, check boxes and text
+            /// fields, the shown rows of its lists and the cells of its grids, each where the mouse would reach it.
+            /// @return The places; empty without a window.
+            std::vector<PadSpot> padSpots();
+
+            /// @brief Gives where a game pad's pointer starts in the topmost window: the window's PadStart element, else its first row or cell, else its first control.
+            /// @return The point in screen coordinates; nothing without a window or a place in it.
+            std::optional<core::Point> padStartPoint();
+
+            /// @brief Tells what grid of things lies under a point, for a game pad that picks things up and uses them.
+            /// @param point The point in screen coordinates.
+            /// @return The cell there; nothing when the mouse would not reach a grid at the point.
+            std::optional<PadGridCell> padGridAt(core::Point point);
+
+            /// @brief Backs out of the topmost window for a game pad when the Escape key would not: presses its own cancel, close or quit button.
+            /// @return True when the window was dealt with here; false when Escape is to be tried (it closes the window, or there is none).
+            bool pressPadCancel();
+
+            /// @brief Names the grid whose drags work the modern way: while one of its things is dragged a right click puts one
+            /// down and the drag goes on (a Drop with EventArgs::partial).
+            /// @param gridName The grid's element name; empty for none.
+            void setModernDrag(const std::string& gridName) { m_modernDragGrid = gridName; }
+
+            /// @brief Starts a drag of a grid's cell that follows the mouse with no button held, until a left click puts it down.
+            /// @param gridName The grid's element name.
+            /// @param index The cell.
+            /// @param count How many of the cell's things it carries.
+            void startStickyDrag(const std::string& gridName, int index, int count);
+
+            /// @brief Gives the text field the left button was last pressed on since this was last asked, once.
+            /// @return The field's element id; none when no field was pressed.
+            std::optional<int> takeTextClick() {
+                const int id = m_textClickId;
+                m_textClickId = 0;
+                return id != 0 ? std::optional<int>(id) : std::nullopt;
+            }
+
+            /// @brief Gives the element that has the keyboard.
+            /// @return Its id; 0 for none.
+            int focusedId() const { return m_context.focusedId; }
+
+            /// @brief Gives the keyboard to an element by its id.
+            /// @param id The element's id.
+            void focusId(int id) { m_context.focusedId = id; }
+
+            /// @brief Finds a text field that is shown, by its id.
+            /// @param id The element's id.
+            /// @return The field; null when there is none of that id or it is not shown.
+            TextBox* textBoxOf(int id);
+
+            /// @brief Whether a thing is dragged now.
+            /// @return True during a drag.
+            bool isDragging() const { return m_context.drag.has_value(); }
+
+            /// @brief Ends the drag without putting the thing anywhere.
+            void cancelDrag() { m_context.drag.reset(); }
+
+            /// @brief Scrolls by a scroll bar for a game pad, as the mouse wheel over the bar does.
+            /// @param scrollBarId The scroll bar's element id (a PadSpot's scrollBarId).
+            /// @param up True for a line up, false for a line down.
+            void padScroll(int scrollBarId, bool up);
+
+            /// @brief Presses what a game pad's shoulder button stands for in the topmost window: the tab before or after the open one, or the window's two PadShoulders buttons.
+            /// @param next True for the right shoulder.
+            /// @return True when the window gives its shoulder buttons a use.
+            bool pressPadShoulder(bool next);
 
             /// @brief Sets the window in the screen's coordinates (the game's 800 x 600 screen in its middle); anchored elements go to its edges.
             /// @param view The window rectangle.
@@ -306,6 +446,29 @@ namespace ui {
             std::function<bool(const KeyEvent&)> m_keyPreview;
             std::function<void()> m_textFallback;
             int m_hoveredId = 0;
+            /// @brief Finds the topmost shown window.
+            /// @return The window, or nothing.
+            std::optional<Located> padWindow();
+
+            /// @brief Presses a button as a click would (its click sound, then its Click).
+            /// @param element The element.
+            /// @return False when it is no button or not enabled.
+            bool pressButton(Element& element);
+
+            /// @brief Gives where the game pad's pointing hand is drawn.
+            /// @return The hand's place on the screen; nothing without a highlighted element or without a hand.
+            std::optional<core::Rect> padPointerPlace();
+
+            /// @brief Brings the windows that opened since the last update to the front.
+            void raiseOpenedWindows();
+
+            int m_textClickId = 0; // the text field last pressed on (takeTextClick)
+            std::string m_modernDragGrid; // the grid whose drags a right click puts one thing down of
+            bool m_rightUpConsumed = false; // the right button's release belongs to a press that put a dragged thing down
+            std::set<int> m_openWindows; // the windows shown at the last update: one that opens comes to the front
+            bool m_openWindowsKnown = false; // m_openWindows was filled once
+            int m_padFocusId = 0; // the element a game pad highlights (0: none); it counts as the one under the mouse
+            PadPointer m_padPointer; // the hand drawn at it
             const Element* m_hoveredLayout = nullptr; // the layout holding m_hoveredId
             int m_capturedId = 0;
             bool m_pressWasDouble = false;

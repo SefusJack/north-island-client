@@ -5,7 +5,7 @@
      created to the first: the controls here are in drawing order, the reverse of
      TSe_ChangeDeclareForm.Create. -->
 <Panel Name="GuildRulesLayer" Bounds="0,0,800,600">
-  <Window Name="GuildRulesForm" Escape="onGuildRulesCancel" Picture="Form_EditRule_1" Position="510,50" Visible="false">
+  <Window Name="GuildRulesForm" PadShoulders="GuildRulesFormUp,GuildRulesFormDown" Escape="onGuildRulesCancel" Picture="Form_EditRule_1" Position="510,50" Visible="false">
     <!-- where the form opens: this far from the guild window's tab area -->
     <Spot Name="GuildRulesFromTab" Position="9,76"/>
     <ImageButton Name="GuildRulesCancel" Picture="Btn_Cancel_3" Position="185,378" Click="onGuildRulesCancel"/>

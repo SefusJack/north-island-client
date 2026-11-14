@@ -1,5 +1,7 @@
 #include "client/subsystems/battle/BattleGround.h"
 
+#include "core/WorkerPriority.h"
+
 #include <algorithm>
 #include <chrono>
 #include <string>
@@ -104,7 +106,10 @@ namespace client {
             pending.raw = std::make_shared<const gfx::PictureLibrary::Raw>(std::move(*raw));
             pending.source = source;
             pending.layer = layer;
-            pending.image = std::async(std::launch::async, [bytes = pending.raw, tint] { return gfx::PictureLibrary::decodeRaw(*bytes, tint); });
+            pending.image = std::async(std::launch::async, [bytes = pending.raw, tint] {
+                const core::LowPriorityScope low;
+                return gfx::PictureLibrary::decodeRaw(*bytes, tint);
+            });
             m_pending.push_back(std::move(pending));
         };
         picture(scene->battlePictures[0], gfx::PictureLibrary::Source::Bitmap, &BattleGround::m_near);
@@ -119,8 +124,12 @@ namespace client {
     }
 
     bool BattleGround::poll() {
+        // with quiet workers the first picture still decoding gets a few ms of this frame
+        int slice = core::workerSliceMs();
         for (auto it = m_pending.begin(); it != m_pending.end(); ++it) {
-            if (it->image.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+            const int waitMs = slice;
+            slice = 0;
+            if (it->image.wait_for(std::chrono::milliseconds(waitMs)) == std::future_status::ready) {
                 upload(*it);
                 m_pending.erase(it);
                 break; // one upload a frame

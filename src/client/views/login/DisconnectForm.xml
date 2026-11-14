@@ -4,7 +4,7 @@
      TDZ_WillCloseForm1.Create; the captions of the buttons are drawn over them (TSe_Button).
      View model: viewmodels/DisconnectForm.cpp. -->
 <Panel Name="DisconnectLayer" Bounds="0,0,800,600" Topmost="true" Visible="false">
-  <Panel Name="DisconnectForm" Skin="panel15" SkinSource="0,0,50,50" Borders="15,15,15,15" Bounds="300,80,200,150">
+  <Panel Name="DisconnectForm" Skin="panel15" SkinSource="0,0,50,50" Borders="15,15,15,15" Bounds="300,80,200,150" PadPage="true">
     <ImageButton Name="DisconnectEnd" Picture="btn_module_1" Position="60,110" Size="56,20" Click="onDisconnectQuit"/>
     <ImageButton Name="DisconnectQuit" Picture="btn_module_1" Position="32,110" Size="56,20" Click="onDisconnectQuit"/>
     <ImageButton Name="DisconnectUpdate" Picture="btn_module_1" Position="102,110" Size="56,20" Click="onDisconnectQuit"/>

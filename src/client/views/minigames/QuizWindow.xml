@@ -5,7 +5,7 @@
      the Exit button.  The game draws a form's controls from the last created to the first: the controls here are in drawing
      order, the reverse of TConundrumGame.Create. -->
 <Panel Name="QuizLayer" Bounds="0,0,800,600">
-  <Panel Name="QuizForm" Bounds="0,0,800,600" Visible="false">
+  <Panel Name="QuizForm" Bounds="0,0,800,600" PadPage="true" Visible="false">
     <DrawingArea Name="QuizPage" Bounds="0,0,800,600" HitTest="true" MouseUp="onQuizUp">
       <!-- the timer bar (centred: 7 px in from its picture's corner), and the first second segment, 16 px between segments -->
       <Spot Name="QuizTimerBar" Position="321,10"/>

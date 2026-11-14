@@ -7,7 +7,7 @@
      hidden memo, id list and scroll bars draw nothing: all left out); the page label and the
      row marks (DrawControl) come last. -->
 <Panel Name="QuestLayer" Bounds="0,0,800,600">
-  <Window Name="Quests" Picture="form_taskview_1" Position="80,60" Visible="false">
+  <Window Name="Quests" PadShoulders="QuestsPageUp,QuestsPageDown" Picture="form_taskview_1" Position="80,60" Visible="false">
     <ImageButton Name="QuestsClose" Picture="Btn_Close_1" Bounds="115,332,56,20" Hint="Cancel" Click="onQuestsClose"
                  ClickSound="" ReleaseSound="sound/wav0154.wav"/>
     <ImageButton Name="QuestsCloseSmall" Picture="Btn_Close_s_1" Bounds="382,24,18,18" Hint="Cancel" Click="onQuestsClose"

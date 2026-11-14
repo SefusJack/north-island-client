@@ -6,6 +6,14 @@
 #include <array>
 #include <cstdint>
 
+// The calling convention of OpenGL functions: __stdcall on Windows (APIENTRY), which differs from SDL's __cdecl in 32-bit
+// builds. Called as __cdecl there, each call left the stack unbalanced and the OpenGL renderer never got past startup.
+#ifdef _WIN32
+#define NORTH_ISLAND_GL_CALL __stdcall
+#else
+#define NORTH_ISLAND_GL_CALL
+#endif
+
 namespace gfx {
 
     /// @brief GPU timer of the "opengl" renderer: a GL_TIME_ELAPSED query a frame (OpenGL 3.3 or ARB_timer_query).
@@ -26,12 +34,12 @@ namespace gfx {
             void endFrame() override;
 
         private:
-            using GenQueries = void(SDLCALL*)(int count, unsigned int* ids);
-            using DeleteQueries = void(SDLCALL*)(int count, const unsigned int* ids);
-            using BeginQuery = void(SDLCALL*)(unsigned int target, unsigned int id);
-            using EndQuery = void(SDLCALL*)(unsigned int target);
-            using GetQueryObjectiv = void(SDLCALL*)(unsigned int id, unsigned int name, int* value);
-            using GetQueryObjectui64v = void(SDLCALL*)(unsigned int id, unsigned int name, std::uint64_t* value);
+            using GenQueries = void(NORTH_ISLAND_GL_CALL*)(int count, unsigned int* ids);
+            using DeleteQueries = void(NORTH_ISLAND_GL_CALL*)(int count, const unsigned int* ids);
+            using BeginQuery = void(NORTH_ISLAND_GL_CALL*)(unsigned int target, unsigned int id);
+            using EndQuery = void(NORTH_ISLAND_GL_CALL*)(unsigned int target);
+            using GetQueryObjectiv = void(NORTH_ISLAND_GL_CALL*)(unsigned int id, unsigned int name, int* value);
+            using GetQueryObjectui64v = void(NORTH_ISLAND_GL_CALL*)(unsigned int id, unsigned int name, std::uint64_t* value);
 
             /// @brief Wraps the renderer.
             /// @param renderer The SDL renderer.

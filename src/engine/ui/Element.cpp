@@ -100,6 +100,18 @@ namespace ui {
             m_releaseSound = value;
         } else if (name == "Topmost") {
             m_topmost = LoadContext::parseBool(value);
+        } else if (name == "PadCells") {
+            m_padCells = LoadContext::parsePoint(value);
+        } else if (name == "PadScroll") {
+            m_padScroll = value;
+        } else if (name == "PadSkip") {
+            m_padSkip = LoadContext::parseBool(value);
+        } else if (name == "PadWindow") {
+            m_padWindow = LoadContext::parseBool(value);
+        } else if (name == "PadPage") {
+            m_padPage = LoadContext::parseBool(value);
+        } else if (name == "PadSlider") {
+            m_padSlider = LoadContext::parseBool(value);
         } else if (name == "HudScale") {
             m_hudScaled = LoadContext::parseBool(value);
         } else if (name == "Anchor") {

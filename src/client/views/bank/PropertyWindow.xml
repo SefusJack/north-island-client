@@ -4,7 +4,7 @@
      asks and sends the marked ones (86/2).  Made in the middle of the screen.  The game draws a form's controls from the last created to the first: the
      controls here are in drawing order, the reverse of TPropertyForm.Create. -->
 <Panel Name="PropertyLayer" Bounds="0,0,800,600">
-  <Window Name="Property" Escape="onPropertyClose" Picture="Form_Property" Position="272,64" Visible="false">
+  <Window Name="Property" PadShoulders="PropertyUp,PropertyDown" Escape="onPropertyClose" Picture="Form_Property" Position="272,64" Visible="false">
     <!-- DrawControl: the points, the red over the marked rows -->
     <DrawingArea Name="PropertyPaint" Bounds="0,0,255,471">
       <!-- inside a list row: the item icon's box, and the name's box and colour (RGB565 2113) -->

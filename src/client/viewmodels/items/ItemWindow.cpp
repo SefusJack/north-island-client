@@ -323,7 +323,8 @@ namespace client {
     }
 
     void ItemWindow::update() {
-        if (const auto hovered = hoveredItem()) {
+        m_screen.setModernDrag(m_services.videoSettings().modernBag ? "ItemBag" : "");
+        if (const auto hovered = m_screen.isDragging() ? std::nullopt : hoveredItem()) { // nothing is told of what lies under a carried thing
             std::optional<protocol::ItemInstance> worn;
             const auto record = m_services.items.find(hovered->item.itemId);
             if (hovered->inBag && !shownPet() && record && isEquipment(*record) && canWear(*record, m_player.look.bodyType, m_status.element) &&
@@ -785,6 +786,11 @@ namespace client {
 
     void ItemWindow::rightClickBagItem(int slot) {
         const protocol::ItemInstance& item = m_inventory.bagItem(slot);
+        if (!item.empty() && item.count > 1 && m_services.videoSettings().modernBag && m_marks.vehicleState(slot) == 0) {
+            // the modern way: half of the stack is taken up and follows the mouse until a click puts it down
+            m_screen.startStickyDrag("ItemBag", slot, item.count / 2);
+            return;
+        }
         if (!item.empty() && m_rightClicked) {
             m_rightClicked(item.itemId, slot);
         }
@@ -836,6 +842,10 @@ namespace client {
     void ItemWindow::dropped(const ui::EventArgs& args) {
         const bool fromBag = args.source == "ItemBag";
         const bool toBag = args.target == "ItemBag" || args.target == "BankItemBag";
+        const bool modern = m_services.videoSettings().modernBag;
+        if ((args.partial || args.carried > 0) && !(modern && fromBag && args.target == "ItemBag")) {
+            return; // one of a stack, or a part taken up, goes only from place to place in the bag
+        }
         const bool toWorn = args.target == "ItemHead" || args.target == "ItemBody" || args.target == "ItemWeapon" || args.target == "ItemWrist" ||
                             args.target == "ItemFeet" || args.target == "ItemSpecial";
         const bool toWorld = args.target.empty() || args.target == "WorldView";
@@ -953,6 +963,10 @@ namespace client {
                 if (target > 0 && target != args.index && (there.empty() || there.itemId == item.itemId) && m_requests) {
                     if (args.ctrl) {
                         m_requests->get().askMoveCount(args.index, target);
+                    } else if (modern && args.target == "ItemBag") {
+                        // the modern way: one put down of what is carried, the part taken up, or else the whole stack
+                        const int count = args.partial ? 1 : args.carried > 0 ? std::min(args.carried, item.count) : item.count;
+                        m_requests->get().moveItem(args.index, count, target);
                     } else {
                         m_requests->get().moveItem(args.index, 1, target);
                     }

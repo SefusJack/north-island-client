@@ -120,7 +120,7 @@ This is largely an experimental feature. It was only tested with using higher re
 | `--renderer NAME` | ask for a renderer: `direct3d`, `direct3d11`, `direct3d12`, `opengl`, `vulkan`, `gpu` or `software` |
 | `--software` | use software rendering |
 | `--background` | for test runs: open the window minimized without taking focus, and play no sound |
-| `--perf` | show the frame graph |
+| `--perf` | show the performance overlay with everything on it (level 3; F11 steps through the levels) |
 | `--perf-log FILE` | write frame times to a CSV file |
 | `--accounts FILE` | log more accounts in as the played account's party, one `account password [place]` per line |
 | `--mods FOLDER` | load mod packs from another folder |

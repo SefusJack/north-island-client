@@ -4,7 +4,7 @@
      controls from the last created to the first: the controls here are in drawing order, the reverse of TWS_TransmiForm.Create.  View model:
      viewmodels/TransportWindow.cpp. -->
 <Panel Name="TransportLayer" Bounds="0,0,800,600">
-  <Window Name="TransportWindow" Escape="onTransportClose" Picture="From_Transmi" Position="500,30" Size="290,459" Hint="spell [Ctrl+S]" Visible="false">
+  <Window Name="TransportWindow" PadShoulders="TransportUp,TransportDown" Escape="onTransportClose" Picture="From_Transmi" Position="500,30" Size="290,459" Hint="spell [Ctrl+S]" Visible="false">
     <!-- DrawControl: the vehicle's picture -->
     <DrawingArea Name="TransportPage" Bounds="0,0,290,459">
       <!-- the vehicle picture: top-left -->

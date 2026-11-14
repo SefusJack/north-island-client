@@ -130,6 +130,14 @@ namespace ui {
         context.drag = DragItem{id(), index, cell->second.picture, cell->second.source, local - cellPosition(index)};
     }
 
+    std::optional<DragItem> IconGrid::dragOf(int index) const {
+        const auto cell = m_cells.find(index);
+        if (cell == m_cells.end() || !cell->second.picture.isValid()) {
+            return std::nullopt;
+        }
+        return DragItem{id(), index, cell->second.picture, cell->second.source, {m_cellSize / 2, m_cellSize / 2}};
+    }
+
     void IconGrid::onMouseWheel(UiContext& context, int steps) { raise(context, "MouseWheel", steps); }
 
     void IconGrid::onMouseUp(UiContext& context, MouseButton button, core::Point local) {
@@ -158,6 +166,8 @@ namespace ui {
         args.target = target ? target->get().name() : std::string();
         args.targetIndex = targetIndex;
         args.grab = grab;
+        args.partial = context.dropPartial;
+        args.carried = context.dropCarried;
         raise(context, "Drop", args);
     }
 

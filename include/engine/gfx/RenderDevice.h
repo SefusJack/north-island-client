@@ -61,6 +61,13 @@ namespace gfx {
             /// @return True when a renderer could be made with it.
             static bool driverStarts(const std::string& name);
 
+            /// @brief Tells whether the system puts each window's picture together off screen and shows it whole.
+            /// @details Windows 8 and later always do, Vista and 7 with Aero on, Windows XP never. Without it what a window
+            /// draws is on the monitor at once, so a picture changed piece by piece is seen half changed
+            /// (Speedups::softwareScroll looks wavy there).
+            /// @return True on Windows with desktop composition on; false elsewhere.
+            static bool desktopIsComposited();
+
             /// @brief The SDL renderer.
             /// @return The renderer.
             SDL_Renderer* renderer() const { return m_renderer.get(); }
@@ -88,6 +95,12 @@ namespace gfx {
             /// @brief Whether reading the screen back is quick enough to do every frame (exact alpha fills, dimming).
             /// @return False for the Vulkan renderer, whose read back waits for the GPU (about 260 ms for 800 x 600).
             bool readsBackQuickly() const { return m_backendName != "vulkan"; }
+
+            /// @brief Tells whether making and freeing a small texture is quick.
+            /// @details SDL's Direct3D 12 and Vulkan renderers take about 1 ms to make one and 0.4 ms to free one (they wait for
+            /// the graphics card); the others a few hundredths of a ms.
+            /// @return False for Direct3D 12 and Vulkan.
+            bool makesTexturesQuickly() const { return m_backendName != "vulkan" && m_backendName != "direct3d12"; }
 
             /// @brief Whether textures may use SDL's pixel-art scale mode on this renderer.
             /// @return False for Direct3D 11: SDL makes a new constant buffer for each draw whose texture size differs
@@ -176,6 +189,15 @@ namespace gfx {
             /// @brief Shows the drawn frame.
             void present();
 
+            /// @brief Makes the next present copy the whole frame to the screen (the window was uncovered, moved or resized).
+            void presentEverything() { m_presentAll = true; }
+
+            /// @brief Tells the device that this frame's scene is the last one moved by some pixels (the camera scrolled).
+            /// @details With Speedups::softwareScroll the software renderer then moves the picture on the screen and copies
+            /// only the parts that are not the moved old picture. A wrong hint costs time, never a wrong picture.
+            /// @param shift How far the scene moved on the screen since the frame before, in pixels.
+            void sceneMovedBy(core::Point shift) const { m_sceneShift = shift; }
+
             /// @brief Starts drawing off screen over an area of this many logical pixels from the buffer's top left.
             /// @details The area is the part of the canvas a zoom shows (bigger than the window when zoomed out).
             /// @param area Size of the area in logical pixels.
@@ -215,6 +237,14 @@ namespace gfx {
             SdlHandle<SDL_Window> m_window;
             SdlHandle<SDL_Renderer> m_renderer;
             mutable SdlHandle<SDL_Texture> m_zoomTarget;
+            // software renderer: the frame last copied to the screen, to copy only the parts that changed
+            std::vector<std::uint8_t> m_shownFrame;
+            int m_shownWidth = 0;
+            int m_shownHeight = 0;
+            int m_shownPitch = 0;
+            bool m_presentAll = true;
+            int m_wholeFrames = 0; // frames in a row that changed almost everywhere
+            mutable core::Point m_sceneShift{0, 0}; // this frame's hint from sceneMovedBy, used up by present
             mutable int m_zoomTargetWidth = 0;
             mutable int m_zoomTargetHeight = 0;
             int m_width = 0;

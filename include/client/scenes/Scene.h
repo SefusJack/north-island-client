@@ -2,6 +2,7 @@
 #define NORTH_ISLAND_CLIENT_SCENES_SCENE_H
 
 #include "client/scenes/SceneKind.h"
+#include "client/services/input/PadAsk.h"
 #include "client/services/input/ScriptProbe.h"
 #include "gfx/Canvas.h"
 #include "ui/Screen.h"
@@ -9,6 +10,7 @@
 #include <functional>
 #include <cstdint>
 #include <optional>
+#include <vector>
 
 namespace client {
 
@@ -45,6 +47,44 @@ namespace client {
             /// @brief Gives the scene to switch to, once this one is done.
             /// @return The next scene, or nothing while this one goes on.
             virtual std::optional<SceneKind> nextScene() const = 0;
+
+            /// @brief Does what a game pad asks for directly.
+            /// @param ask What is asked.
+            /// @return True when the scene took it: the pad then does nothing else with the button (the default takes nothing).
+            virtual bool padAsk(PadAsk ask) {
+                (void)ask;
+                return false;
+            }
+
+            /// @brief Tells whether the pad's directions step through something now (a list of choices, the battle's command ring), so that the pad does not walk with them.
+            /// @return True while the directions are asked for.
+            virtual bool wantsPadSteps() const { return false; }
+
+            /// @brief Tells the scene whether a game pad is what is played with.
+            /// @param on True in controller mode.
+            virtual void setPadInUse(bool on) { (void)on; }
+
+            /// @brief Gives the places on the scene itself the pad's pointer steps through while no window is open (the fighters a command can be aimed at).
+            /// @return The places in screen coordinates, the one to start on first; empty when there are none.
+            virtual std::vector<core::Point> padSpots() { return {}; }
+
+            /// @brief A click the scene wants a game pad to make with the mouse pointer, on what its accept or cancel button reached.
+            struct PadClick {
+                core::Point point; // where, in screen coordinates
+                bool right = false; // with the right button
+            };
+
+            /// @brief Hands over the click the scene asked for since the last call (after PadAsk::Interact or PadAsk::Cancel), once.
+            /// @return The click, or none.
+            virtual std::optional<PadClick> takePadClick() { return std::nullopt; }
+
+            /// @brief Tells the scene whether the pad plays without the pointer, so that it can mark what PadAsk::Interact would use.
+            /// @param on True in controller mode with the pointer hidden and no menu of the pad open.
+            /// @param hand The hand to mark it with (it points down).
+            virtual void setPadAim(bool on, const ui::PadPointer& hand) {
+                (void)on;
+                (void)hand;
+            }
 
             /// @brief Gives what a test script may ask of the scene.
             /// @return The probe, or nothing (the default: it offers nothing).

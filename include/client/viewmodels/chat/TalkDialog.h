@@ -18,6 +18,8 @@
 #include "ui/Screen.h"
 #include "ui/Spot.h"
 
+#include "client/services/input/PadAsk.h"
+
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -144,6 +146,24 @@ namespace client {
             /// @brief Closes the box without an answer, giving the scene its windows back if it was exclusive.
             void close();
 
+            /// @brief Answers the box from a game pad: Accept confirms, goes on or takes the chosen entry (the first press on a
+            /// list only marks its first entry), Cancel cancels or closes, Up and Down move through a list of choices.
+            /// @param ask What the pad asks.
+            /// @return True when the box took it (always while it is open, but for Up and Down without a list).
+            bool padAsk(PadAsk ask);
+
+            /// @brief Whether a list of choices is up, which Up and Down step through.
+            /// @return True while choosing.
+            bool padSteps() const { return isOpen() && (m_onChoice != nullptr || (m_onOk != nullptr && m_onCancel != nullptr)); }
+
+            /// @brief Tells the box whether a game pad is in use: a yes/no question then shows which answer its accept button takes.
+            /// @param on True while the pad is the input in use.
+            /// @param hand The hand that points at the answer.
+            void setPad(bool on, const ui::PadPointer& hand) {
+                m_padOn = on;
+                m_padHand = hand;
+            }
+
             /// @brief Sets the main box's frame skin (FMsgSkin): 1 plain frame panel22, 2 Form_Talk_3.
             /// @param skin Skin number.
             void setSkin(int skin) { m_skin = skin; }
@@ -257,6 +277,10 @@ namespace client {
             int m_targetHeight = 0;
             int m_skin = 1;
             std::function<void()> m_onOk;
+            bool m_padOn = false; // a game pad is the input in use
+            bool m_padNo = false; // the pad stands on the question's Cancel, not its Confirm
+            bool m_padFocused = false; // the screen's pad highlight is on an answer
+            ui::PadPointer m_padHand; // the hand at the answer
             std::function<void()> m_onCancel;
             std::function<void(int)> m_onChoice;
             std::function<void()> m_onClose;

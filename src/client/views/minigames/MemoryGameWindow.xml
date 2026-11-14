@@ -4,7 +4,7 @@
      form shows once the game is begun).  The game draws a form's controls from the last created to the first: the controls here are in
      drawing order, the reverse of TMemoryGameForm.Create.  View model: viewmodels/MemoryGameWindow.cpp. -->
 <Panel Name="MemoryGameLayer" Bounds="0,0,800,600">
-  <Panel Name="MemoryGameForm" Bounds="0,0,800,600" Visible="false">
+  <Panel Name="MemoryGameForm" Bounds="0,0,800,600" PadPage="true" Visible="false">
     <DrawingArea Name="MemoryGamePage" Bounds="0,0,800,600" HitTest="true" MouseDown="onMemoryGameDown">
       <!-- the board picture -->
       <Spot Name="MemoryGameBoard" Position="200,100"/>

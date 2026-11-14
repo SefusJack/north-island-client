@@ -52,6 +52,15 @@ namespace client {
           m_messageSpot(screen.get<ui::Spot>("HitMouseMessage")) {
         m_page.setPainter([this](gfx::Canvas& canvas, core::Point, std::uint64_t nowMs) { paint(canvas, nowMs); });
         screen.on("onHitMouseUp", [this](const ui::EventArgs& args) { released(args); });
+        m_page.setPadPoints([this] {
+            // a game pad's pointer steps from hole to hole: where what comes up is struck
+            constexpr core::Point kStrike{50, 24}; // from a hole's place to the middle of what comes up, px
+            std::vector<core::Point> holes;
+            for (int index = 1; index <= HitMouseGame::kHoles; ++index) {
+                holes.push_back(m_game.hole(index).position + kStrike);
+            }
+            return holes;
+        });
         screen.on("onHitMouseLeave", [this](const ui::EventArgs&) { m_game.leave(); });
     }
 

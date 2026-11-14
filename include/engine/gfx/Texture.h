@@ -28,6 +28,19 @@ namespace gfx {
             /// @return The texture, or nothing when the upload fails.
             static std::optional<Texture> create(const RenderDevice& device, const formats::Image& image, int detail = 1);
 
+            /// @brief Makes an opaque texture whose pixels are given later, some rows at a time (a map background decoded in parts).
+            /// @param device The render device.
+            /// @param width Width in pixels.
+            /// @param height Height in pixels.
+            /// @return The texture, or nothing when it cannot be made.
+            static std::optional<Texture> createOpaque(const RenderDevice& device, int width, int height);
+
+            /// @brief Gives some rows of a createOpaque texture their pixels.
+            /// @param top The first row.
+            /// @param rows How many rows.
+            /// @param pixels width() pixels a row, all opaque; they may be changed (turned into the texture's own format).
+            void setRows(int top, int rows, core::Color* pixels) const;
+
             /// @brief The width in logical pixels.
             /// @return The width.
             int width() const { return m_width; }
@@ -101,7 +114,28 @@ namespace gfx {
             void setAdditive(bool additive) const;
 
         private:
+            /// @brief The texture for draws that are scaled, flipped, tinted, faded, additive or geometry.
+            /// @details With the software renderer the main texture is static, which SDL run-length encodes: opaque runs are
+            /// stored in the screen's own format and copied, transparent runs skipped. SDL has to decode and encode it again
+            /// each time a colour, alpha or blend change comes and goes, so those draws use a second, plain copy, made from the
+            /// main one the first time it is needed. With a GPU renderer this is the main texture.
+            /// @param device The render device.
+            /// @return The texture, with the colour, alpha and blend settings applied.
+            SDL_Texture* loose(const RenderDevice& device) const;
+
             SdlHandle<SDL_Texture> m_texture;
+            mutable SdlHandle<SDL_Texture> m_loose; // software renderer only: the plain copy
+            mutable bool m_looseFailed = false;
+            mutable bool m_looseStale = true; // the settings below are not on m_loose yet
+            bool m_encoded = false; // software renderer: m_texture is static (encoded), settings go to m_loose
+            bool m_opaque = false; // made by createOpaque: drawn without blending while it is not faded or additive
+            bool m_swapRedBlue = false; // made by createOpaque in the software screen's own format (blue first)
+
+            /// @brief Puts the blend mode for the current settings on the main texture.
+            void applyBlend() const;
+            mutable core::Color m_colorMod{255, 255, 255, 255};
+            mutable std::uint8_t m_alphaMod = 255;
+            mutable bool m_additive = false;
             int m_width = 0;
             int m_height = 0;
             int m_detail = 1;

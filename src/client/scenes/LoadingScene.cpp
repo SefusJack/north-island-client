@@ -1,14 +1,85 @@
 #include "client/scenes/LoadingScene.h"
 
 #include "core/Log.h"
+#include "core/Speedups.h"
 #include "gfx/RenderDevice.h"
 
 #include <algorithm>
+#include <chrono>
+#include <filesystem>
+#include <fstream>
+#include <map>
+#include <memory>
 #include <string>
+
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#endif
 
 namespace client {
 
     namespace {
+
+        // Speedups::rememberRendererChecks: which renderers start on this machine is remembered in the user folder.
+        // The answers are kept for the same graphics card for a week, then asked again (a driver update can change them).
+        struct RendererAnswers {
+            std::filesystem::path file;
+            std::string machine;
+            std::map<std::string, bool> known;
+            bool changed = false;
+        };
+
+        /// @brief Names the graphics card, so answers from another machine or card are not used.
+        std::string graphicsCard() {
+#ifdef _WIN32
+            DISPLAY_DEVICEA device{};
+            device.cb = sizeof(device);
+            for (DWORD i = 0; EnumDisplayDevicesA(nullptr, i, &device, 0); ++i) {
+                if ((device.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) != 0) {
+                    return std::string(device.DeviceString) + " " + device.DeviceID;
+                }
+            }
+#endif
+            return "unknown";
+        }
+
+        /// @brief Reads the remembered answers, when they are for this card and less than a week old.
+        std::shared_ptr<RendererAnswers> readAnswers(const std::filesystem::path& file) {
+            auto answers = std::make_shared<RendererAnswers>();
+            answers->file = file;
+            answers->machine = graphicsCard();
+            std::error_code error;
+            const auto written = std::filesystem::last_write_time(file, error);
+            if (error || std::filesystem::file_time_type::clock::now() - written > std::chrono::hours(24 * 7)) {
+                return answers;
+            }
+            std::ifstream in(file);
+            std::string line;
+            if (!std::getline(in, line) || line != "card=" + answers->machine) {
+                return answers;
+            }
+            while (std::getline(in, line)) {
+                const std::size_t equals = line.find('=');
+                if (equals != std::string::npos && equals + 1 < line.size()) {
+                    answers->known[line.substr(0, equals)] = line[equals + 1] == '1';
+                }
+            }
+            return answers;
+        }
+
+        void writeAnswers(const RendererAnswers& answers) {
+            std::ofstream out(answers.file, std::ios::trunc);
+            out << "card=" << answers.machine << '\n';
+            for (const auto& [driver, starts] : answers.known) {
+                out << driver << '=' << (starts ? '1' : '0') << '\n';
+            }
+        }
 
         /// @brief A group of picture archives sharing an extension; large ones are skipped in "ShortMemory" mode.
         struct ArchiveSet {
@@ -59,18 +130,46 @@ namespace client {
           m_layout(m_screen.load(services.game.layout("LoadingScene.xml"), services.loadContext())),
           m_progress(m_screen.get<ui::ProgressBar>("Progress")) {
         // the renderers in the build that cannot start on this machine leave the Video tab's list, one tried a step (first, while the bar (30 steps long) still moves)
+        const auto answers = core::speedups().rememberRendererChecks ? readAnswers(m_services.game.user("renderer-check.txt")) : std::shared_ptr<RendererAnswers>();
+        std::vector<std::string> cannotStart;
         for (const std::string& driver : m_services.renderDrivers) {
             if (driver == m_services.rendererInUse || driver == "software") {
                 continue; // running already, or always there
             }
-            m_steps.push_back([this, driver] {
-                if (!gfx::RenderDevice::driverStarts(driver)) {
+            if (const auto known = answers ? answers->known.find(driver) : std::map<std::string, bool>::iterator{};
+                answers && known != answers->known.end()) {
+                if (!known->second) {
+                    cannotStart.push_back(driver);
+                }
+                continue; // remembered from an earlier launch
+            }
+            m_steps.push_back([this, driver, answers] {
+                const bool starts = gfx::RenderDevice::driverStarts(driver);
+                if (answers) {
+                    answers->known[driver] = starts;
+                    answers->changed = true;
+                }
+                if (!starts) {
                     auto& drivers = m_services.renderDrivers;
                     drivers.erase(std::remove(drivers.begin(), drivers.end(), driver), drivers.end());
                 }
             });
         }
+        for (const std::string& driver : cannotStart) {
+            auto& drivers = m_services.renderDrivers;
+            drivers.erase(std::remove(drivers.begin(), drivers.end(), driver), drivers.end());
+        }
+        if (answers) {
+            core::logInfo("renderer checks remembered: ", answers->known.size(), ", to try now: ", m_steps.size());
+        }
         m_driverSteps = m_steps.size();
+        if (answers) {
+            m_steps.push_back([answers] {
+                if (answers->changed) {
+                    writeAnswers(*answers);
+                }
+            });
+        }
         m_steps.push_back([this] { m_services.pictures.addDirectory(m_services.game.data("menu/skins/white")); });
         m_steps.push_back([this] { m_services.pictures.addDirectory(m_services.game.data("menu/skins/default")); });
         const bool shortMemory = m_services.startup.memory == formats::StartupInfo::MemoryMode::Short;

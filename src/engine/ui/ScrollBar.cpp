@@ -59,6 +59,7 @@ namespace ui {
 
     void ScrollBar::setRange(int count, int page) {
         m_page = page;
+        m_count = count;
         m_maximum = std::max(count, page);
         if (m_maximum != 0) {
             m_thumbSize = static_cast<int>(static_cast<double>(m_page) / m_maximum * bounds().height);

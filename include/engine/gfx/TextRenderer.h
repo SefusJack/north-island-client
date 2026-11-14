@@ -8,7 +8,9 @@
 #include "gfx/Texture.h"
 
 #include <optional>
+#include <cstdint>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace gfx {
@@ -98,8 +100,28 @@ namespace gfx {
                 std::vector<Texture::Quad>* batch
             ) const;
 
+            /// @brief A string drawn once into its own picture (software renderer): one copy instead of up to nine a glyph.
+            struct CachedString {
+                Texture texture;
+                core::Point offset; // of the picture from the string's position
+                int endY = 0; // what draw returns, from the string's position
+                std::uint64_t usedMs = 0;
+            };
+
+            /// @brief Draws the string from its kept picture; every so many calls it reads the clock and frees one picture no longer drawn.
+            /// @return The y below the text, or nothing when the string is drawn the usual way.
+            std::optional<int> drawCached(const RenderDevice& device, core::Point position, const std::string& key) const;
+
             Texture m_atlas;
             mutable std::vector<Texture::Quad> m_batch; // the layers of the string being drawn, reused between strings
+            formats::Image m_atlasPixels; // kept for the string pictures (empty when they are not used)
+            mutable std::unordered_map<std::string, CachedString> m_strings;
+            mutable std::unordered_map<std::string, std::uint64_t> m_seen; // strings drawn once so far, and when
+            mutable std::uint64_t m_sweptMs = 0;
+            mutable std::uint64_t m_clockMs = 0; // the time of the last clock read, used for the string pictures' ages
+            mutable unsigned m_clockAge = 0; // strings since that read
+            mutable bool m_mayMake = false; // no picture has been made since the last clock read
+            mutable std::vector<Texture> m_dropped; // pictures no longer drawn, freed one per clock read
     };
 
 }

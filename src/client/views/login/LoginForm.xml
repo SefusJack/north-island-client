@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- The account form (TSe_IDPassored); view model: viewmodels/LoginForm.cpp. -->
-<Panel Name="LoginForm" Bounds="0,0,800,600" Visible="false">
+<Panel Name="LoginForm" Bounds="0,0,800,600" PadPage="true" Visible="false">
   <Image Name="LoginFormBackground" Source="Menu/Skins/White/Form_IdPassword_1.jpg" Position="267,135"/>
   <ImageButton Name="Login" Picture="Btn_Login_L" Bounds="328,335,143,20" Click="onLogin"/>
   <ImageButton Name="Previous" Picture="Btn_Prev_L" Bounds="328,365,143,20" Click="onPrevious"/>

@@ -28,8 +28,13 @@ namespace client {
         m_previous = m_position;
         m_atTarget = m_position == target;
         const double elapsed = static_cast<double>(nowMs - m_moveMs);
-        m_moveMs = nowMs;
         const int step = static_cast<int>(std::lround(elapsed * m_setup.speed));
+        if (step == 0 && !m_atTarget) {
+            // frames less than a pixel's worth of time apart (about 2 ms at the item flights' speed): the time is kept for the
+            // next call; taking it here without moving left the effect standing where it started for good
+            return;
+        }
+        m_moveMs = nowMs;
         const double dx = std::abs(target.x - m_position.x);
         const double dy = std::abs(target.y - m_position.y);
         if (m_atTarget) {

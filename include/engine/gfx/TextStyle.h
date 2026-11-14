@@ -16,6 +16,7 @@ namespace gfx {
         core::Color color{255, 255, 255, 255}; // opaque white
         TextEffect effect = TextEffect::Plain;
         std::optional<core::Color> background;
+        bool changing = false; // the words change many times a second (a scrolling line, coordinates): no picture of them where textures are slow to make
     };
 
 }
