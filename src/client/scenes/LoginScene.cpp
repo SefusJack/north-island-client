@@ -79,7 +79,8 @@ namespace client {
           m_disconnect(services, m_screen, {[this] { backToServerList(); }, [this] { m_next = SceneKind::Quit; }}),
           m_relogin(services, m_screen),
           m_settingsButton(m_screen.load(services.game.layout("LoginSettingsButton.xml"), services.loadContext())),
-          m_settings(services, m_screen, {}, true) {
+          m_settings(services, m_screen, {}, true),
+          m_padKeyboard(services, m_screen) {
         m_screen.context().playSound = [this](const std::string& sound) { m_services.playSound(sound); };
         // the original starts the loading music again whenever it is outside the game (CheckStartMusic)
         applyLoadingVolumes(services);
@@ -450,6 +451,7 @@ namespace client {
 
     void LoginScene::update(std::uint64_t nowMs) {
         m_nowMs = nowMs;
+        m_padKeyboard.update(nowMs);
         m_services.connection.update(nowMs);
         handleConnectionEvents();
         MessageContext context{*this, m_services.connection, m_services.session.loginId};

@@ -8,7 +8,7 @@
      The game draws a form's controls from the last created to the first: the controls here
      are in drawing order, the reverse of TSe_TeamForm.Create. -->
 <Panel Name="GroupWindowLayer" Bounds="0,0,800,600">
-  <Window Name="GroupWindow" Escape="onGroupWindowEscape" Picture="Form_Team_2" Position="444,0" Size="356,539" Hint="Group [Ctrl+T]" Visible="false"
+  <Window Name="GroupWindow" PadTabs="*GroupTabTeam,GroupTabGuild,GroupTabInstances" Escape="onGroupWindowEscape" Picture="Form_Team_2" Position="444,0" Size="356,539" Hint="Group [Ctrl+T]" Visible="false"
           Click="onGroupWindowClick">
     <!-- DrawTeamPage: the teammates' figures, names, levels and bars -->
     <DrawingArea Name="GroupTeam" Bounds="0,0,356,539"/>

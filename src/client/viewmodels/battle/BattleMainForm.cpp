@@ -82,7 +82,8 @@ namespace client {
           m_lastCommand(screen.get<ui::ImageButton>("BattleCommand8")),
           m_autoCancel(screen.get<ui::ImageButton>("BattleAutoCancel")),
           m_memberPanelSpot(screen.get<ui::Spot>("BattleMemberPanel")),
-          m_wheelCentreSpot(screen.get<ui::Spot>("BattleWheelCentre")) {
+          m_wheelCentreSpot(screen.get<ui::Spot>("BattleWheelCentre")),
+          m_screen(screen) {
         for (int member = 1; member <= kMembers; ++member) {
             const std::string name = "BattleMember" + std::to_string(member);
             m_members.push_back(
@@ -290,19 +291,55 @@ namespace client {
         if (actor != m_wheelActor) {
             m_wheelActor = actor;
             m_wheelMs = nowMs;
+            if (actor != 0) {
+                // whoever chooses next (the player on a new turn, then the pet) finds the ring as it starts
+                m_top = kPadFirst;
+                if (m_padOn) {
+                    m_turn = static_cast<float>(m_top);
+                }
+            }
         }
         const auto fighter = actor != 0 ? m_battle.field().fighter(actor) : std::nullopt;
         const core::Point feet = fighter ? (m_toWindow ? m_toWindow(fighter->get().position) : fighter->get().position) : core::Point{};
         const int elapsed = static_cast<int>(std::min<std::uint64_t>(nowMs - m_wheelMs, kWheelMs));
+        // for a game pad the ring turns until the chosen button is at the top; the turn goes the short way round, a button's
+        // place in a tenth of a second
+        constexpr float kTurnMs = 100.0f;
+        const float wanted = m_padOn ? static_cast<float>(m_top) : 0.0f;
+        float left = wanted - m_turn;
+        left -= static_cast<float>(kButtons) * std::round(left / static_cast<float>(kButtons));
+        const float step = static_cast<float>(std::min<std::uint64_t>(nowMs - m_turnMs, 100)) / kTurnMs; // 100: a longer gap between frames turns no further
+        m_turnMs = nowMs;
+        m_turn = std::abs(left) <= step ? wanted : m_turn + (left > 0.0f ? step : -step);
+        m_turn -= static_cast<float>(kButtons) * std::floor(m_turn / static_cast<float>(kButtons));
         for (std::size_t i = 0; i < m_commands.size(); ++i) {
             ui::ImageButton& button = m_commands[i];
             button.setVisible(fighter.has_value());
             if (!fighter) {
                 continue;
             }
-            const core::Point offset = bezier(m_wheelCentreSpot.at(), kHomes[i], kBends[i], kWheelMs, elapsed);
+            // the button's place on the turned ring: between two of the ring's places while it turns (the pictures stay upright)
+            float place = static_cast<float>(i) - m_turn;
+            place -= static_cast<float>(kButtons) * std::floor(place / static_cast<float>(kButtons));
+            const std::size_t from = static_cast<std::size_t>(place) % kButtons;
+            const std::size_t to = (from + 1) % kButtons;
+            const float part = place - std::floor(place);
+            const core::Point home{
+                static_cast<int>(std::lround(kHomes[from].x + (kHomes[to].x - kHomes[from].x) * part)),
+                static_cast<int>(std::lround(kHomes[from].y + (kHomes[to].y - kHomes[from].y) * part))
+            };
+            const core::Point offset = bezier(m_wheelCentreSpot.at(), home, kBends[part < 0.5f ? from : to], kWheelMs, elapsed);
             button.setPosition({feet.x + offset.x, feet.y + offset.y});
         }
+        // the hand points at the button at the top once the ring is out; under a window (the skills, the items) it does not: the
+        // highlighted button counts as the one under the mouse, and would take the window's clicks
+        const bool focused = m_padOn && fighter.has_value() && elapsed >= kWheelMs && m_screen.shownWindows().empty();
+        if (focused) {
+            m_screen.setPadFocus("BattleCommand" + std::to_string(m_top + 1), m_padHand);
+        } else if (m_padFocused) {
+            m_screen.setPadFocus({});
+        }
+        m_padFocused = focused;
         const int last = fighter ? m_battle.lastCommandKind() : 0;
         const auto picture = last != 0 ? m_services.pictures.find("Btn_Battle_" + std::to_string(last) + "_1") : std::nullopt;
         m_lastCommand.setVisible(picture.has_value());

@@ -88,6 +88,10 @@ namespace ui {
             /// @return True when it is.
             bool isReadOnly() const { return m_readOnly; }
 
+            /// @brief Tells whether the box hides what is typed (a password).
+            /// @return True when it shows stars.
+            bool isPassword() const { return m_password; }
+
             /// @brief Sets the text colour.
             /// @param color The colour.
             void setFontColor(core::Color color) { m_fontColor = color; }

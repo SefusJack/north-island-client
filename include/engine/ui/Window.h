@@ -85,6 +85,18 @@ namespace ui {
             /// @return True when it did.
             bool closesOnEscape() const { return hasHandler("Escape"); }
 
+            /// @brief The window's tab buttons in their order (the PadTabs attribute): a game pad's shoulder buttons go from one to the next.
+            /// @return The buttons' names.
+            const std::vector<std::string>& padTabs() const { return m_padTabs; }
+
+            /// @brief The two buttons a game pad's shoulder buttons press in a window without tabs (the PadShoulders attribute: before, after).
+            /// @return The buttons' names, empty when not given.
+            const std::vector<std::string>& padShoulders() const { return m_padShoulders; }
+
+            /// @brief The element a game pad's pointer starts on when the window opens (the PadStart attribute).
+            /// @return The element's name, empty for the first row or cell, or the first control.
+            const std::string& padStart() const { return m_padStart; }
+
             /// @brief Raises the Escape event (the window closes itself).
             /// @param context UI context.
             void raiseEscape(UiContext& context) const { raise(context, "Escape"); }
@@ -108,6 +120,9 @@ namespace ui {
             // the game's 800 x 600 screen
             core::Rect m_view{0, 0, 800, 600};
             bool m_abovePopups = false;
+            std::vector<std::string> m_padTabs;
+            std::vector<std::string> m_padShoulders;
+            std::string m_padStart;
     };
 
 }

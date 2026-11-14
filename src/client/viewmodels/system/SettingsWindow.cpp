@@ -145,7 +145,14 @@ namespace client {
             m_services.playSound("sound/wav0151.wav"); // the sound of the heading's arrow button
             toggleVideoGroup(numberAfter(args.source, "SettingsVideoHead"));
         });
-        m_gameRows.setContentHeight(screen.get<ui::Element>("SettingsGameRows").bounds().height);
+        screen.on("onSettingsGameOpen", [this](const ui::EventArgs& args) { toggleGameGroup(numberAfter(args.source, "SettingsGameOpen")); });
+        screen.on("onSettingsGameHead", [this](const ui::EventArgs& args) { toggleGameGroup(numberAfter(args.source, "SettingsGameHead")); });
+        screen.on("onSettingsModernBag", [this](const ui::EventArgs&) {
+            m_video = m_services.videoSettings();
+            const bool checked = m_screen.get<ui::CheckBox>("SettingsModernBag").isChecked();
+            changeVideo([checked](ExtraSettings& video) { video.modernBag = checked; });
+        });
+        layoutGame();
         layoutVideo();
         screen.on("onSettingsRemember", [this](const ui::EventArgs&) {
             m_video = m_services.videoSettings();
@@ -162,6 +169,30 @@ namespace client {
             const bool checked = m_screen.get<ui::CheckBox>("SettingsPartyLogin").isChecked();
             changeVideo([checked](ExtraSettings& video) { video.partyLogin = checked; });
         });
+        screen.on("onSettingsPad", [this](const ui::EventArgs&) {
+            m_video = m_services.videoSettings();
+            ExtraSettings::Controller controller = m_video.controller;
+            controller.enabled = m_screen.get<ui::CheckBox>("SettingsPadEnabled").isChecked();
+            controller.hideHud = m_screen.get<ui::CheckBox>("SettingsPadHideHud").isChecked();
+            controller.hideStatus = m_screen.get<ui::CheckBox>("SettingsPadHideStatus").isChecked();
+            controller.hideChat = m_screen.get<ui::CheckBox>("SettingsPadHideChat").isChecked();
+            changeVideo([controller](ExtraSettings& video) { video.controller = controller; });
+        });
+        screen.on("onSettingsPadArrow", [this](const ui::EventArgs& args) {
+            // the times to choose from, in seconds; 0: the bars hide only when Start sends them away
+            static constexpr std::array<int, 6> kSeconds = {0, 5, 10, 15, 30, 60};
+            m_video = m_services.videoSettings();
+            const int step = numberAfter(args.source, "SettingsPadArrow") == 1 ? -1 : 1; // arrow 1 is the left one
+            const int count = static_cast<int>(kSeconds.size());
+            int now = 0;
+            for (int i = 0; i < count; ++i) {
+                if (kSeconds[static_cast<std::size_t>(i)] <= m_video.controller.hideSeconds) {
+                    now = i; // the choice at or below a time written into the file by hand
+                }
+            }
+            const int seconds = kSeconds[static_cast<std::size_t>(((now + step) % count + count) % count)];
+            changeVideo([seconds](ExtraSettings& video) { video.controller.hideSeconds = seconds; });
+        });
         screen.on("onSettingsPixelArtPart", [this](const ui::EventArgs&) {
             m_video = m_services.videoSettings();
             const bool pictures = m_screen.get<ui::CheckBox>("SettingsPixelArtOnPictures").isChecked();
@@ -177,13 +208,13 @@ namespace client {
         screen.get<ui::DrawingArea>("SettingsColors").setPainter([this](gfx::Canvas& canvas, core::Point at, std::uint64_t) { paintColors(canvas, at); });
         if (m_beforeLogin) {
             screen.get<ui::Label>("SettingsTitle").setText("Settings");
-            for (const char* name : {"SettingsTab1", "SettingsTab3", "SettingsMenu4", "SettingsMenu5", "SettingsMenu7", "SettingsMenu8", "SettingsMenu9"}) {
+            for (const char* name : {"SettingsTab3", "SettingsMenu4", "SettingsMenu5", "SettingsMenu7", "SettingsMenu8", "SettingsMenu9"}) {
                 screen.get<ui::Element>(name).setVisible(false);
             }
-            // tab button positions (x, y) when the Game and Chat tabs are hidden
-            screen.get<ui::Element>("SettingsTab2").setPosition({20, 44});
-            screen.get<ui::Element>("SettingsTab4").setPosition({95, 44});
+            // tab button position (x, y) when the Chat tab is hidden; the Game tab stays for its groups that need no server
+            screen.get<ui::Element>("SettingsTab4").setPosition({170, 44});
             m_tab = Tab::Sound;
+            layoutGame();
         }
         showTab(m_tab);
     }
@@ -247,12 +278,12 @@ namespace client {
     }
 
     void SettingsWindow::showTab(Tab tab) {
-        if (tab < Tab::Game || tab > Tab::Video || (m_beforeLogin && (tab == Tab::Game || tab == Tab::Chat))) {
+        if (tab < Tab::Game || tab > Tab::Video || (m_beforeLogin && tab == Tab::Chat)) {
             return;
         }
         m_tab = tab;
         static constexpr std::array<const char*, 4> kPanels = {"SettingsGame", "SettingsSound", "SettingsChat", "SettingsVideo"};
-        for (int i = 1; i <= 4; ++i) {
+        for (int i = 1; i <= 4; ++i) { // 4: the tabs
             const bool shown = i == static_cast<int>(tab);
             m_screen.get<ui::ImageButton>("SettingsTab" + std::to_string(i)).setSelected(shown);
             m_screen.get<ui::Element>(kPanels[static_cast<std::size_t>(i - 1)]).setVisible(shown);
@@ -397,6 +428,39 @@ namespace client {
         });
     }
 
+    void SettingsWindow::toggleGameGroup(int number) {
+        const std::size_t group = static_cast<std::size_t>(number - 1);
+        if (group < m_services.gameGroupsOpen.size()) {
+            m_services.gameGroupsOpen[group] = !m_services.gameGroupsOpen[group];
+            layoutGame();
+        }
+    }
+
+    void SettingsWindow::layoutGame() {
+        int y = kVideoGroupsTop;
+        for (std::size_t group = 0; group < m_services.gameGroupsOpen.size(); ++group) {
+            const std::string number = std::to_string(group + 1);
+            ui::Element& heading = m_screen.get<ui::Element>("SettingsGameGroup" + number);
+            ui::Element& body = m_screen.get<ui::Element>("SettingsGameBody" + number);
+            // groups 1 (what others may ask of the player) and 4 (lists kept by the server) need the game: not before the login
+            const bool offered = !m_beforeLogin || group == 1 || group == 2;
+            const bool open = offered && (m_services.gameGroupsOpen[group] || (m_beforeLogin && group == 2));
+            heading.setVisible(offered);
+            body.setVisible(open);
+            if (!offered) {
+                continue;
+            }
+            heading.setPosition({0, y});
+            y += heading.bounds().height;
+            m_screen.get<ui::CheckBox>("SettingsGameOpen" + number).setChecked(open);
+            body.setPosition({0, y});
+            if (open) {
+                y += body.bounds().height;
+            }
+        }
+        m_gameRows.setContentHeight(y);
+    }
+
     void SettingsWindow::layoutVideo() {
         int y = kVideoGroupsTop;
         for (std::size_t group = 0; group < m_services.videoGroupsOpen.size(); ++group) {
@@ -501,8 +565,15 @@ namespace client {
             : m_video.perfOverlay == 3 ? "Level 2 and the frame time graph."
                                        : "No numbers on the screen."
         );
+        m_screen.get<ui::CheckBox>("SettingsPadEnabled").setChecked(m_video.controller.enabled);
+        m_screen.get<ui::CheckBox>("SettingsPadHideHud").setChecked(m_video.controller.hideHud);
+        m_screen.get<ui::CheckBox>("SettingsPadHideStatus").setChecked(m_video.controller.hideStatus);
+        m_screen.get<ui::CheckBox>("SettingsPadHideChat").setChecked(m_video.controller.hideChat);
+        m_screen.get<ui::Label>("SettingsPadSecondsValue")
+            .setText(m_video.controller.hideSeconds == 0 ? "Start only" : std::to_string(m_video.controller.hideSeconds) + " seconds");
         m_screen.get<ui::CheckBox>("SettingsSort").setChecked(m_video.sortButtons);
         m_screen.get<ui::CheckBox>("SettingsPartyLogin").setChecked(m_video.partyLogin);
+        m_screen.get<ui::CheckBox>("SettingsModernBag").setChecked(m_video.modernBag);
         m_screen.get<ui::CheckBox>("SettingsPixelArtOnPictures").setChecked(m_video.pixelArtPictures);
         m_screen.get<ui::CheckBox>("SettingsPixelArtOnSprites").setChecked(m_video.pixelArtSprites);
         m_screen.get<ui::CheckBox>("SettingsPixelArtOnText").setChecked(m_video.pixelArtText);

@@ -12,7 +12,6 @@ namespace client {
     namespace {
 
         constexpr int kMargin = 4; // px: gap to the screen edge and to the function buttons
-        constexpr int kFunctionButtonsHeight = 36; // px: the function buttons' bar at the top right, at HUD size 100
         constexpr int kPadding = 6; // px: inner padding of the panel
         constexpr int kLineHeight = 15; // px per text line
         constexpr int kGraphHeight = 80; // px: height of the bar graph
@@ -90,7 +89,7 @@ namespace client {
         const std::string& backend,
         bool gpuMeasured,
         int screenWidth,
-        int hudPercent,
+        int top,
         int level,
         const LoadReading& load,
         std::uint64_t nowMs
@@ -137,7 +136,7 @@ namespace client {
         // paddings: above the text and below it; with the graph one more below the graph
         const int height = graph ? kPadding * 3 + textLines * kLineHeight + kGraphHeight + kLegendLines * kLineHeight : kPadding * 2 + textLines * kLineHeight;
         // at the right edge, below the function buttons (FunctionButtons.xml, the bar across the top right corner)
-        const int buttonsBottom = kFunctionButtonsHeight * hudPercent / 100;
+        const int buttonsBottom = top;
         const core::Rect box{screenWidth - width - kMargin, buttonsBottom + kMargin, width, height};
         canvas.fillRect(box, kBackground);
 

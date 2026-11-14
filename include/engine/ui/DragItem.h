@@ -15,6 +15,8 @@ namespace ui {
         gfx::PictureId picture;
         core::Rect source;
         core::Point grab;
+        bool sticky = false; // it follows the mouse with no button held, until the next left click puts it down
+        int count = 0; // how many of the source's things it carries (0: as the source decides)
     };
 
 }

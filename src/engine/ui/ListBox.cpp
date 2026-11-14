@@ -80,6 +80,20 @@ namespace ui {
         m_items.clear();
         m_selected = -1;
         m_top = 0;
+        m_padRow = -1;
+    }
+
+    void ListBox::stepPadRow(int by) {
+        if (itemCount() == 0 || by == 0) {
+            return;
+        }
+        m_padRow = m_padRow < 0 ? (by > 0 ? 0 : itemCount() - 1) : std::max(0, std::min(itemCount() - 1, m_padRow + by));
+        m_padMouseKnown = false;
+        if (m_padRow < m_top) {
+            setTopIndex(m_padRow);
+        } else if (m_padRow >= m_top + visibleRows()) {
+            setTopIndex(m_padRow - visibleRows() + 1);
+        }
     }
 
     void ListBox::addItem(const std::string& text, std::optional<core::Color> color) {
@@ -226,6 +240,21 @@ namespace ui {
         gfx::Canvas& canvas = context.canvas;
         const bool hovered = context.hoveredId == id();
         m_hoverRow = hovered ? rowAt(context.mouse - screenPosition) : -1;
+        if (m_padRow >= itemCount()) {
+            m_padRow = -1;
+        }
+        if (m_padRow >= 0) {
+            // the game pad's row shows as the hovered one, until the mouse moves over the list
+            if (!m_padMouseKnown) {
+                m_padMouse = context.mouse;
+                m_padMouseKnown = true;
+            }
+            if (hovered && !(context.mouse == m_padMouse)) {
+                m_padRow = -1;
+            } else {
+                m_hoverRow = m_padRow >= m_top && m_padRow < m_top + visibleRows() ? m_padRow - m_top : -1;
+            }
+        }
 
         if ((hovered || m_alwaysFrame) && m_focusFrame) {
             // frame sticks out 2 left and 4 above; 4 wider and higher; pen 2 pixels wide

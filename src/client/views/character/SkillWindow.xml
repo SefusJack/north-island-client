@@ -3,7 +3,7 @@
      viewmodels/SkillWindow.cpp.  Tabs: physical, magical, aid, daily skills, and the element's
      skill tree (Intro).  Under the list: what the skill under the mouse is. -->
 <Panel Name="SkillWindowLayer" Bounds="0,0,800,600">
-  <Window Name="SkillWindow" Escape="onSkillWindowEscape" Picture="Form_Skill_2" Position="255,70" Hint="spell [Ctrl+S]" Visible="false">
+  <Window Name="SkillWindow" PadTabs="SkillTab1,SkillTab2,SkillTab3,SkillTab4,SkillTab5" Escape="onSkillWindowEscape" Picture="Form_Skill_2" Position="255,70" Hint="spell [Ctrl+S]" Visible="false">
     <DrawingArea Name="SkillPaint" Bounds="0,0,290,459">
       <!-- the skill list rows: the step down from one row to the next, and the hovered row's fill, light blue -->
       <Spot Name="SkillRows" Pitch="0,26" Color="#89BEF5"/>
@@ -20,7 +20,7 @@
                  ClickSound="" ReleaseSound="sound/wav0154.wav"/>
     <ScrollBar Name="SkillScroll" Bounds="246,104,17,203" Track="Rail_H5" Thumb="bar_H4" ThumbSource="0,0,9,21"
                ThumbCap="7" TrackCap="16" ThumbInset="3" Scroll="onSkillScrolled"/>
-    <DrawingArea Name="SkillList" Bounds="28,88,216,240" HitTest="true" MouseDown="onSkillListPress" MouseUp="onSkillListClick" MouseWheel="onSkillListWheel"
+    <DrawingArea Name="SkillList" Bounds="28,88,216,240" PadCells="0,26" PadScroll="SkillScroll" HitTest="true" MouseDown="onSkillListPress" MouseUp="onSkillListClick" MouseWheel="onSkillListWheel"
                  Drop="onSkillListDrop"/>
     <!-- UpdateSkillLearnButtons: the arrow of a row of a skill not learned yet whose skill points the player has -->
     <ImageButton Name="SkillLearn8" Picture="Btn_ArrowUp_3" Position="225,258" Visible="false" Click="onSkillLearn"/>

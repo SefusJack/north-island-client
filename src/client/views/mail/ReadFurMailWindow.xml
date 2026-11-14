@@ -6,7 +6,7 @@
      the last created to the first: the controls here are in drawing order, the reverse of
      TReadFurMailBoxForm.Create; DrawControl draws over them. -->
 <Panel Name="ReadFurMailLayer" Bounds="0,0,800,600">
-  <Window Name="ReadFurMail" Escape="onReadFurMailClose" Picture="form_MailReceive_1" Position="10,50" Visible="false">
+  <Window Name="ReadFurMail" PadShoulders="ReadFurMailPrevious,ReadFurMailNext" Escape="onReadFurMailClose" Picture="form_MailReceive_1" Position="10,50" Visible="false">
     <Image Name="ReadFurMailPreviousGray" Picture="btn_PrevMail_Gray_1" Position="36,285"/>
     <Image Name="ReadFurMailNextGray" Picture="btn_NextMail_Gray_1" Position="36,310"/>
     <ImageButton Name="ReadFurMailPrevious" Picture="btn_PrevMail_1" Position="36,285" Click="onReadFurMailPrevious"/>

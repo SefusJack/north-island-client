@@ -4,7 +4,7 @@
      it beside the item window; view model: viewmodels/GpsWindow.cpp.  The game draws a form's controls from the last created to the first: the controls here are in
      drawing order, the reverse of TGPSForm.Create. -->
 <Panel Name="GpsLayer" Bounds="0,0,800,600">
-  <Window Name="Gps" AbovePopups="true" Picture="Form_GPS" Position="290,200" Size="223,223" ScreenFit="true" Visible="false">
+  <Window Name="Gps" PadShoulders="GpsPrevious,GpsNext" AbovePopups="true" Picture="Form_GPS" Position="290,200" Size="223,223" ScreenFit="true" Visible="false">
     <!-- DrawControl: the place's name and coordinates -->
     <DrawingArea Name="GpsPaint" Bounds="0,0,223,223">
       <!-- the map name: the x it is centred on, its y and the text box width (the height is not used) -->

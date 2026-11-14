@@ -680,6 +680,19 @@ namespace client {
         return 0;
     }
 
+    std::vector<std::pair<int, core::Rect>> HousePainter::pieceAreas(const Camera& camera) const {
+        std::vector<std::pair<int, core::Rect>> areas;
+        const HomeFurniture& furniture = m_interior.furniture();
+        const int room = m_interior.room();
+        for (int slot = 1; slot <= HouseUtensils::kMost; ++slot) {
+            const HouseUtensil& utensil = m_interior.utensils().utensil(slot);
+            if (utensil.shown && furniture.piece(utensil.furnIndex).room == room) {
+                areas.emplace_back(slot, m_interior.utensils().pictureArea(slot, camera.origin()));
+            }
+        }
+        return areas;
+    }
+
     int HousePainter::pieceSlotAt(const gfx::PictureLibrary& pictures, const Camera& camera, core::Point mouse) const {
         const HomeFurniture& furniture = m_interior.furniture();
         const int room = m_interior.room();

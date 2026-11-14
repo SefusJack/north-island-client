@@ -72,6 +72,10 @@ namespace ui {
             /// @param selected True to select it.
             void setSelected(bool selected) { m_selected = selected; }
 
+            /// @brief Whether the button is selected (the open tab).
+            /// @return True when selected.
+            bool isSelected() const { return m_selected; }
+
             /// @brief RectHit from code: the whole rectangle catches the mouse (a button whose bounds move to an animation's frame).
             /// @param rectHit True for rectangle hits.
             void setRectHit(bool rectHit) { m_rectHit = rectHit; }

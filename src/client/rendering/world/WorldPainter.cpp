@@ -355,7 +355,19 @@ namespace client {
         int goldEagleNo = 0;
         int defenseNo = 0;
         int stoneEagleNo = 0;
+        if (display.padMark && display.padHand != nullptr && display.padHand->isValid()) {
+            const core::Point spot = shownAt(display, *display.padMark);
+            canvas.drawTexture(*display.padHand, {spot.x - display.padHandTip.x, spot.y - display.padHandTip.y});
+        }
         for (const MapNpc& npc : npcs) {
+            if (npc.visible && npc.index == display.padNpc && display.padHand != nullptr && display.padHand->isValid()) {
+                // the game pad's hand, its fingertip just above the name's place
+                constexpr int kAboveName = 2; // px between the fingertip and the name's top
+                constexpr int kNameHeight = 16; // px a name takes above which the hand stands
+                const core::Point spot = shownAt(display, nameSpot(npc.info, npc.body, camera));
+                const int tipY = npc.showsName() ? spot.y - kAboveName : spot.y + kNameHeight;
+                canvas.drawTexture(*display.padHand, {spot.x - display.padHandTip.x, tipY - display.padHandTip.y});
+            }
             if (npc.visible && npc.showsName()) {
                 // showState 1: the NPC is shown (numbered labels only apply to shown NPCs)
                 const bool defense = display.trojanWarMap && npc.showState == 1 && npc.info.npcId >= kFirstDefenseNpc && npc.info.npcId <= kLastDefenseNpc &&

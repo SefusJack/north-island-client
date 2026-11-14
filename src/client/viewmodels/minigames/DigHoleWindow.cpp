@@ -39,6 +39,20 @@ namespace client {
           m_fingerDownSpot(screen.get<ui::Spot>("DigHoleFingerDown")) {
         m_page.setPainter([this](gfx::Canvas& canvas, core::Point, std::uint64_t nowMs) { paint(canvas, nowMs); });
         screen.on("onDigHoleDown", [this](const ui::EventArgs& args) { m_game->mouseDown(args.position); });
+        m_page.setPadPoints([this] {
+            // a game pad's pointer steps from hole to hole
+            std::vector<core::Point> holes;
+            if (!m_game) {
+                return holes;
+            }
+            const core::Point pitch = m_holeSpot.pitch();
+            for (int row = 1; row <= DigHoleGame::kRows; ++row) {
+                for (int column = 1; column <= DigHoleGame::kColumns; ++column) {
+                    holes.push_back({(column - 1) * pitch.x + m_holeSpot.at().x + m_game->boardOffset() + pitch.x / 2, (row - 1) * pitch.y + m_holeSpot.at().y + pitch.y / 2});
+                }
+            }
+            return holes;
+        });
         screen.on("onDigHoleUp", [this](const ui::EventArgs&) { m_game->mouseUp(); });
         screen.on("onDigHoleDig", [this](const ui::EventArgs&) { m_game->digClicked(); });
         screen.on("onDigHoleQuit", [this](const ui::EventArgs&) { m_game->quitClicked(); });

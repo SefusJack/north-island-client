@@ -37,7 +37,7 @@ namespace client {
                 const std::string& backend,
                 bool gpuMeasured,
                 int screenWidth,
-                int hudPercent,
+                int top,
                 int level,
                 const LoadReading& load,
                 std::uint64_t nowMs

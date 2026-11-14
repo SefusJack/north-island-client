@@ -292,6 +292,11 @@ namespace client {
             /// @details Original: DXDraw1MouseDown right button, ResetFighterCommand, ShowBattleCommandButtons 1.
             void cancelCommand();
 
+            /// @brief Gives the fighters the command in progress can be aimed at, for a game pad's pointer.
+            /// @details A skill for the own side starts on the own side, anything else on the enemies; every fighter can be stepped to.
+            /// @return A point on each fighter, the one to start on first; empty while no command waits for a target.
+            std::vector<core::Point> padTargets();
+
             /// @brief Handles a click on a command ring button.
             /// @details Original: HandleBattleCommandClick; 1 defend, 2 capture, 3 flee, 4 items, 5 auto, 6 attack, 7 skills, 8 the last command again.
             /// @param button Ring button number.

@@ -3,16 +3,16 @@
      One list with two sections that fold away: the servers added by address (saved-servers.json) and SERVER.INI's groups;
      under it the fields to add a server by its IP or host name. -->
 <Panel Name="ServerSelectForm" Bounds="0,0,800,600">
-  <Panel Name="ServerFrame" Bounds="195,84,410,432">
+  <Panel Name="ServerFrame" Bounds="195,84,410,432" PadPage="true">
     <!-- form_module_1: Borders keep the ornaments whole (top 122, bottom 45) and repeat only the picture's steady rows 122..177;
          an odd height keeps its two-row stripes in step where the repeats meet the bottom -->
     <Panel Name="ServerFrameSkin" Bounds="0,0,410,431" Skin="form_module_1" SkinSource="0,0,223,223" Borders="64,122,80,45"/>
     <Label Name="ServerTitle" Position="34,22" Text="Server" FontColor="#1E3C78" Effect="Plain"/>
-    <ImageButton Name="ServerClose" Picture="Btn_Close_s_1" Position="360,26" Size="18,18" Click="onLeave"
+    <ImageButton Name="ServerClose" Picture="Btn_Close_s_1" Position="360,26" Size="18,18" PadSkip="true" Click="onLeave"
                  ClickSound="" ReleaseSound="sound/wav0154.wav"/>
 
     <Panel Name="ServerBox" Bounds="18,48,370,232" Skin="panel10" SkinSource="0,0,50,50" Borders="7,7,7,7">
-      <DrawingArea Name="ServerRows" Bounds="4,4,344,224" HitTest="true" MouseDown="onServerRowDown"
+      <DrawingArea Name="ServerRows" Bounds="4,4,344,224" HitTest="true" PadCells="0,20" PadScroll="ServerRowsScroll" MouseDown="onServerRowDown"
                    DoubleClick="onServerRowDouble" MouseWheel="onServerRowsWheel">
         <!-- a row: its height -->
         <Spot Name="ServerRow" Size="0,20"/>

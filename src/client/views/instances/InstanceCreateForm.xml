@@ -7,7 +7,7 @@
      controls from the last created to the first: the controls here are in drawing order, the
      reverse of TCreateDupMisForm.Create. -->
 <Panel Name="InstanceCreateLayer" Bounds="0,0,800,600">
-  <Window Name="InstanceCreateForm" Picture="Form_CreateDupMis" Position="420,75" Size="377,463" ScreenFit="true" Visible="false">
+  <Window Name="InstanceCreateForm" PadShoulders="InstanceCreatePrevious,InstanceCreateNext" Picture="Form_CreateDupMis" Position="420,75" Size="377,463" ScreenFit="true" Visible="false">
     <ImageButton Name="InstanceCreateNext" Picture="Btn_ArrowR_5" Position="130,390" Size="17,17" Click="onInstanceCreateNext"/>
     <ImageButton Name="InstanceCreatePrevious" Picture="Btn_ArrowL_5" Position="45,390" Size="17,17" Click="onInstanceCreatePrevious"/>
     <ListBox Name="InstanceCreateList" Bounds="19,94,149,290" RowHeight="29" FontColor="#080808" HighlightColor="#89BFF5"

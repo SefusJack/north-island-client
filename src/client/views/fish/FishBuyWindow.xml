@@ -3,7 +3,7 @@
      FormBuyFish or FormDelFish by the mode, and the view model places it beside the tank.  The game draws a form's controls from the last created to the
      first: the controls here are in drawing order, the reverse of TFishBuyForm.Create. -->
 <Panel Name="FishBuyLayer" Bounds="0,0,800,600">
-  <Window Name="FishBuy" Picture="FormBuyFish" Position="278,174" Visible="false">
+  <Window Name="FishBuy" PadShoulders="FishBuyPrevious,FishBuyNext" Picture="FormBuyFish" Position="278,174" Visible="false">
     <!-- DrawControl: the fish picked and its price -->
     <DrawingArea Name="FishBuyPaint" Bounds="0,0,243,252">
       <!-- the preview fish: where it starts, and its drawing offset -->

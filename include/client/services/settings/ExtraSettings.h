@@ -11,6 +11,10 @@ namespace client {
 
     struct LaunchOptions;
 
+    /// @brief Tells whether game pads are used unless the settings say otherwise: not on Windows before Vista, where they are untried.
+    /// @return True where game pads are on by default.
+    bool controllerOnByDefault();
+
     /// @brief The qol client's own settings (user\extra-settings.json), the ones the original never had: frame pacing, frame graph, window and renderer.
     /// @details Defaults are the original's (a 30 ms beat, an 800 x 600 window, SDL's renderer). The command line overrides them for one run; the first run writes the file from what it ran with.
     struct ExtraSettings {
@@ -22,6 +26,23 @@ namespace client {
 
         /// @brief Which speedups run: none, the recommended ones for the renderer, or the player's own choice.
         enum class SpeedupMode { None, Auto, Custom };
+
+        /// @brief Play with a game pad ("controller" in the file).
+        struct Controller {
+            bool enabled = controllerOnByDefault(); // game pads are looked for and used
+            bool hideHud = true; // the HUD slides away while the pad is in use
+            bool hideStatus = true; // the status panel goes with it
+            bool hideChat = true; // the chat box goes with it
+            int hideSeconds = 10; // how long after the last use of the menus the HUD hides; 0: only when Start sends it away
+
+            /// @brief Compares all settings.
+            /// @param other The settings to compare with.
+            /// @return True when every setting matches.
+            bool operator==(const Controller& other) const {
+                return enabled == other.enabled && hideHud == other.hideHud && hideStatus == other.hideStatus && hideChat == other.hideChat &&
+                       hideSeconds == other.hideSeconds;
+            }
+        };
 
         Frames frames = Frames::Original;
         int fpsCap = 144; // default frame cap in frames per second
@@ -44,7 +65,9 @@ namespace client {
         bool loadingSoundOn = true;
         bool sortButtons = false;
         bool partyLogin = false;
+        bool modernBag = false; // things in the bag move the modern way: the left button carries a whole stack, the right one puts one down or takes half
         SpeedupMode speedupMode = SpeedupMode::None; // which speedups run ("mode" under "speedups" in the file)
+        Controller controller;
         core::Speedups speedups; // the player's own choice (used in SpeedupMode::Custom) and, in every mode, the busy wait
 
         /// @brief Tells whether frames are paced by anything but the original's beat.

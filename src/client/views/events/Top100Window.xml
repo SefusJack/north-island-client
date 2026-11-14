@@ -6,7 +6,7 @@
      here are in drawing order, the reverse of TLD_Top100Form.Create.  (The game's places edits of
      the event lists never show: the picture lies over them.) -->
 <Panel Name="Top100Layer" Bounds="0,0,800,600">
-  <Window Name="Top100Window" Escape="onTop100Close" Picture="Form_Top100_1" Position="222,38" Visible="false">
+  <Window Name="Top100Window" PadShoulders="Top100Previous,Top100Next" Escape="onTop100Close" Picture="Form_Top100_1" Position="222,38" Visible="false">
     <!-- DrawControl: which controls show, and the picture under the event lists' places -->
     <DrawingArea Name="Top100Layout" Bounds="0,0,356,523">
       <!-- the event ranking background picture -->

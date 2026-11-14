@@ -8,10 +8,10 @@
   <Window Name="RemoteControlWindow" Escape="onRemoteClose" Picture="form_autoPlay_1" Position="286,49" Size="227,501" Visible="false">
     <!-- DrawControl: the rails with their percents; RenderWithChildren: the hints of the rails over everything -->
     <DrawingArea Name="RemotePage" Bounds="0,0,227,501"/>
-    <DrawingArea Name="RemoteSlider4" Bounds="106,249,70,10" HitTest="true" MouseDown="onRemoteSliderDown" MouseDrag="onRemoteSliderDrag" MouseUp="onRemoteSliderUp"/>
-    <DrawingArea Name="RemoteSlider3" Bounds="106,227,70,10" HitTest="true" MouseDown="onRemoteSliderDown" MouseDrag="onRemoteSliderDrag" MouseUp="onRemoteSliderUp"/>
-    <DrawingArea Name="RemoteSlider2" Bounds="106,183,70,10" HitTest="true" MouseDown="onRemoteSliderDown" MouseDrag="onRemoteSliderDrag" MouseUp="onRemoteSliderUp"/>
-    <DrawingArea Name="RemoteSlider1" Bounds="106,161,70,10" HitTest="true" MouseDown="onRemoteSliderDown" MouseDrag="onRemoteSliderDrag" MouseUp="onRemoteSliderUp"/>
+    <DrawingArea Name="RemoteSlider4" PadSlider="true" Bounds="106,249,70,10" HitTest="true" MouseDown="onRemoteSliderDown" MouseDrag="onRemoteSliderDrag" MouseUp="onRemoteSliderUp"/>
+    <DrawingArea Name="RemoteSlider3" PadSlider="true" Bounds="106,227,70,10" HitTest="true" MouseDown="onRemoteSliderDown" MouseDrag="onRemoteSliderDrag" MouseUp="onRemoteSliderUp"/>
+    <DrawingArea Name="RemoteSlider2" PadSlider="true" Bounds="106,183,70,10" HitTest="true" MouseDown="onRemoteSliderDown" MouseDrag="onRemoteSliderDrag" MouseUp="onRemoteSliderUp"/>
+    <DrawingArea Name="RemoteSlider1" PadSlider="true" Bounds="106,161,70,10" HitTest="true" MouseDown="onRemoteSliderDown" MouseDrag="onRemoteSliderDrag" MouseUp="onRemoteSliderUp"/>
     <DrawingArea Name="RemoteItem5" Bounds="156,399,30,30" HitTest="true" RightMouseUp="onRemoteItemClear"/>
     <DrawingArea Name="RemoteItem4" Bounds="122,399,30,30" HitTest="true" RightMouseUp="onRemoteItemClear"/>
     <DrawingArea Name="RemoteItem3" Bounds="88,399,30,30" HitTest="true" RightMouseUp="onRemoteItemClear"/>

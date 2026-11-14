@@ -3,7 +3,7 @@
      viewmodels/RightClickMenu.cpp.  For the HP and SP Bottles it holds "Put in" over Cancel.  The game draws a form's controls from the
      last created to the first: the controls here are in drawing order, the reverse of TRightClickForm.Create. -->
 <Panel Name="RightClickMenuLayer" Bounds="0,0,800,600" Topmost="true">
-  <Panel Name="RightClickMenu" Bounds="0,0,71,40" Visible="false">
+  <Panel Name="RightClickMenu" PadWindow="true" Bounds="0,0,71,40" Visible="false">
     <ImageButton Name="RightClickPutIn" Picture="Btn_MagicPutIn_1" Position="0,0" Click="onRightClickPutIn"/>
     <ImageButton Name="RightClickCancel" Picture="Btn_Cancel_5" Position="0,20" Click="onRightClickCancel"/>
   </Panel>

@@ -278,6 +278,31 @@ namespace client {
         m_content.setVisible(true);
     }
 
+    bool MaidMenu::padAsk(PadAsk ask) {
+        if (!m_visible) {
+            return false;
+        }
+        if (m_onChoice) {
+            if (ask == PadAsk::Up || ask == PadAsk::Down) {
+                m_choices.stepPadRow(ask == PadAsk::Up ? -1 : 1);
+            } else if (ask == PadAsk::Accept) {
+                if (const int row = m_choices.padRow(); row >= 0) {
+                    const std::function<void(int)> handler = m_onChoice;
+                    hide();
+                    m_speaker = false;
+                    handler(row);
+                } else {
+                    m_choices.stepPadRow(1); // nothing marked yet: mark the first choice
+                }
+            }
+            return true; // the box is in the way of everything else
+        }
+        if (ask == PadAsk::Accept || ask == PadAsk::Cancel) {
+            clicked();
+        }
+        return true;
+    }
+
     void MaidMenu::clicked() {
         if (!m_visible) {
             return;

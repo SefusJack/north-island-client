@@ -100,6 +100,18 @@ namespace ui {
             /// @return The row index, or -1 for none.
             int hoverIndex() const { return m_hoverRow >= 0 ? m_top + m_hoverRow : -1; }
 
+            /// @brief The row a game pad stands on; it is drawn as the row under the mouse until the mouse moves over the list.
+            /// @return The row index, or -1 for none.
+            int padRow() const { return m_padRow; }
+
+            /// @brief Moves the game pad's row, scrolling it into view; from no row, down starts at the first and up at the last.
+            /// @param by Rows to move, negative for up.
+            void stepPadRow(int by);
+
+            /// @brief The height of one row.
+            /// @return The height in pixels.
+            int rowHeight() const { return m_rowHeight; }
+
             /// @brief Selects a row.
             /// @param index The row index (-1 for none).
             void setSelectedIndex(int index) { m_selected = index; }
@@ -181,6 +193,9 @@ namespace ui {
             int m_top = 0;
             int m_selected = -1;
             int m_hoverRow = -1;
+            int m_padRow = -1; // the row a game pad stands on
+            core::Point m_padMouse; // where the mouse was when the pad last moved its row
+            bool m_padMouseKnown = false;
             int m_barPosition = -1;
             int m_barCount = -1;
     };

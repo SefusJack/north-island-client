@@ -7,7 +7,9 @@
 
 #include <SDL3/SDL.h>
 
+#include <algorithm>
 #include <cctype>
+#include <cstdlib>
 #include <map>
 #include <sstream>
 
@@ -188,6 +190,55 @@ namespace client {
                         key.key.down = down;
                         SDL_PushEvent(&key);
                     }
+                }
+            } else if (command == "pad") {
+                std::string what;
+                std::string name;
+                std::string value;
+                words >> what >> name >> value;
+                if (what == "attach") {
+                    SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1"); // a test's window need not have the keyboard
+                    SDL_VirtualJoystickDesc pad;
+                    SDL_INIT_INTERFACE(&pad);
+                    pad.type = SDL_JOYSTICK_TYPE_GAMEPAD;
+                    pad.naxes = SDL_GAMEPAD_AXIS_COUNT;
+                    pad.nbuttons = SDL_GAMEPAD_BUTTON_COUNT;
+                    const SDL_JoystickID id = SDL_AttachVirtualJoystick(&pad);
+                    m_pad = id != 0 ? SDL_OpenJoystick(id) : nullptr;
+                    if (m_pad == nullptr) {
+                        core::logError("script: ERROR ", line, ": ", SDL_GetError());
+                    } else {
+                        // a trigger let go is the low end of its axis; a new virtual pad has every axis in the middle
+                        SDL_SetJoystickVirtualAxis(m_pad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, SDL_MIN_SINT16);
+                        SDL_SetJoystickVirtualAxis(m_pad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, SDL_MIN_SINT16);
+                    }
+                } else if (m_pad == nullptr) {
+                    core::logError("script: ERROR ", line, ": no pad attached (pad attach)");
+                } else if (what == "detach") {
+                    const SDL_JoystickID id = SDL_GetJoystickID(m_pad);
+                    SDL_CloseJoystick(m_pad);
+                    SDL_DetachVirtualJoystick(id);
+                    m_pad = nullptr;
+                } else if (what == "button") {
+                    const SDL_GamepadButton button = SDL_GetGamepadButtonFromString(name.c_str());
+                    if (button == SDL_GAMEPAD_BUTTON_INVALID || (value != "down" && value != "up")) {
+                        core::logError("script: ERROR ", line, ": pad button NAME down|up, NAME as SDL names it (a, b, x, y, back, start, dpup ...)");
+                    } else {
+                        SDL_SetJoystickVirtualButton(m_pad, button, value == "down");
+                    }
+                } else if (what == "axis") {
+                    const SDL_GamepadAxis axis = SDL_GetGamepadAxisFromString(name.c_str());
+                    if (axis == SDL_GAMEPAD_AXIS_INVALID || value.empty()) {
+                        core::logError("script: ERROR ", line, ": pad axis NAME VALUE, NAME as SDL names it (leftx, lefty, rightx, righty, lefttrigger, righttrigger), VALUE from -1 to 1 (a trigger's from 0 to 1)");
+                    } else {
+                        double amount = std::max(-1.0, std::min(1.0, std::atof(value.c_str())));
+                        if (axis == SDL_GAMEPAD_AXIS_LEFT_TRIGGER || axis == SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) {
+                            amount = std::max(0.0, amount) * 2.0 - 1.0; // a trigger goes from 0 to 1 over its axis's whole range
+                        }
+                        SDL_SetJoystickVirtualAxis(m_pad, axis, static_cast<Sint16>(amount * 32767.0)); // 32767: an axis's largest value
+                    }
+                } else {
+                    core::logError("script: ERROR ", line, ": pad attach, pad detach, pad button NAME down|up or pad axis NAME VALUE");
                 }
             } else if (command == "move") {
                 int x = 0;

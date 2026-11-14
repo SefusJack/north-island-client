@@ -9,7 +9,7 @@
      shows.  The game draws a form's controls from the last created to the first: the controls
      here are in drawing order, the reverse of TDupMisForm.Create. -->
 <Panel Name="InstanceWindowLayer" Bounds="0,0,800,600">
-  <Window Name="InstanceWindow" Escape="onInstanceClose" Picture="Form_Emblem_1" Position="444,0" Size="371,539" ScreenFit="true" Visible="false" DoubleClick="onInstanceWindowDoubleClick">
+  <Window Name="InstanceWindow" PadTabs="InstanceTabParty,InstanceTabGuild,*InstanceTabInstances" Escape="onInstanceClose" Picture="Form_Emblem_1" Position="444,0" Size="371,539" ScreenFit="true" Visible="false" DoubleClick="onInstanceWindowDoubleClick">
     <!-- DrawControl: which tabs and pages show, and the picture of the page under its tabs -->
     <DrawingArea Name="InstanceTabArt" Bounds="0,0,371,539">
       <!-- the page art (Form_Dup*) under the tabs -->
@@ -33,7 +33,7 @@
     <ImageButton Name="InstanceTabInstances" Picture="Btn_DupMis" Position="150,41" Size="66,21"/>
     <ImageButton Name="InstanceTabGuild" Picture="Btn_ArmyGrounp_1" Position="85,41" Size="66,21" Visible="false" Click="onInstanceTabGuild"/>
     <ImageButton Name="InstanceTabParty" Picture="Btn_Team_1" Position="20,41" Size="66,21" Click="onInstanceTabParty"/>
-    <DrawingArea Name="InstanceList" Bounds="36,98,294,350" HitTest="true" MouseDown="onInstanceListDown"/>
+    <DrawingArea Name="InstanceList" PadCells="0,70" Bounds="36,98,294,350" HitTest="true" MouseDown="onInstanceListDown"/>
     <ImageButton Name="InstanceJoin5" Picture="Btn_Join" Position="271,415" Size="56,20" Visible="false" Click="onInstanceJoin"/>
     <ImageButton Name="InstanceJoin4" Picture="Btn_Join" Position="271,345" Size="56,20" Visible="false" Click="onInstanceJoin"/>
     <ImageButton Name="InstanceJoin3" Picture="Btn_Join" Position="271,275" Size="56,20" Visible="false" Click="onInstanceJoin"/>

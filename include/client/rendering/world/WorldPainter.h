@@ -47,6 +47,10 @@ namespace client {
                 std::set<std::int32_t> teamMembers;
                 bool showTents = false;
                 bool trojanWarMap = false;
+                std::optional<core::Point> padMark; // the top of a thing that is no NPC which the pad would reach, where the hand points
+                int padNpc = -1; // index of the NPC a game pad's talk button would reach (-1: none)
+                const gfx::Texture* padHand = nullptr; // the hand drawn over it, pointing down
+                core::Point padHandTip; // the fingertip in the hand's picture
                 std::function<std::string(int)> goldEaglePrefix;
                 std::function<std::string(int)> defenseNpcPrefix;
                 std::function<std::string(int)> stoneEaglePrefix;

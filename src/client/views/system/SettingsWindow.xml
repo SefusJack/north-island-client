@@ -2,12 +2,12 @@
 <!-- The system window of the qol client (the System button; it replaces TSe_SystemForm's Form_System_2, whose words are
      painted into its picture); view model: viewmodels/system/SettingsWindow.cpp.  Made of the game's own pictures: the
      white form frame (form_module), blank buttons with captions as tabs (Btn_Module_2), the blue box (panel10), the
-     original's switches, arrows, volume bars and menu buttons.  Four tabs: Game (the server's switches, the camera, the
+     original's switches, arrows, volume bars and menu buttons.  Five tabs: Game (the server's switches, the camera, the
      sort buttons, more accounts, the character information, the black list, the online tips), Sound (music and sound effects), Chat (the channels, the chat
-     box, the channels' colours) and Video (extra-settings.json); below them what the menu did: back to a spot, the password,
+     box, the channels' colours), Video and Pad (extra-settings.json); below them what the menu did: back to a spot, the password,
      the balance, Log Out and Exit. -->
 <Panel Name="SettingsWindowLayer" Bounds="0,0,800,600">
-  <Window Name="SettingsWindow" Escape="onSettingsWindowEscape" Position="195,106" Size="410,388" Hint="System" Visible="false">
+  <Window Name="SettingsWindow" PadTabs="SettingsTab1,SettingsTab2,SettingsTab3,SettingsTab4" Escape="onSettingsWindowEscape" Position="195,106" Size="410,388" Hint="System" Visible="false">
     <!-- form_module_1: Borders keep the ornaments whole (top 122, bottom 45) and repeat only the picture's steady rows 122..177;
          an odd height keeps its two-row stripes in step where the repeats meet the bottom -->
     <Panel Name="SettingsFrame" Bounds="0,0,410,387" Skin="form_module_1" SkinSource="0,0,223,223" Borders="64,122,80,45"/>
@@ -23,30 +23,78 @@
     <Panel Name="SettingsBox" Bounds="18,66,370,250" Skin="panel10" SkinSource="0,0,50,50" Borders="7,7,7,7">
       <!-- Game: more rows than the box holds, scrolled in it (the wheel over them or the bar) -->
       <Panel Name="SettingsGame" Bounds="0,0,372,250" ClipChildren="true">
-        <Panel Name="SettingsGameRows" Bounds="0,0,346,304">
-          <DrawingArea Name="SettingsGameWheel" Bounds="0,0,346,304" HitTest="true" MouseWheel="onSettingsGameWheel"/>
-          <Label Name="SettingsPkText" Position="16,16" Text="Player PK" Effect="Shadow"/>
-          <ImageButton Name="SettingsOption1" Picture="Btn_On_1" Position="298,12" Click="onSettingsOption"/>
-          <Label Name="SettingsFightText" Position="16,44" Text="Fighting" Effect="Shadow"/>
-          <ImageButton Name="SettingsOption2" Picture="Btn_On_1" Position="298,40" Click="onSettingsOption"/>
-          <Label Name="SettingsTradeText" Position="16,72" Text="Trading" Effect="Shadow"/>
-          <ImageButton Name="SettingsOption6" Picture="Btn_On_1" Position="298,68" Click="onSettingsOption"/>
-          <Label Name="SettingsPartyText" Position="16,100" Text="Party" Effect="Shadow"/>
-          <ImageButton Name="SettingsOption10" Picture="Btn_On_1" Position="298,96" Click="onSettingsOption"/>
-          <Label Name="SettingsCameraText" Position="16,128" Text="Battle camera zoom" Effect="Shadow"/>
-          <ImageButton Name="SettingsCamera" Picture="Btn_On_1" Position="298,124" Click="onSettingsCamera"/>
-          <Label Name="SettingsSortText" Position="16,156" Text="Sort button in item windows" Effect="Shadow"/>
-          <CheckBox Name="SettingsSort" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="326,155"
-                    Click="onSettingsSort"/>
-          <Label Name="SettingsPartyLoginText" Position="16,184" Text="Log in more accounts (group window)" Effect="Shadow"/>
-          <CheckBox Name="SettingsPartyLogin" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="326,183"
-                    Click="onSettingsPartyLogin"/>
-          <Label Name="SettingsHumInfoText" Position="16,212" Text="Character information" Effect="Shadow"/>
-          <ImageButton Name="SettingsHumInfoSetup" Picture="Btn_setup_1" Position="298,208" Click="onSettingsHumInfoSetup"/>
-          <Label Name="SettingsBlacklistText" Position="16,240" Text="Black list" Effect="Shadow"/>
-          <ImageButton Name="SettingsBlacklistSetup" Picture="Btn_setup_1" Position="298,236" Click="onSettingsBlacklist"/>
-          <Label Name="SettingsTipsText" Position="16,270" Text="Online tips" Effect="Shadow"/>
-          <ImageButton Name="SettingsTips" Picture="Btn_Readme_1" Position="266,266" Click="onSettingsTips"/>
+        <Panel Name="SettingsGameRows" PadScroll="SettingsGameScroll" Bounds="0,0,346,250">
+          <DrawingArea Name="SettingsGameWheel" Bounds="0,0,346,250" HitTest="true" MouseWheel="onSettingsGameWheel"/>
+          <!-- groups that open and close, stacked by the view model like the Video page's -->
+          <Panel Name="SettingsGameGroup1" Bounds="0,0,346,26">
+            <DrawingArea Name="SettingsGameHead1" Bounds="0,0,346,26" HitTest="true" MouseDown="onSettingsGameHead" MouseWheel="onSettingsGameWheel"/>
+            <CheckBox Name="SettingsGameOpen1" PadSkip="true" Picture="Btn_ArrowR_1" CheckedPicture="Btn_ArrowDn_3" Position="12,4" Click="onSettingsGameOpen"/>
+            <Label Name="SettingsGameTitle1" Position="36,6" Text="Permissions" FontColor="#FFFF00" Effect="Shadow"/>
+          </Panel>
+          <Panel Name="SettingsGameBody1" Bounds="0,0,346,116">
+            <Label Name="SettingsPkText" Position="16,6" Text="Player PK" Effect="Shadow"/>
+            <ImageButton Name="SettingsOption1" Picture="Btn_On_1" Position="298,2" Click="onSettingsOption"/>
+            <Label Name="SettingsFightText" Position="16,34" Text="Fighting" Effect="Shadow"/>
+            <ImageButton Name="SettingsOption2" Picture="Btn_On_1" Position="298,30" Click="onSettingsOption"/>
+            <Label Name="SettingsTradeText" Position="16,62" Text="Trading" Effect="Shadow"/>
+            <ImageButton Name="SettingsOption6" Picture="Btn_On_1" Position="298,58" Click="onSettingsOption"/>
+            <Label Name="SettingsPartyText" Position="16,90" Text="Party" Effect="Shadow"/>
+            <ImageButton Name="SettingsOption10" Picture="Btn_On_1" Position="298,86" Click="onSettingsOption"/>
+          </Panel>
+          <Panel Name="SettingsGameGroup2" Bounds="0,0,346,26">
+            <DrawingArea Name="SettingsGameHead2" Bounds="0,0,346,26" HitTest="true" MouseDown="onSettingsGameHead" MouseWheel="onSettingsGameWheel"/>
+            <CheckBox Name="SettingsGameOpen2" PadSkip="true" Picture="Btn_ArrowR_1" CheckedPicture="Btn_ArrowDn_3" Position="12,4" Click="onSettingsGameOpen"/>
+            <Label Name="SettingsGameTitle2" Position="36,6" Text="Interface" FontColor="#FFFF00" Effect="Shadow"/>
+          </Panel>
+          <Panel Name="SettingsGameBody2" Bounds="0,0,346,132">
+            <Label Name="SettingsCameraText" Position="16,6" Text="Battle camera zoom" Effect="Shadow"/>
+            <ImageButton Name="SettingsCamera" Picture="Btn_On_1" Position="298,2" Click="onSettingsCamera"/>
+            <Label Name="SettingsSortText" Position="16,34" Text="Sort button in item windows" Effect="Shadow"/>
+            <CheckBox Name="SettingsSort" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="326,33" Click="onSettingsSort"/>
+            <Label Name="SettingsPartyLoginText" Position="16,62" Text="Log in more accounts (group window)" Effect="Shadow"/>
+            <CheckBox Name="SettingsPartyLogin" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="326,61" Click="onSettingsPartyLogin"/>
+            <!-- the modern way of moving things: the left button carries the whole stack, the right one puts one down or takes half -->
+            <Label Name="SettingsModernBagText" Position="16,90" Text="Modern item dragging" Effect="Shadow"/>
+            <CheckBox Name="SettingsModernBag" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="326,89" Click="onSettingsModernBag"/>
+            <Label Name="SettingsModernBagHelp" Bounds="16,110,326,15" Text="Left: whole stack. Right: one or half." FontColor="#C8DCFF" Effect="Plain"/>
+          </Panel>
+          <Panel Name="SettingsGameGroup3" Bounds="0,0,346,26">
+            <DrawingArea Name="SettingsGameHead3" Bounds="0,0,346,26" HitTest="true" MouseDown="onSettingsGameHead" MouseWheel="onSettingsGameWheel"/>
+            <CheckBox Name="SettingsGameOpen3" PadSkip="true" Picture="Btn_ArrowR_1" CheckedPicture="Btn_ArrowDn_3" Position="12,4" Click="onSettingsGameOpen"/>
+            <Label Name="SettingsGameTitle3" Position="36,6" Text="Controller" FontColor="#FFFF00" Effect="Shadow"/>
+          </Panel>
+          <Panel Name="SettingsGameBody3" Bounds="0,0,346,212">
+            <Label Name="SettingsPadEnabledText" Position="16,6" Text="Use game controllers" Effect="Shadow"/>
+            <CheckBox Name="SettingsPadEnabled" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="326,5" Click="onSettingsPad"/>
+            <Label Name="SettingsPadEnabledHelp" Bounds="16,26,326,15" Text="Restart to apply." FontColor="#C8DCFF" Effect="Plain"/>
+            <Label Name="SettingsPadHudTitle" Position="16,52" Text="While a controller is in use" FontColor="#FFFF00" Effect="Shadow"/>
+            <Label Name="SettingsPadHideHudText" Position="16,78" Text="Hide the bars and the small map" Effect="Shadow"/>
+            <CheckBox Name="SettingsPadHideHud" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="326,77" Click="onSettingsPad"/>
+            <Label Name="SettingsPadHideStatusText" Position="32,106" Text="Also hide the status bars" Effect="Shadow"/>
+            <CheckBox Name="SettingsPadHideStatus" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="326,105" Click="onSettingsPad"/>
+            <Label Name="SettingsPadHideChatText" Position="32,134" Text="Also hide the chat box" Effect="Shadow"/>
+            <CheckBox Name="SettingsPadHideChat" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="326,133" Click="onSettingsPad"/>
+            <Label Name="SettingsPadSecondsText" Position="16,164" Text="Hide after" Effect="Shadow"/>
+            <ImageButton Name="SettingsPadArrow1" Picture="Btn_ArrowL_4" Position="184,162" Click="onSettingsPadArrow"/>
+            <Panel Name="SettingsPadSecondsField" Bounds="204,160,124,21" Skin="panel16" SkinSource="0,0,120,21" Borders="4,4,4,4">
+              <Label Name="SettingsPadSecondsValue" Bounds="0,4,124,15" Align="Center" FontColor="#1E3C78" Effect="Plain"/>
+            </Panel>
+            <ImageButton Name="SettingsPadArrow2" Picture="Btn_ArrowR_4" Position="330,162" Click="onSettingsPadArrow"/>
+            <Label Name="SettingsPadSecondsHelp" Bounds="16,189,326,15" Text="Start shows the bars and hides them again." FontColor="#C8DCFF" Effect="Plain"/>
+          </Panel>
+          <Panel Name="SettingsGameGroup4" Bounds="0,0,346,26">
+            <DrawingArea Name="SettingsGameHead4" Bounds="0,0,346,26" HitTest="true" MouseDown="onSettingsGameHead" MouseWheel="onSettingsGameWheel"/>
+            <CheckBox Name="SettingsGameOpen4" PadSkip="true" Picture="Btn_ArrowR_1" CheckedPicture="Btn_ArrowDn_3" Position="12,4" Click="onSettingsGameOpen"/>
+            <Label Name="SettingsGameTitle4" Position="36,6" Text="Information" FontColor="#FFFF00" Effect="Shadow"/>
+          </Panel>
+          <Panel Name="SettingsGameBody4" Bounds="0,0,346,90">
+            <Label Name="SettingsHumInfoText" Position="16,6" Text="Character information" Effect="Shadow"/>
+            <ImageButton Name="SettingsHumInfoSetup" Picture="Btn_setup_1" Position="298,2" Click="onSettingsHumInfoSetup"/>
+            <Label Name="SettingsBlacklistText" Position="16,34" Text="Black list" Effect="Shadow"/>
+            <ImageButton Name="SettingsBlacklistSetup" Picture="Btn_setup_1" Position="298,30" Click="onSettingsBlacklist"/>
+            <Label Name="SettingsTipsText" Position="16,62" Text="Online tips" Effect="Shadow"/>
+            <ImageButton Name="SettingsTips" Picture="Btn_Readme_1" Position="266,58" Click="onSettingsTips"/>
+          </Panel>
         </Panel>
         <ScrollBar Name="SettingsGameScroll" Bounds="348,4,17,242" Track="Rail_H5" TrackCap="16" Thumb="bar_H4"
                    ThumbSource="0,0,9,21" ThumbCap="7" ThumbInset="3" Scroll="onSettingsGameScroll"/>
@@ -92,11 +140,11 @@
       <!-- Video (the qol client's own settings): groups that open and close under their headings; the view model stacks them and
            scrolls what does not fit (the wheel over them or the bar) -->
       <Panel Name="SettingsVideo" Bounds="0,0,378,250" Visible="false" ClipChildren="true">
-        <Panel Name="SettingsVideoRows" Bounds="0,0,352,250">
+        <Panel Name="SettingsVideoRows" PadScroll="SettingsVideoScroll" Bounds="0,0,352,250">
           <DrawingArea Name="SettingsVideoWheel" Bounds="0,0,352,250" HitTest="true" MouseWheel="onSettingsVideoWheel"/>
           <Panel Name="SettingsVideoGroup1" Bounds="0,0,352,26">
             <DrawingArea Name="SettingsVideoHead1" Bounds="0,0,352,26" HitTest="true" MouseDown="onSettingsVideoHead" MouseWheel="onSettingsVideoWheel"/>
-            <CheckBox Name="SettingsVideoOpen1" Picture="Btn_ArrowR_1" CheckedPicture="Btn_ArrowDn_3" Position="12,4" Click="onSettingsVideoOpen"/>
+            <CheckBox Name="SettingsVideoOpen1" PadSkip="true" Picture="Btn_ArrowR_1" CheckedPicture="Btn_ArrowDn_3" Position="12,4" Click="onSettingsVideoOpen"/>
             <Label Name="SettingsVideoTitle1" Position="36,6" Text="Window" FontColor="#FFFF00" Effect="Shadow"/>
           </Panel>
           <Panel Name="SettingsVideoBody1" Bounds="0,0,352,88">
@@ -118,7 +166,7 @@
           </Panel>
           <Panel Name="SettingsVideoGroup2" Bounds="0,0,352,26">
             <DrawingArea Name="SettingsVideoHead2" Bounds="0,0,352,26" HitTest="true" MouseDown="onSettingsVideoHead" MouseWheel="onSettingsVideoWheel"/>
-            <CheckBox Name="SettingsVideoOpen2" Picture="Btn_ArrowR_1" CheckedPicture="Btn_ArrowDn_3" Position="12,4" Click="onSettingsVideoOpen"/>
+            <CheckBox Name="SettingsVideoOpen2" PadSkip="true" Picture="Btn_ArrowR_1" CheckedPicture="Btn_ArrowDn_3" Position="12,4" Click="onSettingsVideoOpen"/>
             <Label Name="SettingsVideoTitle2" Position="36,6" Text="Performance" FontColor="#FFFF00" Effect="Shadow"/>
           </Panel>
           <Panel Name="SettingsVideoBody2" Bounds="0,0,352,162">
@@ -146,7 +194,7 @@
           </Panel>
           <Panel Name="SettingsVideoGroup3" Bounds="0,0,352,26">
             <DrawingArea Name="SettingsVideoHead3" Bounds="0,0,352,26" HitTest="true" MouseDown="onSettingsVideoHead" MouseWheel="onSettingsVideoWheel"/>
-            <CheckBox Name="SettingsVideoOpen3" Picture="Btn_ArrowR_1" CheckedPicture="Btn_ArrowDn_3" Position="12,4" Click="onSettingsVideoOpen"/>
+            <CheckBox Name="SettingsVideoOpen3" PadSkip="true" Picture="Btn_ArrowR_1" CheckedPicture="Btn_ArrowDn_3" Position="12,4" Click="onSettingsVideoOpen"/>
             <Label Name="SettingsVideoTitle3" Position="36,6" Text="Scaling" FontColor="#FFFF00" Effect="Shadow"/>
           </Panel>
           <Panel Name="SettingsVideoBody3" Bounds="0,0,352,198">
@@ -183,7 +231,7 @@
                the check boxes are numbered in the view model's order and show what the chosen way turns on -->
           <Panel Name="SettingsVideoGroup4" Bounds="0,0,352,26">
             <DrawingArea Name="SettingsVideoHead4" Bounds="0,0,352,26" HitTest="true" MouseDown="onSettingsVideoHead" MouseWheel="onSettingsVideoWheel"/>
-            <CheckBox Name="SettingsVideoOpen4" Picture="Btn_ArrowR_1" CheckedPicture="Btn_ArrowDn_3" Position="12,4" Click="onSettingsVideoOpen"/>
+            <CheckBox Name="SettingsVideoOpen4" PadSkip="true" Picture="Btn_ArrowR_1" CheckedPicture="Btn_ArrowDn_3" Position="12,4" Click="onSettingsVideoOpen"/>
             <Label Name="SettingsVideoTitle4" Position="36,6" Text="Speedups" FontColor="#FFFF00" Effect="Shadow"/>
           </Panel>
           <Panel Name="SettingsVideoBody4" Bounds="0,0,352,360">
@@ -233,6 +281,7 @@
         <ScrollBar Name="SettingsVideoScroll" Bounds="352,4,17,242" Track="Rail_H5" TrackCap="16" Thumb="bar_H4"
                    ThumbSource="0,0,9,21" ThumbCap="7" ThumbInset="3" Scroll="onSettingsVideoScroll"/>
       </Panel>
+      <!-- Pad: play with a game controller (extra-settings.json "controller") -->
     </Panel>
 
     <ImageButton Name="SettingsMenu4" Picture="Btn_ReTurn_1" Position="16,322" Click="onSettingsMenu"/>

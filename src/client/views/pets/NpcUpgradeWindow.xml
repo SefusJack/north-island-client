@@ -5,7 +5,7 @@
      drawn and the Cancel and arrow buttons are invisible but catch the mouse, as buttons without a picture do in the game.  The game draws a form's controls from the last
      created to the first: the controls here are in drawing order, the reverse of TSe_NPCUpgradeForm.Create; DrawControl's rows are under them. -->
 <Panel Name="NpcUpgradeLayer" Bounds="0,0,800,600">
-  <Window Name="NpcUpgrade" Escape="onNpcUpgradeClose" Position="378,0" Size="422,360" Visible="false">
+  <Window Name="NpcUpgrade" PadShoulders="NpcUpgradePrevious,NpcUpgradeNext" Escape="onNpcUpgradeClose" Position="378,0" Size="422,360" Visible="false">
     <DrawingArea Name="NpcUpgradePaint" Bounds="0,0,422,360">
       <!-- the left pet figure's feet, and the distance from the left side to the right side -->
       <Spot Name="NpcUpgradeFigure" Position="113,147" Pitch="202,0"/>

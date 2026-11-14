@@ -1059,6 +1059,25 @@ namespace client {
         }
     }
 
+    std::vector<core::Point> Battle::padTargets() {
+        std::vector<core::Point> first;
+        if (!m_on || m_actor == 0 || (m_skill == 0 && m_item == 0)) {
+            return first;
+        }
+        const auto actor = m_field.fighter(m_actor);
+        const auto skill = m_skill != 0 ? m_services.skills.find(m_skill) : std::nullopt;
+        // target types 1, 3 and 5: the own side, oneself, the own side but oneself
+        const bool ownFirst = skill && (skill->targetType == 1 || skill->targetType == 3 || skill->targetType == 5);
+        std::vector<core::Point> later;
+        for (const auto& [slot, point] : m_painter.padPoints(m_field)) {
+            const auto fighter = m_field.fighter(slot);
+            const bool sameSide = actor && fighter && actor->get().side() == fighter->get().side();
+            (sameSide == ownFirst ? first : later).push_back(point);
+        }
+        first.insert(first.end(), later.begin(), later.end());
+        return first;
+    }
+
     void Battle::command(int button) {
         if (!m_on || m_actor == 0) {
             return;

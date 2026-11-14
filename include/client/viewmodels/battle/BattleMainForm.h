@@ -47,6 +47,25 @@ namespace client {
             /// @param toWindow The mapping function.
             void setToWindow(std::function<core::Point(core::Point)> toWindow) { m_toWindow = std::move(toWindow); }
 
+            /// @brief Tells the ring whether a game pad is played with: it then turns, and the button at its top is the chosen one.
+            /// @param on True in controller mode; the ring turns back to its own places otherwise.
+            /// @param hand The hand that points at the chosen button.
+            void setPad(bool on, const ui::PadPointer& hand) {
+                m_padOn = on;
+                m_padHand = hand;
+            }
+
+            /// @brief Whether the ring is up and turned by the pad now.
+            /// @return True while the pad's left and right turn it.
+            bool padTurns() const { return m_padOn && m_battle.choosing(); }
+
+            /// @brief Turns the ring by one button.
+            /// @param right True to bring the button to the right of the top one up, false the one to its left.
+            void turn(bool right) { m_top = (m_top + (right ? 1 : kButtons - 1)) % kButtons; }
+
+            /// @brief Takes the button at the ring's top, as a click on it would.
+            void takeTop() { m_battle.command(m_top + 1); }
+
             /// @brief Starts the panel coming down from above the screen.
             /// @details Original: SetBattlePanelSlide 1.
             /// @param nowMs Current time in milliseconds.
@@ -131,6 +150,14 @@ namespace client {
             bool m_slid = false;
             int m_wheelActor = 0;
             std::uint64_t m_wheelMs = 0;
+            ui::Screen& m_screen;
+            bool m_padOn = false; // a game pad is played with: the ring turns
+            ui::PadPointer m_padHand; // the hand at the ring's top button
+            static constexpr int kPadFirst = 6; // the button a turn starts with at the top for the pad, counted from 0: the skills
+            int m_top = kPadFirst; // the button at the ring's top for the pad, counted from 0
+            float m_turn = 0.0f; // how far the ring is turned now, in buttons (it follows m_top, or goes back to 0 without a pad)
+            std::uint64_t m_turnMs = 0; // when the ring was last placed
+            bool m_padFocused = false; // the screen's pad highlight is on a ring button
     };
 
 }

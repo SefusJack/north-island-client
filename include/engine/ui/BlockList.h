@@ -123,6 +123,10 @@ namespace ui {
             /// @return The row pitch in pixels.
             int pitch() const { return m_rowHeight + m_rowSpacing; }
 
+            /// @brief Gives the height of a row without the gap under it.
+            /// @return The row height, px.
+            int rowHeight() const { return m_rowHeight; }
+
             /// @brief Moves the top shown row.
             /// @param index New top row index, clamped to 0 or more.
             void setTopIndex(int index) { m_topIndex = std::max(0, index); }
