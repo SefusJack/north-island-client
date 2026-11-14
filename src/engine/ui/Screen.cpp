@@ -1,5 +1,10 @@
 #include "ui/Screen.h"
 
+#include "ui/BlockList.h"
+#include "ui/DrawingArea.h"
+#include "ui/IconGrid.h"
+#include "ui/ImageButton.h"
+
 #include "core/FileSystem.h"
 #include "gfx/TextStyle.h"
 #include "ui/LayoutLoader.h"
@@ -10,6 +15,7 @@
 #include "ui/Tooltip.h"
 #include "xml/Parser.h"
 
+#include <cctype>
 #include <cmath>
 #include <unordered_set>
 
@@ -232,8 +238,8 @@ namespace ui {
         const auto& layouts = m_root->children();
         for (const bool overlay : {true, false}) {
             for (auto layout = layouts.rbegin(); layout != layouts.rend(); ++layout) {
-                if (!kept(**layout)) {
-                    continue;
+                if (!kept(**layout) || (*layout)->isSlidAway() || (*layout)->slide() != core::Point{}) {
+                    continue; // filtered out, or sliding: the mouse is kept off a bar on its way
                 }
                 if (const int id = topmostHit(**layout, {0, 0}, toLayout(position, std::cref(**layout)), m_pictures, overlay)) {
                     if (layoutOut != nullptr) {
@@ -246,7 +252,370 @@ namespace ui {
         return 0;
     }
 
-    void Screen::refreshHover() { m_hoveredId = hitAt(m_mouse, &m_hoveredLayout); }
+    void Screen::refreshHover() {
+        if (m_padFocusId != 0) {
+            if (const auto focused = locate(m_padFocusId)) {
+                m_hoveredId = m_padFocusId;
+                m_hoveredLayout = focused->layout ? &focused->layout->get() : nullptr;
+                return;
+            }
+        }
+        m_hoveredId = hitAt(m_mouse, &m_hoveredLayout);
+    }
+
+    void Screen::setPadFocus(const std::string& name, const PadPointer& pointer) {
+        m_padFocusId = 0;
+        m_padPointer = pointer;
+        if (!name.empty()) {
+            try {
+                m_padFocusId = findByName(name).id();
+            } catch (const LayoutError&) {
+                // no such element on this screen: nothing is highlighted
+            }
+        }
+        refreshHover();
+    }
+
+    bool Screen::pressPadFocus() {
+        const auto focused = locate(m_padFocusId);
+        return focused && pressButton(focused->element.get());
+    }
+
+    bool Screen::pressButton(Element& element) {
+        auto* button = dynamic_cast<ImageButton*>(&element);
+        if (button == nullptr || !button->isEnabled()) {
+            return false;
+        }
+        if (!button->clickSound().empty() && m_context.playSound) {
+            m_context.playSound(button->clickSound());
+        }
+        button->click(m_context);
+        return true;
+    }
+
+    std::optional<Screen::Located> Screen::padWindow() {
+        // the layouts and their children are searched from the top down, as a click is
+        const std::function<Element*(Element&)> topWindow = [&](Element& element) -> Element* {
+            if (!element.isVisible()) {
+                return nullptr;
+            }
+            if (element.padWindow() || element.padPage() || dynamic_cast<Window*>(&element) != nullptr) { // a pop-up menu and a page count as windows
+                return &element;
+            }
+            for (auto child = element.children().rbegin(); child != element.children().rend(); ++child) {
+                if (Element* inner = topWindow(**child)) {
+                    return inner;
+                }
+            }
+            return nullptr;
+        };
+        const auto& layouts = m_root->children();
+        for (auto layout = layouts.rbegin(); layout != layouts.rend(); ++layout) {
+            if (!kept(**layout) || (*layout)->isSlidAway()) {
+                continue;
+            }
+            if (Element* window = topWindow(**layout)) {
+                return locate(window->id());
+            }
+        }
+        return std::nullopt;
+    }
+
+    int Screen::padWindowId() {
+        const auto window = padWindow();
+        return window ? window->element.get().id() : 0;
+    }
+
+    std::vector<PadSpot> Screen::padSpots() {
+        std::vector<PadSpot> spots;
+        const auto window = padWindow();
+        if (!window) {
+            return spots;
+        }
+        const LayoutRef layout = window->layout;
+        // a place counts when the mouse would reach its element there: nothing lies over it
+        const auto add = [&](const Element& element, core::Point inLayout, bool cell, bool up, bool down, bool checked) {
+            const core::Point point = fromLayout(inLayout, layout);
+            if (checked && hitAt(point) != element.id()) {
+                return false;
+            }
+            spots.push_back({point, element.id(), cell, up, down});
+            return true;
+        };
+        const std::function<void(Element&, core::Point)> collect = [&](Element& element, core::Point origin) {
+            if (!element.isVisible() || element.padSkip() || dynamic_cast<ScrollBar*>(&element) != nullptr) {
+                return;
+            }
+            const core::Rect& bounds = element.bounds();
+            const core::Point at = origin + bounds.position();
+            if (const core::Point cells = element.padCells(); cells.x > 0 || cells.y > 0) {
+                // an element drawn by hand: a column of rows, or a grid of cells
+                const int width = cells.x > 0 ? cells.x : bounds.width;
+                const int height = cells.y > 0 ? cells.y : bounds.height;
+                const int columns = std::max(1, bounds.width / std::max(1, width));
+                int rows = std::max(1, (bounds.height + height / 2) / std::max(1, height)); // the nearest whole number: rows may have gaps between them
+                bool up = false;
+                bool down = false;
+                if (!element.padScroll().empty()) {
+                    try {
+                        if (const auto* bar = dynamic_cast<const ScrollBar*>(&findByName(element.padScroll()))) {
+                            rows = std::min(rows, std::max(0, (bar->count() - bar->position() + columns - 1) / columns));
+                            up = bar->canScrollUp();
+                            down = bar->canScrollDown();
+                        }
+                    } catch (const LayoutError&) {
+                        // no such scroll bar: every row counts
+                    }
+                }
+                for (int row = 0; row < rows; ++row) {
+                    for (int column = 0; column < columns; ++column) {
+                        add(element, {at.x + column * width + width / 2, at.y + row * height + height / 2}, true, up && row == 0, down && row == rows - 1, true);
+                    }
+                }
+            } else if (const auto* list = dynamic_cast<const ListBox*>(&element)) {
+                const int rows = std::min(list->visibleRows(), list->itemCount() - list->topIndex());
+                for (int row = 0; row < rows; ++row) {
+                    // a row is drawn from 2 px above its place in the list
+                    add(
+                        element,
+                        {at.x + bounds.width / 2, at.y + row * list->rowHeight() + list->rowHeight() / 2 - 2},
+                        true,
+                        row == 0 && list->topIndex() > 0,
+                        row == rows - 1 && list->topIndex() + list->visibleRows() < list->itemCount(),
+                        true
+                    );
+                }
+            } else if (const auto* grid = dynamic_cast<const IconGrid*>(&element)) {
+                // an empty cell does not catch the mouse, but a thing can be put on it
+                const core::Size cell = grid->cellSize();
+                for (int index = grid->firstIndex(); index < grid->firstIndex() + grid->cellCount(); ++index) {
+                    const core::Point corner = grid->cellPosition(index);
+                    add(element, {at.x + corner.x + cell.width / 2, at.y + corner.y + cell.height / 2}, true, false, false, false);
+                }
+            } else if (const auto* blocks = dynamic_cast<const BlockList*>(&element)) {
+                const int rows = std::min(blocks->visibleRows(), blocks->rowCount() - blocks->topIndex());
+                for (int row = 0; row < rows; ++row) {
+                    add(element, {at.x + bounds.width / 2, at.y + row * blocks->pitch() + blocks->rowHeight() / 2}, true, false, false, true);
+                }
+            } else if (const auto* area = dynamic_cast<const DrawingArea*>(&element); area != nullptr && !area->padPoints().empty()) {
+                for (const core::Point& place : area->padPoints()) { // the places its view model names
+                    if (add(element, at + place, false, false, false, true)) {
+                        spots.back().loose = true;
+                    }
+                }
+            } else if (dynamic_cast<const DrawingArea*>(&element) != nullptr) {
+                // a place drawn by hand that takes the mouse (a slot a thing is put on, a picture with a hint, a heading) is one
+                // stop; a strip thinner than a finger (a slider) and an area the size of a page are left to the pointer itself
+                constexpr int kLeast = 20; // the least width and height, px
+                constexpr int kMost = 300; // the greatest width and height, px
+                constexpr int kBar = 60; // a longer one still counts when it is no higher or wider than this, px
+                const int narrow = std::min(bounds.width, bounds.height);
+                if (element.padSlider() || (narrow >= kLeast && (std::max(bounds.width, bounds.height) <= kMost || narrow <= kBar))) {
+                    if (add(element, {at.x + bounds.width / 2, at.y + bounds.height / 2}, false, false, false, true)) {
+                        spots.back().reach = bounds.width / 2;
+                        spots.back().slider = element.padSlider();
+                    }
+                }
+            } else if (element.isEnabled() && dynamic_cast<ImageButton*>(&element) != nullptr) {
+                // the small close button in the window's top right corner is passed by: the pad's cancel button closes
+                constexpr int kCorner = 70; // the corner's width and height, px
+                constexpr int kSmall = 32; // the widest button that counts as the small one, px
+                const core::Rect& form = window->element.get().bounds();
+                const core::Point inWindow = at - window->screenPosition;
+                const bool cornerClose = bounds.width <= kSmall && inWindow.x >= form.width - kCorner && inWindow.y + bounds.height <= kCorner;
+                // a button may catch the mouse only where its picture is drawn: the middle first, then around it
+                constexpr int kTries[5][2] = {{2, 2}, {1, 2}, {3, 2}, {2, 1}, {2, 3}}; // quarters of the width and of the height
+                for (const auto& part : kTries) {
+                    if (cornerClose) {
+                        break;
+                    }
+                    if (add(element, {at.x + bounds.width * part[0] / 4, at.y + bounds.height * part[1] / 4}, false, false, false, true)) {
+                        break;
+                    }
+                }
+            } else if (const auto* field = dynamic_cast<const TextBox*>(&element)) {
+                if (element.isEnabled() && !field->isReadOnly()) { // a text field that cannot be typed in is a label
+                    add(element, {at.x + bounds.width / 2, at.y + bounds.height / 2}, false, false, false, false); // its parts catch the mouse for it
+                }
+                return;
+            }
+            const std::size_t before = spots.size();
+            for (const auto& child : element.children()) {
+                collect(*child, at);
+            }
+            if (!element.padScroll().empty() && spots.size() > before) {
+                // a panel of controls that scrolls: going on from its highest and its lowest controls scrolls it first
+                try {
+                    if (const auto* bar = dynamic_cast<const ScrollBar*>(&findByName(element.padScroll()))) {
+                        constexpr int kSameRow = 6; // controls this near in height stand in one row, px
+                        int top = spots[before].point.y;
+                        int bottom = top;
+                        for (std::size_t i = before; i < spots.size(); ++i) {
+                            top = std::min(top, spots[i].point.y);
+                            bottom = std::max(bottom, spots[i].point.y);
+                        }
+                        for (std::size_t i = before; i < spots.size(); ++i) {
+                            spots[i].scrollsUp = bar->canScrollUp() && spots[i].point.y - top <= kSameRow;
+                            spots[i].scrollsDown = bar->canScrollDown() && bottom - spots[i].point.y <= kSameRow;
+                            spots[i].scrollBarId = bar->id();
+                        }
+                    }
+                } catch (const LayoutError&) {
+                    // no such scroll bar: the panel does not scroll
+                }
+            }
+        };
+        for (const auto& child : window->element.get().children()) {
+            collect(*child, window->screenPosition);
+        }
+        return spots;
+    }
+
+    std::optional<PadGridCell> Screen::padGridAt(core::Point point) {
+        const auto located = locate(hitAt(point));
+        const auto* grid = located ? dynamic_cast<const IconGrid*>(&located->element.get()) : nullptr;
+        if (grid == nullptr) {
+            return std::nullopt;
+        }
+        const int index = grid->cellAt(localMouse(*located, point));
+        return PadGridCell{index != 0 && grid->holdsIcon(index), grid->isDraggable(), grid->usesDoubleClick()};
+    }
+
+    void Screen::padScroll(int scrollBarId, bool up) {
+        const auto located = locate(scrollBarId);
+        if (auto* bar = located ? dynamic_cast<ScrollBar*>(&located->element.get()) : nullptr) {
+            constexpr int kLines = 3; // lines a press: about a row of controls
+            bar->onMouseWheel(m_context, up ? kLines : -kLines);
+        }
+    }
+
+    bool Screen::pressPadCancel() {
+        const auto window = padWindow();
+        if (!window) {
+            return false;
+        }
+        if (const auto* form = dynamic_cast<const Window*>(&window->element.get()); form != nullptr && form->closesOnEscape()) {
+            return false;
+        }
+        // the button that backs out is known by the end of its name; the first kind found wins
+        static const char* const kEnds[] = {"cancel", "close", "quit", "exit", "leave", "back", "closesmall", "previous"};
+        std::vector<ImageButton*> buttons;
+        const std::function<void(Element&)> gather = [&](Element& element) {
+            if (!element.isVisible()) {
+                return;
+            }
+            if (auto* button = dynamic_cast<ImageButton*>(&element); button != nullptr && element.isEnabled() && !element.padSkip()) {
+                buttons.push_back(button);
+            }
+            for (const auto& child : element.children()) {
+                gather(*child);
+            }
+        };
+        gather(window->element.get());
+        for (const char* end : kEnds) {
+            const std::string tail = end;
+            for (ImageButton* button : buttons) {
+                std::string name = button->name();
+                std::transform(name.begin(), name.end(), name.begin(), [](unsigned char letter) { return static_cast<char>(std::tolower(letter)); });
+                if (name.size() >= tail.size() && name.compare(name.size() - tail.size(), tail.size(), tail) == 0) {
+                    pressButton(*button);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    std::optional<core::Point> Screen::padStartPoint() {
+        const std::vector<PadSpot> spots = padSpots();
+        const auto window = padWindow();
+        if (spots.empty() || !window) {
+            return std::nullopt;
+        }
+        if (const auto* form = dynamic_cast<const Window*>(&window->element.get()); form != nullptr && !form->padStart().empty()) {
+            try {
+                const int id = findByName(form->padStart()).id();
+                const auto named = std::find_if(spots.begin(), spots.end(), [id](const PadSpot& spot) { return spot.elementId == id; });
+                if (named != spots.end()) {
+                    return named->point;
+                }
+            } catch (const LayoutError&) {
+                // no such element: the usual start
+            }
+        }
+        const auto cell = std::find_if(spots.begin(), spots.end(), [](const PadSpot& spot) { return spot.cell; });
+        if (cell != spots.end()) {
+            return cell->point;
+        }
+        // the first control as one reads, the highest and of those the leftmost, passing by the tabs (the shoulder buttons
+        // change them) and the small close button in the window's top right corner (the cancel button closes)
+        constexpr int kCorner = 60; // the corner's width and height, px
+        std::set<int> tabs;
+        const core::Rect& bounds = window->element.get().bounds();
+        const core::Point corner = fromLayout(window->screenPosition + core::Point{bounds.width - kCorner, kCorner}, window->layout);
+        if (const auto* form = dynamic_cast<const Window*>(&window->element.get())) {
+            for (const std::string& listed : form->padTabs()) {
+                const std::string name = !listed.empty() && listed.front() == '*' ? listed.substr(1) : listed;
+                try {
+                    tabs.insert(findByName(name).id());
+                } catch (const LayoutError&) {
+                    // a tab this screen does not have
+                }
+            }
+        }
+        const auto passedBy = [&](const PadSpot& spot) { return tabs.count(spot.elementId) != 0 || (spot.point.x >= corner.x && spot.point.y <= corner.y); };
+        const auto first = std::min_element(spots.begin(), spots.end(), [&](const PadSpot& a, const PadSpot& b) {
+            if (passedBy(a) != passedBy(b)) {
+                return passedBy(b);
+            }
+            return a.point.y != b.point.y ? a.point.y < b.point.y : a.point.x < b.point.x;
+        });
+        return first->point;
+    }
+
+    bool Screen::pressPadShoulder(bool next) {
+        const auto window = padWindow();
+        const auto* form = window ? dynamic_cast<const Window*>(&window->element.get()) : nullptr;
+        if (form == nullptr) {
+            return false;
+        }
+        const auto buttonOf = [&](const std::string& name) -> ImageButton* {
+            try {
+                Element& element = findByName(name);
+                return element.isVisible() && element.isEnabled() ? dynamic_cast<ImageButton*>(&element) : nullptr;
+            } catch (const LayoutError&) {
+                return nullptr;
+            }
+        };
+        if (!form->padTabs().empty()) {
+            std::vector<ImageButton*> tabs;
+            const ImageButton* own = nullptr; // the tab of this window itself, where each tab is a window (*Name)
+            for (const std::string& listed : form->padTabs()) {
+                const bool starred = !listed.empty() && listed.front() == '*';
+                if (ImageButton* tab = buttonOf(starred ? listed.substr(1) : listed)) {
+                    tabs.push_back(tab);
+                    if (starred) {
+                        own = tab;
+                    }
+                }
+            }
+            if (!tabs.empty()) {
+                const auto open = std::find_if(tabs.begin(), tabs.end(), [own](const ImageButton* tab) { return own != nullptr ? tab == own : tab->isSelected(); });
+                const int count = static_cast<int>(tabs.size());
+                // from the last tab on to the first and back; with no tab open, the first or the last
+                const int index = open == tabs.end() ? (next ? 0 : count - 1) : (static_cast<int>(open - tabs.begin()) + (next ? 1 : count - 1)) % count;
+                pressButton(*tabs[static_cast<std::size_t>(index)]);
+            }
+            return true;
+        }
+        if (form->padShoulders().size() == 2) { // 2: the button before and the button after
+            if (ImageButton* button = buttonOf(form->padShoulders()[next ? 1 : 0])) {
+                pressButton(*button);
+            }
+            return true;
+        }
+        return false;
+    }
 
     void Screen::focus(const std::string& name) { m_context.focusedId = findByName(name).id(); }
 
@@ -260,10 +629,53 @@ namespace ui {
         }
     }
 
+    void Screen::startStickyDrag(const std::string& gridName, int index, int count) {
+        try {
+            if (const auto* grid = dynamic_cast<const IconGrid*>(&findByName(gridName))) {
+                if (auto drag = grid->dragOf(index)) {
+                    drag->sticky = true;
+                    drag->count = count;
+                    m_context.drag = *drag;
+                }
+            }
+        } catch (const LayoutError&) {
+            // no such grid: nothing to drag
+        }
+    }
+
     void Screen::mouseDown(core::Point position, MouseButton button, int clicks, bool ctrl) {
         m_mouse = position;
         m_context.ctrlHeld = ctrl;
         refreshHover();
+        if (m_context.drag) {
+            const auto source = locate(m_context.drag->sourceId);
+            const bool modern = source && !m_modernDragGrid.empty() && source->element.get().name() == m_modernDragGrid;
+            if (button == MouseButton::Right && modern) {
+                // one of what is carried is put down where the mouse is; the rest stays carried
+                const DragItem drag = *m_context.drag;
+                const auto target = locate(m_hoveredId);
+                std::optional<std::reference_wrapper<const Element>> targetElement;
+                if (target) {
+                    targetElement = std::cref(target->element.get());
+                }
+                const int targetIndex = target ? targetElement->get().dropIndexAt(localMouse(*target, position)) : -1;
+                m_context.dropPartial = true;
+                m_context.dropCarried = drag.count;
+                source->element.get().onDropped(m_context, drag.sourceIndex, targetElement, targetIndex, position, drag.grab);
+                m_context.dropPartial = false;
+                m_context.dropCarried = 0;
+                if (m_context.drag && m_context.drag->count > 0 && --m_context.drag->count == 0) {
+                    m_context.drag.reset(); // the last one of a counted drag is down
+                }
+                m_rightUpConsumed = true;
+                return;
+            }
+            if (button == MouseButton::Left && m_context.drag->sticky) {
+                dropDragged(position);
+                m_releaseConsumed = true;
+                return;
+            }
+        }
         m_context.focusedId = m_hoveredId;
         auto target = locate(m_hoveredId);
         if (!target) {
@@ -294,13 +706,25 @@ namespace ui {
         if (button == MouseButton::Left && clicks >= 2) {
             element.onDoubleClick(m_context, local);
         }
+        if (button == MouseButton::Left && element.takesText()) {
+            m_textClickId = element.id();
+        }
         element.onMouseDown(m_context, button, local);
+    }
+
+    TextBox* Screen::textBoxOf(int id) {
+        const auto found = locate(id);
+        return found ? dynamic_cast<TextBox*>(&found->element.get()) : nullptr;
     }
 
     void Screen::mouseUp(core::Point position, MouseButton button, bool ctrl) {
         m_mouse = position;
         m_context.ctrlHeld = ctrl;
         refreshHover();
+        if (button == MouseButton::Right && m_rightUpConsumed) {
+            m_rightUpConsumed = false;
+            return;
+        }
         if (button == MouseButton::Left && m_context.drag) {
             dropDragged(position);
         }
@@ -341,7 +765,9 @@ namespace ui {
             targetElement = std::cref(target->element.get());
         }
         const int targetIndex = target ? targetElement->get().dropIndexAt(localMouse(*target, position)) : -1;
+        m_context.dropCarried = drag.count;
         source->element.get().onDropped(m_context, drag.sourceIndex, targetElement, targetIndex, position, drag.grab);
+        m_context.dropCarried = 0;
     }
 
     void Screen::mouseWheel(int steps) {
@@ -352,6 +778,10 @@ namespace ui {
 
     void Screen::keyDown(const KeyEvent& key) {
         m_heldKeys.insert(key.key);
+        if (key.key == Key::Escape && m_context.drag && m_context.drag->sticky) {
+            m_context.drag.reset(); // what is carried without a button goes back
+            return;
+        }
         if (m_keyPreview && m_keyPreview(key)) {
             return;
         }
@@ -430,6 +860,7 @@ namespace ui {
     void Screen::update(std::uint64_t nowMs) {
         m_context.nowMs = nowMs;
         m_root->update(m_context);
+        raiseOpenedWindows();
         syncScrollBars();
         refreshHover();
     }
@@ -444,6 +875,115 @@ namespace ui {
         return windows;
     }
 
+    std::optional<core::Rect> Screen::screenRectOf(const std::string& name) {
+        Element* element = nullptr;
+        try {
+            element = &findByName(name);
+        } catch (const LayoutError&) {
+            return std::nullopt;
+        }
+        const auto located = locate(element->id());
+        if (!located) {
+            return std::nullopt;
+        }
+        const core::Rect& bounds = element->bounds();
+        const core::Point topLeft = fromLayout(located->screenPosition, located->layout);
+        const core::Point bottomRight = fromLayout(located->screenPosition + core::Point{bounds.width, bounds.height}, located->layout);
+        return core::Rect{topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y};
+    }
+
+    void Screen::raiseOpenedWindows() {
+        // a window that opens lies over those open before it, as one that is clicked does; it stays under the layouts kept
+        // on top (the talk box, the hints) unless a window was raised over those already
+        std::set<int> open;
+        const std::function<void(const Element&)> gather = [&](const Element& element) {
+            if (!element.isVisible()) {
+                return;
+            }
+            if (element.padWindow() || dynamic_cast<const Window*>(&element) != nullptr) {
+                open.insert(element.id());
+                return;
+            }
+            for (const auto& child : element.children()) {
+                gather(*child);
+            }
+        };
+        for (const auto& layout : m_root->children()) {
+            if (kept(*layout) && !layout->isTopmost()) {
+                gather(*layout);
+            }
+        }
+        if (m_openWindowsKnown) {
+            for (const int id : open) {
+                if (m_openWindows.count(id) != 0) {
+                    continue;
+                }
+                m_root->raiseChildHolding(id);
+                const auto& layouts = m_root->children();
+                const auto holder = std::find_if(layouts.begin(), layouts.end(), [id](const auto& layout) { return layout->contains(id); });
+                const bool windowAbove = holder != layouts.end() && std::any_of(holder + 1, layouts.end(), [&](const auto& layout) {
+                    return !layout->isTopmost() && std::any_of(open.begin(), open.end(), [&](int other) { return layout->contains(other); });
+                });
+                if (windowAbove) {
+                    m_root->raiseChildHoldingAbovePopups(id);
+                }
+            }
+        }
+        m_openWindows = std::move(open);
+        m_openWindowsKnown = true;
+    }
+
+    core::Point Screen::layoutSlide(const std::string& layoutName) const {
+        for (const auto& layout : m_root->children()) {
+            if (layout->name() == layoutName) {
+                return layout->slide();
+            }
+        }
+        return {};
+    }
+
+    bool Screen::layoutAway(const std::string& layoutName) const {
+        for (const auto& layout : m_root->children()) {
+            if (layout->name() == layoutName) {
+                return layout->isSlidAway();
+            }
+        }
+        return false;
+    }
+
+    void Screen::slideLayout(const std::string& layoutName, core::Point slide, bool away) {
+        for (const auto& layout : m_root->children()) {
+            if (layout->name() == layoutName) {
+                layout->setSlide(slide, away);
+            }
+        }
+    }
+
+    std::optional<core::Rect> Screen::padPointerPlace() {
+        if (m_padPointer.picture == nullptr || !m_padPointer.picture->isValid()) {
+            return std::nullopt;
+        }
+        const auto focused = locate(m_padFocusId);
+        if (!focused) {
+            return std::nullopt;
+        }
+        const core::Rect& bounds = focused->element.get().bounds();
+        const core::Point slide = focused->layout ? focused->layout->get().slide() : core::Point{};
+        const core::Point topLeft = fromLayout(focused->screenPosition, focused->layout) + slide;
+        const core::Point bottomRight = fromLayout(focused->screenPosition + core::Point{bounds.width, bounds.height}, focused->layout) + slide;
+        // the fingertip lies a little way inside the element's upper or lower edge
+        const float scale = scaleOf(focused->layout);
+        constexpr int kInside = 6; // how far inside the edge, px
+        const int inside = static_cast<int>(std::lround(kInside * scale));
+        const core::Point aim{(topLeft.x + bottomRight.x) / 2, m_padPointer.below ? bottomRight.y - inside : topLeft.y + inside};
+        return core::Rect{
+            aim.x - static_cast<int>(std::lround(m_padPointer.tip.x * scale)),
+            aim.y - static_cast<int>(std::lround(m_padPointer.tip.y * scale)),
+            static_cast<int>(std::lround(m_padPointer.picture->width() * scale)),
+            static_cast<int>(std::lround(m_padPointer.picture->height() * scale))
+        };
+    }
+
     void Screen::draw(gfx::Canvas& canvas, std::uint64_t nowMs) {
         if (m_hoveredLayout != nullptr && !kept(*m_hoveredLayout)) {
             // update found the hovered element without this filter (party member screens get it only to draw), in a
@@ -455,7 +995,7 @@ namespace ui {
         DrawContext context{canvas, m_hoveredId, m_context.focusedId, m_mouse, nowMs};
         const auto drawLayouts = [&](bool overlay) {
             for (const auto& layout : m_root->children()) {
-                if (!kept(*layout)) {
+                if (!kept(*layout) || layout->isSlidAway()) {
                     continue;
                 }
                 const float scale = scaleOf(std::cref(*layout));
@@ -463,10 +1003,13 @@ namespace ui {
                     canvas.beginScale(layout->anchorPoint(), scale);
                     context.mouse = toLayout(m_mouse, std::cref(*layout));
                 }
+                // the slide is in screen pixels; inside the HUD scale it is that much less
+                const core::Point slide = layout->slide();
+                const core::Point origin{static_cast<int>(std::lround(slide.x / scale)), static_cast<int>(std::lround(slide.y / scale))};
                 if (overlay) {
-                    layout->drawOverlayTree(context, {0, 0});
+                    layout->drawOverlayTree(context, origin);
                 } else {
-                    layout->drawTree(context, {0, 0});
+                    layout->drawTree(context, origin);
                 }
                 if (scale != 1.0f) {
                     canvas.endScale();
@@ -476,6 +1019,21 @@ namespace ui {
         };
         drawLayouts(false);
         drawLayouts(true);
+        if (const auto focused = locate(m_padFocusId)) {
+            if (const auto hand = padPointerPlace()) {
+                canvas.drawTextureScaled(*m_padPointer.picture, *hand); // the game pad's highlight: a hand pointing at the element
+            } else {
+                // without a hand: a light frame with a dark one around it, to show on any ground
+                const core::Rect& bounds = focused->element.get().bounds();
+                const core::Point slide = focused->layout ? focused->layout->get().slide() : core::Point{};
+                const core::Point topLeft = fromLayout(focused->screenPosition, focused->layout) + slide;
+                const core::Point bottomRight = fromLayout(focused->screenPosition + core::Point{bounds.width, bounds.height}, focused->layout) + slide;
+                constexpr int kGap = 2; // px between the element and its frame
+                const core::Rect frame{topLeft.x - kGap, topLeft.y - kGap, bottomRight.x - topLeft.x + 2 * kGap, bottomRight.y - topLeft.y + 2 * kGap};
+                canvas.drawRectOutline({frame.x - 1, frame.y - 1, frame.width + 2, frame.height + 2}, {0x20, 0x18, 0x00, 255}, 1); // dark brown
+                canvas.drawRectOutline(frame, {0xFF, 0xE0, 0x40, 255}, 2); // bright yellow, 2 px
+            }
+        }
         if (m_context.drag) {
             canvas.drawPicture(m_context.drag->picture, m_mouse - m_context.drag->grab, m_context.drag->source);
             return;
@@ -489,6 +1047,14 @@ namespace ui {
             return; // nothing hovered, or in a layout the filter hides
         }
         const core::Point local = localMouse(*target, m_mouse);
+        if (const auto hand = m_hoveredId == m_padFocusId ? padPointerPlace() : std::nullopt) {
+            // the hint stands past the game pad's hand, not over it: its box is drawn 26 px above the point given, one line 23 px high
+            constexpr int kGap = 2; // px between the hand and the box
+            const core::Point origin = fromLayout(target->screenPosition + target->element.get().hintOrigin(local), target->layout);
+            const int y = m_padPointer.below ? hand->y + hand->height + kGap + 26 : hand->y - kGap - 23 + 26;
+            drawHintBox(canvas, {origin.x, y}, target->element.get().hintAt(local));
+            return;
+        }
         drawHintBox(canvas, fromLayout(target->screenPosition + target->element.get().hintOrigin(local), target->layout), target->element.get().hintAt(local));
     }
 

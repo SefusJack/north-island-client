@@ -90,6 +90,11 @@ namespace client {
             /// @return The frame index shown.
             static int shownFrame(const Fighter& fighter, int count);
 
+            /// @brief Gives a point on each fighter at which a click reaches him, for a game pad's pointer.
+            /// @param field The battle field.
+            /// @return Slot and screen point of every fighter that can be clicked.
+            std::vector<std::pair<int, core::Point>> padPoints(BattleField& field);
+
             /// @brief Finds the slot of the fighter drawn under a screen point, the front one first.
             /// @param field The battle field.
             /// @param point Screen point.

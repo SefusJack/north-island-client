@@ -5,7 +5,7 @@
      brings.  The game draws a form's controls from the last created to the first: the controls here are in drawing order, the
      reverse of the creation.  View model: viewmodels/HitMouseWindow.cpp. -->
 <Panel Name="HitMouseLayer" Bounds="0,0,800,600">
-  <Panel Name="HitMouseForm" Bounds="0,0,800,600" Visible="false">
+  <Panel Name="HitMouseForm" Bounds="0,0,800,600" PadPage="true" Visible="false">
     <DrawingArea Name="HitMousePage" Bounds="0,0,800,600" HitTest="true" MouseUp="onHitMouseUp" RightMouseUp="onHitMouseUp">
       <!-- the time label and the time-left number, the score label and the score number -->
       <Spot Name="HitMouseTime" Position="330,10"/>

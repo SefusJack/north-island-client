@@ -546,6 +546,22 @@ namespace client {
         }
     }
 
+    std::vector<std::pair<int, core::Point>> BattlePainter::padPoints(BattleField& field) {
+        std::vector<std::pair<int, core::Point>> points;
+        for (const int slot : drawingOrder(field)) {
+            const core::Point feet = field.fighter(slot)->get().position;
+            // a point of the body, from the middle outwards, that no nearer fighter covers
+            for (const int above : {40, 25, 60, 12, 80}) { // px above the feet
+                const core::Point point{feet.x, feet.y - above};
+                if (slotAt(field, point) == slot) {
+                    points.push_back({slot, point});
+                    break;
+                }
+            }
+        }
+        return points;
+    }
+
     int BattlePainter::slotAt(BattleField& field, core::Point point) {
         const std::vector<int> order = drawingOrder(field);
         for (auto it = order.rbegin(); it != order.rend(); ++it) {

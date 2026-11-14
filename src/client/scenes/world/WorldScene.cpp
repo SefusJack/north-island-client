@@ -161,8 +161,21 @@ namespace client {
               services,
               {[this](bool shown) { setHudShown(shown); },
                [this](bool shown) { m_starSkyWindow.setQuitShown(shown); },
-               [this] { m_services.music.playLooped(m_services.game.data("Sound/BGM0017.wav")); },
-               [this] { playMapMusic(); },
+               [this] {
+                   const std::filesystem::path star = m_services.game.data("Sound/BGM0017.wav");
+                   if (m_services.music.file() != star) {
+                       m_musicBeforeStars = m_services.music.file(); // what plays now comes back when the book is left
+                   }
+                   m_services.music.playLooped(star);
+               },
+               [this] {
+                   if (!m_musicBeforeStars.empty()) {
+                       m_services.music.playLooped(m_musicBeforeStars);
+                       m_musicBeforeStars.clear();
+                   } else {
+                       playMapMusic();
+                   }
+               },
                [this]() -> std::optional<core::Point> { return m_camera.toScreen(m_player.position); },
                [this](int index) -> std::optional<core::Point> {
                    const auto npc = std::find_if(m_npcs.begin(), m_npcs.end(), [index](const MapNpc& n) { return n.index == index; });
@@ -1214,6 +1227,7 @@ namespace client {
           m_petInfo(services, m_screen),
           m_rightClickMenu(services, m_screen, m_inventory, m_status, m_messages, m_bagRequests, [this](int slot) { m_storeTank.open(slot); }),
           m_talk(services, m_screen),
+          m_padKeyboard(services, m_screen),
           m_roleIntro(
               services,
               m_screen,
@@ -3305,6 +3319,282 @@ namespace client {
         return found;
     }
 
+    std::optional<int> WorldScene::npcInFront() const {
+        constexpr double kReach = 150.0; // how far the talk button reaches, map px
+        constexpr double kTouch = 48.0; // an NPC this near is reached whichever way the player faces
+        constexpr double kSide = 0.38; // the cosine of how far off the facing an NPC may stand (about 67 degrees)
+        constexpr double kEighth = 0.78539816339744831; // an eighth of a turn in radians: one step of the 8 directions
+        // direction 0 is north and the numbers go on by way of the west
+        const double faceX = -std::sin(m_player.direction * kEighth);
+        const double faceY = -std::cos(m_player.direction * kEighth);
+        std::optional<int> found;
+        double foundFar = 0.0;
+        for (const MapNpc& npc : m_npcs) {
+            if (!npc.visible) {
+                continue;
+            }
+            const double x = npc.body.position.x - m_player.position.x;
+            const double y = npc.body.position.y - m_player.position.y;
+            const double far = std::sqrt(x * x + y * y);
+            if (far > kReach || (far > kTouch && (x * faceX + y * faceY) / far < kSide)) {
+                continue;
+            }
+            if (!found || far < foundFar) {
+                found = npc.index;
+                foundFar = far;
+            }
+        }
+        return found;
+    }
+
+    bool WorldScene::padReachesWorld() { return !m_talk.isOpen() && !m_battle.isOn() && !m_inputLocked && m_screen.shownWindows().empty(); }
+
+    std::vector<core::Point> WorldScene::padSpots() {
+        if (!m_battleShown || !m_battle.isOn() || m_talk.isOpen() || !m_screen.shownWindows().empty()) {
+            return {};
+        }
+        std::vector<core::Point> spots = m_battle.padTargets();
+        if (isViewZoomed()) {
+            for (core::Point& spot : spots) {
+                spot = ViewZoom::toWindow(spot, m_camera.view(), m_services.view);
+            }
+        }
+        return spots;
+    }
+
+    bool WorldScene::padAsk(PadAsk ask) {
+        if (m_padKeyboard.isOpen()) {
+            return m_padKeyboard.padAsk(ask);
+        }
+        if (ask == PadAsk::Erase || ask == PadAsk::Space || ask == PadAsk::Menu) {
+            return false; // the keyboard's own, and the start button has the button bars here
+        }
+        if (m_maid.isOpen()) {
+            return m_maid.padAsk(ask);
+        }
+        if (m_talk.isOpen()) {
+            return m_talk.padAsk(ask);
+        }
+        if (m_battleShown && m_battle.isOn()) {
+            if (!m_screen.shownWindows().empty()) {
+                return false; // a window over the fight: the pointer steps through it
+            }
+            if (padTurnsRing()) {
+                switch (ask) {
+                    case PadAsk::Left:
+                    case PadAsk::Right:
+                        m_battleMain.turn(ask == PadAsk::Right);
+                        break;
+                    case PadAsk::Accept:
+                        m_battleMain.takeTop();
+                        break;
+                    default: // up, down and cancel have no use at the ring
+                        break;
+                }
+                return true;
+            }
+            if (ask == PadAsk::Cancel && m_battle.cursor() != ui::CursorKind::Normal) {
+                m_battle.cancelCommand(); // back from aiming to the ring
+                return true;
+            }
+            return ask == PadAsk::Interact; // nobody to talk to in a fight
+        }
+        if ((ask != PadAsk::Interact && ask != PadAsk::Cancel) || !padReachesWorld()) {
+            return false;
+        }
+        const auto clickAt = [this](core::Point point, bool right) {
+            m_padClick = PadClick{isViewZoomed() ? ViewZoom::toWindow(point, m_camera.view(), m_services.view) : point, right};
+        };
+        if (ask == PadAsk::Cancel) {
+            // what the right mouse button does on the map: it takes back the own tent or a piece of furniture in front, leaves
+            // a choice of whom to pick, and puts the vehicle ridden away
+            if (!m_padAim) {
+                return false;
+            }
+            const PadTarget target = padTarget();
+            if (target.kind == PadTarget::Kind::Thing && target.takesBack) {
+                clickAt(target.click, true);
+                return true;
+            }
+            if (m_mouseMode != 0 || m_hotKeyAim || m_picnicAim || m_player.vehicle) {
+                clickAt(m_camera.toScreen(m_player.position), true);
+                return true;
+            }
+            return false;
+        }
+        const PadTarget target = padTarget();
+        if (target.kind == PadTarget::Kind::Npc) {
+            clickNpc(target.npc);
+        } else if (target.kind == PadTarget::Kind::Thing) {
+            clickAt(target.click, false); // the pad clicks it with the mouse pointer: all the mouse does with it follows
+        } else if (m_player.vehicle && VehicleKinds::teleportKind(m_player.vehicle->itemId) != 0 && m_fightState == 0) {
+            m_transport.open(VehicleKinds::teleportKind(m_player.vehicle->itemId)); // nothing in front: the ridden vehicle's own menu, as a click on the rider opens
+        }
+        return true; // with nothing in front the button does nothing: there is no pointer to click with
+    }
+
+    std::optional<Scene::PadClick> WorldScene::takePadClick() {
+        std::optional<PadClick> click;
+        click.swap(m_padClick);
+        return click;
+    }
+
+    WorldScene::PadTarget WorldScene::padTarget() {
+        constexpr double kReach = 150.0; // how far the button reaches, map px
+        constexpr double kTouch = 48.0; // a thing this near is reached whichever way the player faces
+        constexpr double kSide = 0.38; // the cosine of how far off the facing a thing may stand (about 67 degrees)
+        constexpr double kEighth = 0.78539816339744831; // an eighth of a turn in radians: one step of the 8 directions
+        const double faceX = -std::sin(m_player.direction * kEighth);
+        const double faceY = -std::cos(m_player.direction * kEighth);
+        PadTarget best;
+        double bestFar = 0.0;
+        const auto offer = [&](core::Point mapAt, const PadTarget& target) {
+            const double x = mapAt.x - m_player.position.x;
+            const double y = mapAt.y - m_player.position.y;
+            const double far = std::sqrt(x * x + y * y);
+            if (far > kReach || (far > kTouch && (x * faceX + y * faceY) / far < kSide)) {
+                return;
+            }
+            if (best.kind == PadTarget::Kind::None || far < bestFar) {
+                best = target;
+                bestFar = far;
+            }
+        };
+        const auto thing = [](core::Point click, core::Point mark, bool takesBack = false) {
+            PadTarget target;
+            target.kind = PadTarget::Kind::Thing;
+            target.click = click;
+            target.mark = mark;
+            target.takesBack = takesBack;
+            return target;
+        };
+        // a figure is clicked where its picture is: some heights above the feet are tried
+        constexpr int kHeights[] = {30, 10, 55, 80};
+        constexpr int kOverHead = 12; // the hand stands this far over a thing's top, px
+        const bool picking = m_mouseMode != 0 && m_mouseMode != kThrowMouseMode;
+        for (const MapNpc& npc : m_npcs) {
+            if (!npc.visible) {
+                continue;
+            }
+            if (!picking) {
+                PadTarget target;
+                target.kind = PadTarget::Kind::Npc;
+                target.npc = npc.index;
+                offer(npc.body.position, target);
+            } else if (m_mouseMode == 1) { // mouse mode 1: a fight, which an NPC can be asked for too
+                const core::Point feet = m_camera.toScreen(npc.body.position);
+                for (const int height : kHeights) {
+                    const core::Point at{feet.x, feet.y - height};
+                    if (npcAt(at) == npc.index) {
+                        offer(npc.body.position, thing(at, {feet.x, feet.y - 100}));
+                        break;
+                    }
+                }
+            }
+        }
+        if (picking) {
+            for (auto& [id, other] : m_others) {
+                const core::Rect area = m_services.characters.figureFrameArea(other.look, m_camera.toScreen(other.position), other.actionSlot());
+                const core::Point middle{area.x + area.width / 2, area.y + area.height / 2};
+                if (playerAt(middle) == id) {
+                    offer(other.position, thing(middle, {middle.x, area.y - kOverHead}));
+                }
+            }
+            return best;
+        }
+        for (const auto& [index, item] : m_ground.things()) {
+            if (!item.active) {
+                continue;
+            }
+            const core::Rect area = m_ground.areaOf(item, m_camera);
+            const core::Point middle{area.x + area.width / 2, area.y + area.height / 2};
+            if (m_ground.indexAt(middle, m_camera) == index) {
+                offer(item.position, thing(middle, {middle.x, area.y - kOverHead}));
+            }
+        }
+        const int mapId = m_map ? m_map->id() : 0;
+        for (const auto& [slot, camp] : m_camps.camps()) {
+            const core::Point feet = m_camera.toScreen(camp.position);
+            for (const int height : kHeights) {
+                const core::Point at{feet.x, feet.y - height};
+                if (campAt(at) == slot) {
+                    offer(camp.position, thing(at, {feet.x, feet.y - 110}, camp.own && m_camps.ownMap() == mapId));
+                    break;
+                }
+            }
+        }
+        for (const auto& [slot, vehicle] : m_vehicles.placedVehicles()) {
+            if (vehicle.flight.isActive()) {
+                continue;
+            }
+            const core::Point feet = m_camera.toScreen(vehicle.position);
+            for (const int height : kHeights) {
+                const core::Point at{feet.x, feet.y - height};
+                if (vehicleAt(at) == slot) {
+                    offer(vehicle.position, thing(at, {feet.x, feet.y - 90}));
+                    break;
+                }
+            }
+        }
+        const auto plate = [&](std::int32_t id, core::Point position) {
+            const core::Rect area = m_painter.stallPlateArea(m_camera.toScreen(position));
+            const core::Point middle{area.x + area.width / 2, area.y + area.height / 2};
+            if (stallPlateAt(middle) == id) {
+                offer(position, thing(middle, {middle.x, area.y - kOverHead}));
+            }
+        };
+        if (m_player.stall) {
+            plate(m_player.id, m_player.position);
+        }
+        for (const auto& [id, other] : m_others) {
+            if (other.stall) {
+                plate(id, other.position);
+            }
+        }
+        if (m_fightState == 0 && !m_teams.isMember(m_player.id)) {
+            for (const formats::SceneDoor& door : m_doors) {
+                if (!door.clickable) {
+                    continue;
+                }
+                const core::Point middle{door.area.x + door.area.width / 2, door.area.y + door.area.height / 2};
+                const core::Point at = m_camera.toScreen(middle);
+                // only a place nothing else lies over: the click would go to that
+                if (!npcAt(at) && !campAt(at) && !vehicleAt(at) && m_ground.indexAt(at, m_camera) == 0) {
+                    offer(middle, thing(at, m_camera.toScreen({middle.x, door.area.y})));
+                }
+            }
+        }
+        if (m_house.inFloorRoom() && m_fightState == 0) {
+            const bool own = ownHouse();
+            constexpr int kOnPiece = 6; // the hand's fingertip stands this far over where the piece is clicked, px
+            for (const auto& [pieceSlot, area] : m_housePainter.pieceAreas(m_camera)) {
+                // a piece takes the mouse where its picture is drawn: the middle and around it are tried
+                const core::Point tries[] = {
+                    {area.x + area.width / 2, area.y + area.height / 2},
+                    {area.x + area.width / 2, area.y + area.height * 3 / 4},
+                    {area.x + area.width / 2, area.y + area.height / 4},
+                    {area.x + area.width / 4, area.y + area.height / 2},
+                    {area.x + area.width * 3 / 4, area.y + area.height / 2}
+                };
+                for (const core::Point& at : tries) {
+                    if (m_housePainter.pieceSlotAt(m_services.pictures, m_camera, at) == pieceSlot) {
+                        // the piece's place in the room is what the game measures the reach to; its picture may be far larger than what is drawn
+                        offer(m_house.utensils().utensil(pieceSlot).world, thing(at, {at.x, at.y - kOnPiece}, own));
+                        break;
+                    }
+                }
+            }
+            if (specFloorShown()) {
+                const core::Point place = m_specFloor.place(own);
+                const core::Point at = m_camera.toScreen(place);
+                if (m_specFloor.contains(own, at, m_camera)) {
+                    offer(place, thing(at, {at.x, at.y - 40}));
+                }
+            }
+        }
+        return best;
+    }
+
     void WorldScene::clickNpc(int npcIndex) {
         auto npc = findNpc(npcIndex);
         if (!npc || m_inputLocked) {
@@ -4259,14 +4549,32 @@ namespace client {
     }
 
     void WorldScene::walkWithKeys(std::uint64_t nowMs) {
-        if (!canWalk() || m_mouseMode != 0 || m_player.stall || m_screen.isTyping() || nowMs - m_keyWalkMs < kHeldWalkMs) {
+        if (!canWalk() || m_mouseMode != 0 || m_player.stall || m_screen.isTyping()) {
             return;
         }
         const bool left = m_screen.isKeyHeld(ui::Key::Left);
         const bool right = m_screen.isKeyHeld(ui::Key::Right);
         const bool up = m_screen.isKeyHeld(ui::Key::Up);
         const bool down = m_screen.isKeyHeld(ui::Key::Down);
-        if (!left && !right && !up && !down) {
+        // a game pad's stick is followed closely: a new way is taken at once, the way held is renewed often, and letting go stops
+        // within a few steps instead of walking the last stretch out
+        constexpr std::uint64_t kPadWalkMs = 150; // renewal of the way a stick holds, ms
+        constexpr int kPadStop = formats::MapFile::kCellSize * 3 / 2; // how far the walk still goes once the stick is let go: into the next cell, px
+        const int ways = (left ? 1 : 0) | (right ? 2 : 0) | (up ? 4 : 0) | (down ? 8 : 0);
+        const bool turned = m_padInUse && ways != m_keyWalkWays;
+        const int waysBefore = m_keyWalkWays;
+        m_keyWalkWays = ways;
+        if (ways == 0) {
+            if (turned && m_player.walking && !m_player.path.empty()) {
+                core::Point stop = m_player.position;
+                stop.x += (waysBefore & 2) != 0 ? kPadStop : (waysBefore & 1) != 0 ? -kPadStop : 0;
+                stop.y += (waysBefore & 8) != 0 ? kPadStop : (waysBefore & 4) != 0 ? -kPadStop : 0;
+                m_keyWalkMs = nowMs;
+                walkTo(stop, true);
+            }
+            return;
+        }
+        if (!turned && nowMs - m_keyWalkMs < (m_padInUse ? kPadWalkMs : kHeldWalkMs)) {
             return;
         }
         m_keyWalkMs = nowMs;
@@ -5097,7 +5405,12 @@ namespace client {
         const core::Rect window = canvas.window();
         // 800x600 is the size of the original screen, whose top-left corner is the origin of the HUD
         const core::Point corner{window.right() - 800, window.bottom() - 600};
-        const int y = corner.y + 600 - static_cast<int>((600 - kY) * m_screen.hudScale());
+        // the text stands over the bottom buttons: it goes down with them as they slide away, and stands at the bottom edge
+        // while they are hidden (a fight)
+        constexpr int kTextHeight = 20; // the room the line takes at the bottom edge, px
+        const int lowest = window.bottom() - kTextHeight;
+        const int home = corner.y + 600 - static_cast<int>((600 - kY) * m_screen.hudScale());
+        const int y = m_screen.screenRectOf("MainButtonsBackground") && !m_screen.layoutAway("MainButtons") ? std::min(lowest, home + std::max(0, m_screen.layoutSlide("MainButtons").y)) : lowest;
         canvas.drawText(
             {corner.x + kRight - static_cast<int>(text.size()) * kCharWidth, y},
             text,
@@ -5234,6 +5547,7 @@ namespace client {
         m_hotKeys.update();
         m_cart.update();
         m_talk.update(nowMs);
+        m_padKeyboard.update(nowMs);
         m_movie.update(nowMs);
         m_itemWindow.update();
         m_itemWindow.updateSort(nowMs);
@@ -5362,6 +5676,15 @@ namespace client {
             return std::nullopt;
         };
         display.trojanWarMap = onTrojanWarMap();
+        if (m_padAim && m_padHand.picture != nullptr && padReachesWorld() && !m_player.walking) {
+            const PadTarget target = padTarget();
+            display.padNpc = target.kind == PadTarget::Kind::Npc ? target.npc : -1;
+            if (target.kind == PadTarget::Kind::Thing) {
+                display.padMark = target.mark;
+            }
+            display.padHand = m_padHand.picture;
+            display.padHandTip = m_padHand.tip;
+        }
         display.goldEaglePrefix = [this](int ordinal) { return m_goldEagle.prefix(m_map ? m_map->id() : 0, ordinal); };
         display.defenseNpcPrefix = [this](int ordinal) { return m_defenseNpc.prefix(m_map ? m_map->id() : 0, ordinal); };
         display.stoneEaglePrefix = [this](int ordinal) { return m_stoneEagle.prefix(m_map ? m_map->id() : 0, ordinal); };

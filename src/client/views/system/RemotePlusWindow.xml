@@ -5,7 +5,7 @@
      THL_AutoPlayFormPlus.Create (the small close button and the fourth tick are hidden in the game and left out).
      View model: viewmodels/RemotePlusWindow.cpp. -->
 <Panel Name="RemotePlusLayer" Bounds="0,0,800,600">
-  <Window Name="RemotePlusWindow" Escape="onPlusClose" Picture="Form_AutoPlayerPlus_1" Position="280,55" Size="240,489" Visible="false">
+  <Window Name="RemotePlusWindow" PadTabs="PlusTab1,PlusTab2,PlusTab3" Escape="onPlusClose" Picture="Form_AutoPlayerPlus_1" Position="280,55" Size="240,489" Visible="false">
     <!-- DrawControl: the arrows from a skill to its target and the panel of the target menu, under the controls -->
     <DrawingArea Name="PlusOverlay" Bounds="0,0,240,489"/>
     <!-- not in the game: the Electron Control's script file on tab 3, over the help's last line (4. Confirm after setting to execute) -->

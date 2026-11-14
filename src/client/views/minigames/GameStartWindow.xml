@@ -5,7 +5,7 @@
      viewmodels/GameStartWindow.cpp.  The game draws a form's controls from the last created to the
      first: the controls here are in drawing order, the reverse of CH_GameStartForm.Create. -->
 <Panel Name="GameStartLayer" Bounds="0,0,800,600">
-  <Panel Name="GameStartWindow" Bounds="215,50,409,525" HitTest="true" Visible="false">
+  <Panel Name="GameStartWindow" Bounds="215,50,409,525" HitTest="true" PadPage="true" Visible="false">
     <Image Name="GameStartPicture" Picture="MiniGame_TG_Form" Position="0,0"/>
     <!-- the standard form: its x, width and height, and the y of its top edge (the form is put here before the clamp) -->
     <Spot Name="GameStartStandard" Bounds="215,60,409,525"/>

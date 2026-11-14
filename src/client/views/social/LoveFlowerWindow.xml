@@ -4,7 +4,7 @@
      draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of TLoveFlowerForm.Create; DrawControl's flower picture is under
      them.  View model: viewmodels/LoveFlowerWindow.cpp. -->
 <Panel Name="LoveFlowerLayer" Bounds="0,0,800,600">
-  <Window Name="LoveFlower" AbovePopups="true" Escape="onLoveFlowerClose" Picture="Form_Magnet_1" Position="286,100" Size="228,399" Visible="false">
+  <Window Name="LoveFlower" PadShoulders="LoveFlowerUp,LoveFlowerDown" AbovePopups="true" Escape="onLoveFlowerClose" Picture="Form_Magnet_1" Position="286,100" Size="228,399" Visible="false">
     <Image Name="LoveFlowerIcon" Picture="Flower" SourceRect="0,0,76,34" Position="74,11"/>
     <ImageButton Name="LoveFlowerDown" Picture="Btn_ArrowDn_1" Position="192,348" Size="17,17" Click="onLoveFlowerDown"/>
     <ImageButton Name="LoveFlowerUp" Picture="Btn_ArrowUp_1" Position="192,106" Size="17,17" Click="onLoveFlowerUp"/>

@@ -4,7 +4,7 @@
      is kept on the screen); the view model places it beside the item window.  The game draws a form's controls from the last created to the first: the controls here are in
      drawing order, the reverse of TBlessBalloonForm.Create; DrawControl's balloon picture is under them.  View model: viewmodels/BlessBalloonWindow.cpp. -->
 <Panel Name="BlessBalloonLayer" Bounds="0,0,800,600">
-  <Window Name="BlessBalloon" AbovePopups="true" Escape="onBlessBalloonClose" Picture="Form_Magnet_1" Position="286,100" Size="228,399" ScreenFit="true" Visible="false">
+  <Window Name="BlessBalloon" PadShoulders="BlessBalloonUp,BlessBalloonDown" AbovePopups="true" Escape="onBlessBalloonClose" Picture="Form_Magnet_1" Position="286,100" Size="228,399" ScreenFit="true" Visible="false">
     <Image Name="BlessBalloonIcon" Picture="Icon_beatify" SourceRect="0,0,76,34" Position="74,11"/>
     <ImageButton Name="BlessBalloonDown" Picture="Btn_ArrowDn_1" Position="192,348" Size="17,17" Click="onBlessBalloonDown"/>
     <ImageButton Name="BlessBalloonUp" Picture="Btn_ArrowUp_1" Position="192,106" Size="17,17" Click="onBlessBalloonUp"/>

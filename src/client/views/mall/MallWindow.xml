@@ -7,7 +7,7 @@
      first, then its controls from the last created to the first (the hidden bonus-shop buttons
      left out), then the hovered row's description. -->
 <Panel Name="MallLayer" Bounds="0,0,800,600">
-  <Window Name="Mall" Position="11,21" Size="778,554" Visible="false">
+  <Window Name="Mall" PadTabs="MallTab1,MallTab2,MallTab3,MallTab4,MallTab5,MallTab6,MallTab7" Position="11,21" Size="778,554" Visible="false">
     <Image Name="MallBackground" Source="Menu/Skins/white/Form_Shopping_1.bmp" Position="0,0"/>
     <DrawingArea Name="MallPaint" Bounds="0,0,778,554" HitTest="true" MouseUp="onMallPress">
       <!-- the text, near-black (RGB565 2113), and the description text, yellow (RGB565 65504) -->

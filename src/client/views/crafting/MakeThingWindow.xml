@@ -6,9 +6,9 @@
      from the last created to the first: the controls here are in drawing order, the reverse of
      TRe_MakeThingForm.Create. -->
 <Panel Name="MakeThingLayer" Bounds="0,0,800,600">
-  <Window Name="MakeThingWindow" Escape="onMakeThingClose" Picture="Form_MakeThing_1" Position="256,75" ScreenFit="true" Visible="false">
+  <Window Name="MakeThingWindow" PadShoulders="MakeThingUp,MakeThingDown" Escape="onMakeThingClose" Picture="Form_MakeThing_1" Position="256,75" ScreenFit="true" Visible="false">
     <!-- TRe_TreeList: rows of 32 with 2 between, 10 shown -->
-    <DrawingArea Name="MakeThingTree" Bounds="19,63,225,338" HitTest="true" MouseUp="onMakeThingTreeClick">
+    <DrawingArea Name="MakeThingTree" PadCells="0,34" PadScroll="MakeThingScroll" Bounds="19,63,225,338" HitTest="true" MouseUp="onMakeThingTreeClick">
       <!-- one tree row: 225 x 32 (the hover highlight), and the step down to the next row -->
       <Spot Name="MakeThingRow" Bounds="0,0,225,32" Pitch="0,34"/>
       <!-- the indent of a recipe under its group, also the width of the fold icon column -->

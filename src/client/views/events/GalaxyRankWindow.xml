@@ -6,7 +6,7 @@
      (389 x 345 in a 400 high place).  The game draws a form's own part first (the title, the figures, the rank numbers), then its controls from the last created to the
      first: the controls here are in drawing order, the reverse of TRE_GalaxyRankForm.CreateGalaxyRankForm (the row panels lie over the rank numbers, as in the game). -->
 <Panel Name="GalaxyRankLayer" Bounds="0,0,800,600">
-  <Window Name="GalaxyRank" Escape="onGalaxyClose" Position="205,100" Size="389,345" Visible="false">
+  <Window Name="GalaxyRank" PadShoulders="GalaxyPrevious,GalaxyNext" Escape="onGalaxyClose" Position="205,100" Size="389,345" Visible="false">
     <Panel Name="GalaxyFrame" Bounds="0,0,389,345" Skin="form_modulePlus" SkinSource="0,0,200,205" Borders="85,65,60,20"/>
     <!-- DrawControl of the form: the title, the figures, the rank numbers -->
     <DrawingArea Name="GalaxyPaint" Bounds="0,0,389,345">

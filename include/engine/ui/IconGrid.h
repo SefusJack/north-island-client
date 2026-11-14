@@ -49,6 +49,30 @@ namespace ui {
             /// @return The Pitch (x) and PitchY (y) attributes, px.
             core::Point pitch() const { return {m_pitch, m_pitchY}; }
 
+            /// @brief Whether a cell shows a thing.
+            /// @param index The cell number.
+            /// @return True when the cell has a picture.
+            bool holdsIcon(int index) const {
+                const auto cell = m_cells.find(index);
+                return cell != m_cells.end() && cell->second.picture.isValid();
+            }
+
+            /// @brief Whether the grid's things can be dragged (the Draggable attribute).
+            /// @return True when draggable.
+            bool isDraggable() const { return m_draggable; }
+
+            /// @brief Whether a double click on a thing does something (the DoubleClick event has a handler).
+            /// @return True when it does.
+            bool usesDoubleClick() const { return hasHandler("DoubleClick"); }
+
+            /// @brief The number of the grid's first cell.
+            /// @return The FirstIndex attribute.
+            int firstIndex() const { return m_firstIndex; }
+
+            /// @brief How many cells the grid has.
+            /// @return Columns times rows.
+            int cellCount() const { return m_columns * m_rows; }
+
             /// @brief The size of one cell.
             /// @return The CellSize attribute as width and height, px.
             core::Size cellSize() const { return {m_cellSize, m_cellSize}; }
@@ -62,6 +86,11 @@ namespace ui {
             /// @param index The cell number.
             /// @return The cell's top left relative to the grid.
             core::Point cellPosition(int index) const;
+
+            /// @brief Makes the drag of a cell's icon as a press on its middle would, for a drag started from code.
+            /// @param index The cell.
+            /// @return The drag, none for a cell without an icon.
+            std::optional<DragItem> dragOf(int index) const;
 
             /// @brief Whether a point is inside the grid's bounds.
             /// @param local The point relative to the grid.

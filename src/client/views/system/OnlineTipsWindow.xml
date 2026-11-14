@@ -6,7 +6,7 @@
      the reverse of Tjo_OnLineTip.Create (its two empty panels, hidden memos and scroll bars draw
      nothing and are left out). -->
 <Panel Name="OnlineTipsLayer" Bounds="0,0,800,600">
-  <Window Name="OnlineTips" Picture="Form_onLineInfo_1" Position="0,0" Visible="false">
+  <Window Name="OnlineTips" PadShoulders="OnlineTipsPageUp,OnlineTipsPageDown" Picture="Form_onLineInfo_1" Position="0,0" Visible="false">
     <!-- where the close button goes while the topic list is shown, and while a topic's text is shown -->
     <Spot Name="OnlineTipsCloseTopics" Position="276,265"/>
     <Spot Name="OnlineTipsCloseText" Position="294,265"/>

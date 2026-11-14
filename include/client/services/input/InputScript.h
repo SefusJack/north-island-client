@@ -7,6 +7,8 @@
 #include "core/Bytes.h"
 #include "ui/Screen.h"
 
+#include <SDL3/SDL.h>
+
 #include <cstdint>
 #include <filesystem>
 #include <functional>
@@ -27,6 +29,7 @@ namespace client {
     ///   focus NAME (give the keyboard to the layout element of that Name, e.g. StallPrice); typefield NAME TEXT (focus NAME, then type TEXT);
     ///   key NAME (Enter, Tab, Escape, Backspace, Delete, Left, Right, Up, Down, Home, End, I, S; Ctrl+NAME holds Ctrl);
     ///   shot FILE[.bmp] (save the next frame, relative to the user folder, default extension .bmp; the script goes on when it is saved);
+    ///   pad attach (plug in a virtual game pad), pad detach, pad button NAME down|up, pad axis NAME VALUE (NAME as SDL names buttons and axes: a, b, x, y, back, start, leftshoulder, dpup, leftx, righty ...; VALUE from -1 to 1, a trigger's from 0 to 1);
     ///   recv HEX (a server message payload in hex, e.g. "35 0a 01", that the game reads next); quit (end the program).
     /// @details Scene commands (world scene; they find things instead of using screen coordinates, as the camera scrolls with the player) each log a line starting "script: " to north-island-client.log in the user folder: "ok" or the result, "TIMEOUT" when a wait ran out (script goes on), "ERROR" when it could not do it (script goes on with the next line):
     ///   clicknpc ID (click the NPC with that Npc.dat number at a point of its sprite where the game's hit test takes it);
@@ -128,6 +131,7 @@ namespace client {
             std::uint64_t m_actionMark = 0;
             std::optional<ScriptPendingClick> m_click;
             bool m_quit = false;
+            SDL_Joystick* m_pad = nullptr; // the virtual game pad of the pad commands
     };
 
 }

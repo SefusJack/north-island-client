@@ -5,7 +5,7 @@
      draws a form's controls from the last created to the first: the controls here are in drawing
      order, the reverse of TChangeCampForm.Create.  View model: viewmodels/CampStyleWindow.cpp. -->
 <Panel Name="CampStyleLayer" Bounds="0,0,800,600">
-  <Window Name="CampStyleWindow" Escape="onCampStyleClose" Picture="ChangCamp_Form" Position="0,0" Size="243,343" Visible="false">
+  <Window Name="CampStyleWindow" PadShoulders="CampStylePrevious,CampStyleNext" Escape="onCampStyleClose" Picture="ChangCamp_Form" Position="0,0" Size="243,343" Visible="false">
     <!-- DrawControl: the tent -->
     <DrawingArea Name="CampStylePage" Bounds="0,0,243,343">
       <!-- the tent: its feet -->

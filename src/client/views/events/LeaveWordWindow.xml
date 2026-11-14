@@ -6,7 +6,7 @@
      invisible but catch the mouse, as buttons without a picture do in the game.  Made in the middle of the screen.  The game draws a form's controls from the last
      created to the first: the controls here are in drawing order, the reverse of TBK_LeaveWordForm.Create. -->
 <Panel Name="LeaveWordLayer" Bounds="0,0,800,600">
-  <Window Name="LeaveWord" Escape="onLeaveWordClose" Position="205,64" Size="389,471" Visible="false">
+  <Window Name="LeaveWord" PadShoulders="LeaveWordPrevious,LeaveWordNext" Escape="onLeaveWordClose" Position="205,64" Size="389,471" Visible="false">
     <Panel Name="LeaveWordFrame" Bounds="0,0,389,471" Skin="form_module" SkinSource="0,0,200,180" Borders="64,38,44,14"/>
     <!-- DrawControl of the form: the page and the page count -->
     <DrawingArea Name="LeaveWordPages" Bounds="0,0,389,471">
@@ -30,7 +30,7 @@
     <TextBox Name="LeaveWordName" Skin="editorBG" SkinSource="0,0,50,20" Borders="5,5,5,5" Bounds="132,375,120,22" HitTest="true" MaxLength="14" FontColor="#FFFFFF"/>
     <TextBox Name="LeaveWordMessage" Skin="editorBG" SkinSource="0,0,50,20" Borders="5,5,5,5" Bounds="27,343,260,22" HitTest="true" MaxLength="60" AllowPaste="true"
              FontColor="#FFFFFF" Enter="onLeaveWordSend"/>
-    <DrawingArea Name="LeaveWordList" Bounds="18,42,337,300" HitTest="true" MouseUp="onLeaveWordSelect" DoubleClick="onLeaveWordWhisper">
+    <DrawingArea Name="LeaveWordList" PadCells="0,60" Bounds="18,42,337,300" HitTest="true" MouseUp="onLeaveWordSelect" DoubleClick="onLeaveWordWhisper">
       <!-- a message row: list width and row height -->
       <Spot Name="LeaveWordRow" Size="337,60"/>
       <!-- the name and text column: left edge in a row and line height; the time column is this far right of it -->

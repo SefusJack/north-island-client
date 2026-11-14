@@ -7,7 +7,7 @@
      form's controls from the last created to the first: the controls here are in drawing
      order, the reverse of TRe_ItemStallForm.Create. -->
 <Panel Name="ItemStallLayer" Bounds="0,0,800,600">
-  <Window Name="ItemStall" Picture="Form_KeepItemStall_1" Position="222,69" Visible="false">
+  <Window Name="ItemStall" PadShoulders="StallPreviousLook,StallNextLook" Picture="Form_KeepItemStall_1" Position="222,69" Visible="false">
     <!-- DrawControl: the stall's picture and the gold it brought -->
     <DrawingArea Name="StallPaint" Bounds="0,0,355,461">
       <!-- the income text: top-left, colour in RGB565 2113 -->

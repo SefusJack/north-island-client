@@ -49,6 +49,17 @@ namespace client {
           m_yellowSpot(screen.get<ui::Spot>("QuizYellow")),
           m_whiteSpot(screen.get<ui::Spot>("QuizWhite")) {
         screen.get<ui::DrawingArea>("QuizPage").setPainter([this](gfx::Canvas& canvas, core::Point, std::uint64_t nowMs) { paint(canvas, nowMs); });
+        screen.get<ui::DrawingArea>("QuizPage").setPadPoints([this] {
+            // a game pad's pointer steps from answer to answer
+            constexpr int kInRow = 12; // from an answer's top to the middle of its line, px
+            std::vector<core::Point> answers;
+            for (int answer = 1; answer <= QuizGame::kAnswers; ++answer) {
+                if (!m_game.answerText(answer).empty()) {
+                    answers.push_back({m_boxSpot.at().x + m_boxSpot.rect().width / 2, (answer - 1) * m_answersSpot.pitch().y + m_answersSpot.at().y + kInRow});
+                }
+            }
+            return answers;
+        });
         screen.on("onQuizUp", [this](const ui::EventArgs& args) { m_game.clicked(args.position); });
         screen.on("onQuizLeave", [this](const ui::EventArgs&) { m_game.leaveRequested(); });
     }

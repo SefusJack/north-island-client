@@ -3,7 +3,7 @@
      viewmodels/login/SignUpForm.cpp.  Made of the game's pictures: the white form frame (form_module_1), the login form's
      fields (Panel26) and its Sign Up and Previous buttons.  The server makes an account the first time it is logged in to
      (AutoRegister), so Sign Up logs in with the new name. -->
-<Panel Name="SignUpForm" Bounds="0,0,800,600" Visible="false">
+<Panel Name="SignUpForm" Bounds="0,0,800,600" PadPage="true" Visible="false">
   <!-- form_module_1: Borders keep the ornaments whole (top 122, bottom 45) and repeat only the picture's steady rows 122..177;
        an odd height keeps its two-row stripes in step where the repeats meet the bottom -->
   <Panel Name="SignUpFrame" Bounds="267,128,266,345" Skin="form_module_1" SkinSource="0,0,223,223" Borders="64,122,80,45"/>

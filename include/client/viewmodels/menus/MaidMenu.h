@@ -1,6 +1,7 @@
 #ifndef NORTH_ISLAND_CLIENT_VIEWMODELS_MENUS_MAID_MENU_H
 #define NORTH_ISLAND_CLIENT_VIEWMODELS_MENUS_MAID_MENU_H
 
+#include "client/services/input/PadAsk.h"
 #include "client/services/GameServices.h"
 #include "core/Bytes.h"
 #include "ui/DrawingArea.h"
@@ -51,6 +52,16 @@ namespace client {
             /// @brief Tells whether the box is on the screen.
             /// @return True when shown.
             bool isOpen() const { return m_visible; }
+
+            /// @brief Does what a game pad asks while the box is shown: up and down step through the choices and accept takes
+            /// the marked one; accept or cancel closes her words.
+            /// @param ask What is asked.
+            /// @return True when the box took it.
+            bool padAsk(PadAsk ask);
+
+            /// @brief Whether the pad's directions step through the choices now.
+            /// @return True while choices are shown.
+            bool padSteps() const { return m_visible && m_onChoice != nullptr; }
 
             /// @brief Starts the menu for a clicked piece of furniture.
             /// @details Original: DZ_Thing.pas HandleUtensilClick; a piece of a maid kind above 1 was clicked.

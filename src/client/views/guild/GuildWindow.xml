@@ -10,12 +10,12 @@
      board) is in viewmodels/GuildNoticePage.cpp, the Insignia page (the badge editor) in
      viewmodels/GuildEmblemPage.cpp. -->
 <Panel Name="GuildWindowLayer" Bounds="0,0,800,600">
-  <Window Name="GuildWindow" Picture="Form_ArmyGrounpInfo_1" Position="444,0" Visible="false" Hint="Group [Ctrl+T]"
+  <Window Name="GuildWindow" PadShoulders="GuildPreviousPage,GuildNextPage" Picture="Form_ArmyGrounpInfo_1" Position="444,0" Visible="false" Hint="Group [Ctrl+T]"
           DoubleClick="onGuildWindowDoubleClick">
     <!-- the Insignia page's mouse areas: the form does not drag from them (HandleMouseMove); below the buttons -->
-    <DrawingArea Name="GuildEmblemSamples" Bounds="86,99,140,28" HitTest="true" Visible="false" MouseDown="onGuildEmblemSampleDown"/>
-    <DrawingArea Name="GuildEmblemPalette" Bounds="181,436,120,30" HitTest="true" Visible="false" MouseDown="onGuildEmblemPaletteDown"/>
-    <DrawingArea Name="GuildEmblemGrid" Bounds="62,165,240,240" HitTest="true" Visible="false" MouseDown="onGuildEmblemGridDown"
+    <DrawingArea Name="GuildEmblemSamples" PadCells="28,28" Bounds="86,99,140,28" HitTest="true" Visible="false" MouseDown="onGuildEmblemSampleDown"/>
+    <DrawingArea Name="GuildEmblemPalette" PadCells="15,15" Bounds="181,436,120,30" HitTest="true" Visible="false" MouseDown="onGuildEmblemPaletteDown"/>
+    <DrawingArea Name="GuildEmblemGrid" PadCells="10,10" Bounds="62,165,240,240" HitTest="true" Visible="false" MouseDown="onGuildEmblemGridDown"
                  MouseDrag="onGuildEmblemGridDrag" MouseUp="onGuildEmblemGridUp"/>
     <!-- the Insignia page's buttons -->
     <Image Name="GuildEmblemFrame" Picture="icon_portentFram_1" Position="270,101" Visible="false"/>

@@ -6,7 +6,7 @@
      reverse of TTH_CellectionForm.Create; the page, hover bar, texts and the monster
      (DrawControl) come first. -->
 <Panel Name="MonsterBookLayer" Bounds="0,0,800,600">
-  <Window Name="MonsterBook" Escape="onMonsterBookClose" Picture="Form_Cellection_1" Position="150,100" Visible="false">
+  <Window Name="MonsterBook" PadShoulders="MonsterBookPrevious,MonsterBookNext" Escape="onMonsterBookClose" Picture="Form_Cellection_1" Position="150,100" Visible="false">
     <DrawingArea Name="MonsterBookPage" Bounds="0,0,463,367">
       <!-- the hover bar over the first list row: its box, translucent orange, and the step down to the next row -->
       <Spot Name="MonsterBookHover" Bounds="20,55,188,20" Color="#50FF6C01" Pitch="0,24"/>

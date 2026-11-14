@@ -5,7 +5,7 @@
      form's controls from the last created to the first: the controls here are in drawing order, the reverse of
      TRe_RetainFurForm.Create. -->
 <Panel Name="RetainFurLayer" Bounds="0,0,800,600">
-  <Window Name="RetainFurWindow" Escape="onRetainFurClose" Picture="Form_MakeThing_1" Position="512,50" Visible="false">
+  <Window Name="RetainFurWindow" PadShoulders="RetainFurUp,RetainFurDown" Escape="onRetainFurClose" Picture="Form_MakeThing_1" Position="512,50" Visible="false">
     <!-- DrawControl: the title -->
     <Image Name="RetainFurTitle" Picture="Icon_BringUpFurTitle_1" Position="101,11"/>
     <ScrollBar Name="RetainFurScroll" Bounds="249,77,17,310" Track="Rail_H5" Thumb="bar_H4" ThumbSource="0,0,9,21"

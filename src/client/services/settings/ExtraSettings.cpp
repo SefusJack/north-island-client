@@ -9,6 +9,12 @@
 
 #include <nlohmann/json.hpp>
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#endif
+
 #include <algorithm>
 #include <array>
 #include <system_error>
@@ -154,6 +160,20 @@ namespace client {
         return recommended;
     }
 
+    bool controllerOnByDefault() {
+#ifdef _WIN32
+        OSVERSIONINFOW version{};
+        version.dwOSVersionInfoSize = sizeof(version);
+#pragma warning(push)
+#pragma warning(disable : 4996) // GetVersionExW is deprecated; for telling Windows XP from later ones it is right
+        const bool known = GetVersionExW(&version) != 0;
+#pragma warning(pop)
+        return !known || version.dwMajorVersion >= 6; // 6: Windows Vista
+#else
+        return true;
+#endif
+    }
+
     core::Speedups ExtraSettings::speedupsFor(const std::string& renderer) const {
         core::Speedups chosen = speedupMode == SpeedupMode::Custom ? speedups : speedupMode == SpeedupMode::Auto ? recommendedSpeedups(renderer) : core::Speedups{};
         chosen.limiterSpinMs = speedups.limiterSpinMs;
@@ -179,7 +199,8 @@ namespace client {
                pixelScale == other.pixelScale && pixelArt == other.pixelArt && pixelArtPictures == other.pixelArtPictures &&
                pixelArtSprites == other.pixelArtSprites && pixelArtText == other.pixelArtText && hudScale == other.hudScale && display == other.display &&
                loadingMusicVolume == other.loadingMusicVolume && loadingMusicOn == other.loadingMusicOn && loadingSoundVolume == other.loadingSoundVolume &&
-               loadingSoundOn == other.loadingSoundOn && sortButtons == other.sortButtons && partyLogin == other.partyLogin && speedupMode == other.speedupMode && speedups == other.speedups;
+               loadingSoundOn == other.loadingSoundOn && sortButtons == other.sortButtons && partyLogin == other.partyLogin && modernBag == other.modernBag && speedupMode == other.speedupMode && speedups == other.speedups &&
+               controller == other.controller;
     }
 
     std::filesystem::path ExtraSettings::fileIn(const std::filesystem::path& userRoot) { return userRoot / "extra-settings.json"; }
@@ -247,6 +268,14 @@ namespace client {
         if (const auto game = root.find("game"); game != root.end() && game->is_object()) {
             readBool(*game, "sortButtons", settings.sortButtons);
             readBool(*game, "partyLogin", settings.partyLogin);
+            readBool(*game, "modernBag", settings.modernBag);
+        }
+        if (const auto controller = root.find("controller"); controller != root.end() && controller->is_object()) {
+            readBool(*controller, "enabled", settings.controller.enabled);
+            readBool(*controller, "hideHud", settings.controller.hideHud);
+            readBool(*controller, "hideStatus", settings.controller.hideStatus);
+            readBool(*controller, "hideChat", settings.controller.hideChat);
+            readInt(*controller, "hideSeconds", settings.controller.hideSeconds, 0, 600); // up to ten minutes
         }
         if (const auto speedups = root.find("speedups"); speedups != root.end() && speedups->is_object()) {
             for (const auto& [name, member] : kSpeedups) {
@@ -289,7 +318,14 @@ namespace client {
             {"loadingSoundVolume", loadingSoundVolume},
             {"loadingSoundOn", loadingSoundOn}
         };
-        root["game"] = {{"sortButtons", sortButtons}, {"partyLogin", partyLogin}};
+        root["game"] = {{"sortButtons", sortButtons}, {"partyLogin", partyLogin}, {"modernBag", modernBag}};
+        root["controller"] = {
+            {"enabled", controller.enabled},
+            {"hideHud", controller.hideHud},
+            {"hideStatus", controller.hideStatus},
+            {"hideChat", controller.hideChat},
+            {"hideSeconds", controller.hideSeconds}
+        };
         Json& listed = root["speedups"];
         listed["mode"] = speedupModeName(speedupMode);
         for (const auto& [name, member] : kSpeedups) {

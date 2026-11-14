@@ -4,7 +4,7 @@
      view model: viewmodels/GiftExchangeWindow.cpp.  The game draws a form's controls from the last created to the first: the controls here are in drawing order,
      the reverse of TGiftExchangeCardForm.Create. -->
 <Panel Name="GiftExchangeLayer" Bounds="0,0,800,600">
-  <Window Name="GiftExchange" Escape="onGiftClose" Picture="Form_GiftExchange_1" Position="176,153" Size="447,293" ScreenFit="true" Visible="false">
+  <Window Name="GiftExchange" PadShoulders="GiftPrevious,GiftNext" Escape="onGiftClose" Picture="Form_GiftExchange_1" Position="176,153" Size="447,293" ScreenFit="true" Visible="false">
     <!-- DrawControl: the card's name, the page, the rows' names and the number of times's pictures -->
     <DrawingArea Name="GiftPaint" Bounds="0,0,447,293">
       <!-- the gift card name: the x it is centred on and its y, colour in RGB565 2113 -->

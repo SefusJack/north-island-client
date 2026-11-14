@@ -3,7 +3,7 @@
      "Set music"), arrows for the pages, Play, Pause and the previous and next song; a click on a row picks it, a double click or Play sends it to the house.  The game
      draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of TMusicCenter.Create. -->
 <Panel Name="MusicCenterLayer" Bounds="0,0,800,600">
-  <Window Name="MusicCenterWindow" Escape="onMusicClose" Picture="form_MusicCenter" Position="230,260" Size="242,379" ScreenFit="true" Visible="false">
+  <Window Name="MusicCenterWindow" PadShoulders="MusicPreviousPage,MusicNextPage" Escape="onMusicClose" Picture="form_MusicCenter" Position="230,260" Size="242,379" ScreenFit="true" Visible="false">
     <!-- DrawControl: the song under the mouse and the songs -->
     <DrawingArea Name="MusicPaint" Bounds="0,0,242,379">
       <!-- the first song row: its box (the step to the next row is its height) and the hover highlight's colour, cyan with alpha 80 -->
@@ -13,7 +13,7 @@
       <!-- the colour of the song that is playing (RGB565 1344) -->
       <Spot Name="MusicPlaying" Color="#00AA00"/>
     </DrawingArea>
-    <DrawingArea Name="MusicRows" Bounds="41,75,157,190" HitTest="true" MouseUp="onMusicRowUp" DoubleClick="onMusicRowDouble"/>
+    <DrawingArea Name="MusicRows" PadCells="0,19" Bounds="41,75,157,190" HitTest="true" MouseUp="onMusicRowUp" DoubleClick="onMusicRowDouble"/>
     <ImageButton Name="MusicNextPage" Picture="Btn_ArrowDn_1" Position="112,273" Size="17,17" Hint="Next page" Click="onMusicNextPage"/>
     <ImageButton Name="MusicPreviousPage" Picture="Btn_ArrowUP_1" Position="112,51" Size="17,17" Hint="Previous page" Click="onMusicPreviousPage"/>
     <ImageButton Name="MusicNext" Picture="btn_m_Next" Position="150,306" Size="25,25" Hint="Next song" Click="onMusicNext"/>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The game pad's keyboard on the screen (not in the original game; made of its pictures): the line being typed over
+     five rows of keys; view model: viewmodels/system/PadKeyboard.cpp, which paints the keys and slides the board up from
+     the bottom edge when the pad clicks a text field, and down again on Enter or when it is backed out of. -->
+<Panel Name="PadKeyboardLayer" Bounds="0,0,800,600" Anchor="Bottom" HudScale="true" Topmost="true">
+  <Panel Name="PadKeyboardBoard" Skin="panel10" SkinSource="0,0,50,50" Borders="7,7,7,7" HitTest="true"
+         Bounds="208,396,384,204" Visible="false">
+    <DrawingArea Name="PadKeyboardKeys" Bounds="12,10,360,186" HitTest="true" MouseUp="onPadKeyboardUp">
+      <!-- the line being typed: its place, and its colour -->
+      <Spot Name="PadKeyboardLine" Bounds="0,0,360,20" Color="#FFFFFF"/>
+      <!-- the first key's place and a key's size; the keys stand a column and a row apart -->
+      <Spot Name="PadKeyboardKey" Bounds="1,27,34,29" Color="#080808"/>
+      <Spot Name="PadKeyboardStep" Position="36,32"/>
+      <!-- the colour laid over the key the pad stands on -->
+      <Spot Name="PadKeyboardMark" Color="#F5A93B"/>
+    </DrawingArea>
+  </Panel>
+</Panel>

@@ -5,7 +5,7 @@
      model places it beside the item window.  The game draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of
      TInsteadEcisForm.Create; DrawControl's bar, numbers and portrait are over them.  View model: viewmodels/InsteadEcisWindow.cpp. -->
 <Panel Name="InsteadEcisLayer" Bounds="0,0,800,600">
-  <Window Name="InsteadEcis" Escape="onInsteadEcisClose" Picture="Form_InsteadEcis" Position="286,109" Size="228,381" Visible="false">
+  <Window Name="InsteadEcis" PadShoulders="InsteadEcisUp,InsteadEcisDown" Escape="onInsteadEcisClose" Picture="Form_InsteadEcis" Position="286,109" Size="228,381" Visible="false">
     <ImageButton Name="InsteadEcisClose" Picture="Btn_Close_2" Position="111,346" Size="39,20" Hint="[ESC]" Click="onInsteadEcisClose"
                  ClickSound="" ReleaseSound="sound/wav0154.wav"/>
     <ImageButton Name="InsteadEcisOk" Picture="Btn_OK_2" Position="66,346" Size="39,20" Hint="Use" Click="onInsteadEcisOk"

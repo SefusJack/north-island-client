@@ -3,7 +3,7 @@
      viewmodels/ItemWindow.cpp.  The left column shows the character (what it wears around its
      figure, level, HP, SP, experience, gold and stats), the right one the bag. -->
 <Panel Name="ItemWindowLayer" Bounds="0,0,800,600">
-  <Window Name="ItemWindow" Escape="onItemWindowEscape" AbovePopups="true" Picture="Form_RoleStatus_1" Position="207,69" Hint="Item [Ctrl+I]" Visible="false">
+  <Window Name="ItemWindow" PadStart="ItemBag" PadShoulders="ItemPreviousCharacter,ItemNextCharacter" Escape="onItemWindowEscape" AbovePopups="true" Picture="Form_RoleStatus_1" Position="207,69" Hint="Item [Ctrl+I]" Visible="false">
     <DrawingArea Name="ItemStatus" Bounds="0,0,386,461">
       <!-- the text colour, in RGB565 2113, and the colour of a buffed value, red (RGB565 63488) -->
       <Spot Name="ItemStatusText" Color="#080808"/>

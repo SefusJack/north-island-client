@@ -3,7 +3,7 @@
      click on a row puts the name in the transfer form if that player is online.  View model: viewmodels/AtmListWindow.cpp.  The game draws a form's
      controls from the last created to the first: the controls here are in drawing order, the reverse of TATMSubForm.Create. -->
 <Panel Name="AtmListLayer" Bounds="0,0,800,600">
-  <Window Name="AtmList" AbovePopups="true" Escape="onAtmListClose" Picture="Form_ATM_List" Position="286,139" Size="228,321" Visible="false">
+  <Window Name="AtmList" PadShoulders="AtmListUp,AtmListDown" AbovePopups="true" Escape="onAtmListClose" Picture="Form_ATM_List" Position="286,139" Size="228,321" Visible="false">
     <ImageButton Name="AtmListDown" Picture="Btn_ArrowDn_1" Position="190,264" Size="17,17" Click="onAtmListDown"/>
     <ImageButton Name="AtmListUp" Picture="Btn_ArrowUp_1" Position="190,68" Size="17,17" Click="onAtmListUp"/>
     <ImageButton Name="AtmListCloseSmall" Picture="Btn_Close_s_1" Position="178,26" Size="18,18" Hint="[ESC]" Click="onAtmListClose"

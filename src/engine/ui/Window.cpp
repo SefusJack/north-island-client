@@ -1,5 +1,7 @@
 #include "ui/Window.h"
 
+#include "core/StringUtil.h"
+
 namespace ui {
 
     namespace {
@@ -31,6 +33,12 @@ namespace ui {
             m_screenFit = LoadContext::parseBool(value);
         } else if (name == "AbovePopups") {
             m_abovePopups = LoadContext::parseBool(value);
+        } else if (name == "PadTabs") {
+            m_padTabs = core::split(value, ',');
+        } else if (name == "PadShoulders") {
+            m_padShoulders = core::split(value, ',');
+        } else if (name == "PadStart") {
+            m_padStart = value;
         } else {
             Element::applyAttribute(name, value, context);
         }

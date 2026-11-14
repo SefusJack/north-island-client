@@ -4,6 +4,8 @@
 #include "audio/MusicPlayer.h"
 #include "audio/SoundEffects.h"
 #include "client/services/input/CursorSet.h"
+#include "client/services/input/Gamepad.h"
+#include "client/services/input/HudReveal.h"
 #include "client/services/frame/BeatClock.h"
 #include "client/services/frame/FrameBeat.h"
 #include "client/services/frame/FrameCost.h"
@@ -14,6 +16,8 @@
 #include "client/services/GameServices.h"
 #include "client/services/input/InputScript.h"
 #include "client/services/input/InputTranslator.h"
+#include "client/services/input/PadControls.h"
+#include "client/services/input/PadPointers.h"
 #include "client/services/photo/ScreenPhoto.h"
 #include "client/services/mods/ModPacks.h"
 #include "client/models/system/SystemOptions.h"
@@ -474,6 +478,11 @@ namespace client {
         auto gpuTimer = gfx::GpuTimer::create(device->renderer(), device->backendName());
         core::logInfo("gpu timer: ", gpuTimer ? "available" : "none for this renderer");
         bool remakeGpuTimer = false;
+        Gamepad gamepad(m_options.userDirectory, live.controller.enabled);
+        PadControls padControls;
+        const PadPointers padPointers(game, *device);
+        padControls.setPointers(padPointers.above(), padPointers.below());
+        HudReveal hudReveal;
         const auto dropGpuTimer = [&] {
             if (gpuTimer && device->backendName() == "direct3d") {
                 gpuTimer.reset();
@@ -593,10 +602,23 @@ namespace client {
                 if (played->kind == SceneKind::World) {
                     party.coverLeaderHud(played->scene->screen());
                 }
+                padControls.update(frameStartPrecise, gamepad, device->window(), steered, canvas.origin(), live.controller.hideSeconds);
+                hudReveal.update(
+                    frameStartPrecise,
+                    played->scene->screen(),
+                    live.controller.hideHud && padControls.wantsHudHidden(),
+                    live.controller.hideStatus,
+                    live.controller.hideChat,
+                    padControls.wantsShortcutBar()
+                );
                 while (SDL_PollEvent(&event)) {
+                    padControls.seeEvent(event, steered.screen());
                     SDL_ConvertEventToRenderCoordinates(device->renderer(), &event);
                     if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_F11 && !event.key.repeat) {
                         overlayLevel = (overlayLevel + 1) % FrameGraph::kLevels; // off, 1, 2, 3, off
+                        continue;
+                    }
+                    if (gamepad.handleEvent(event)) {
                         continue;
                     }
                     if (event.type >= SDL_EVENT_WINDOW_FIRST && event.type <= SDL_EVENT_WINDOW_LAST) {
@@ -748,7 +770,12 @@ namespace client {
                 if (overlayLevel > 0) {
                     const core::Point origin = canvas.origin();
                     canvas.setOrigin({});
-                    overlay.draw(canvas, frameStats, device->backendName(), gpuTimer != nullptr, device->width(), live.hudScale, overlayLevel, machineLoad.reading(), frameStart);
+                    // under the function buttons where they are now: at the top while they are slid away or hidden (a fight)
+                    int overlayTop = 0;
+                    if (const auto bar = steered.screen().screenRectOf("FunctionBackground"); bar && !steered.screen().layoutAway("FunctionButtons")) {
+                        overlayTop = std::max(0, bar->y + bar->height + steered.screen().layoutSlide("FunctionButtons").y + origin.y);
+                    }
+                    overlay.draw(canvas, frameStats, device->backendName(), gpuTimer != nullptr, device->width(), overlayTop, overlayLevel, machineLoad.reading(), frameStart);
                     canvas.setOrigin(origin);
                 }
                 if (timingGpu && gpuTimer) {

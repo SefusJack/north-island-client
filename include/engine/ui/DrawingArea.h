@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <vector>
 
 namespace ui {
 
@@ -28,6 +29,14 @@ namespace ui {
             /// @brief Sets the view model's own test of which points of the area take the mouse (a picture's opaque pixels as the game maps them).
             /// @param tester Returns true for a local point that takes the mouse; for a hit-tested area a point of its rectangle takes the mouse only when this says so.
             void setHitTester(std::function<bool(core::Point local)> tester) { m_hitTester = std::move(tester); }
+
+            /// @brief Sets the places of the area a game pad's pointer steps to (the holes, cards or answers the view model draws).
+            /// @param points Returns the places now, from the area's top left corner.
+            void setPadPoints(std::function<std::vector<core::Point>()> points) { m_padPoints = std::move(points); }
+
+            /// @brief Gives the places a game pad's pointer steps to.
+            /// @return The places from the area's top left corner; empty when the view model named none.
+            std::vector<core::Point> padPoints() const { return m_padPoints ? m_padPoints() : std::vector<core::Point>(); }
 
             /// @brief Reads the HitTest attribute; others go to Element.
             /// @param name Attribute name.
@@ -97,6 +106,7 @@ namespace ui {
         private:
             Painter m_painter;
             std::function<bool(core::Point local)> m_hitTester;
+            std::function<std::vector<core::Point>()> m_padPoints;
             bool m_hitTest = false;
             core::Point m_lastMouse;
     };

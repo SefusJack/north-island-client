@@ -3,7 +3,7 @@
      Four pages: 1 role and name, 2 points, 3 element, 4 colours.  The view model moves the
      shared parts (buttons, figure, portrait, name) to each page's places, places the role
      pictures of the carousel and fills in the numbers. -->
-<Panel Name="CreateCharacterForm" Bounds="0,0,800,600" Visible="false">
+<Panel Name="CreateCharacterForm" Bounds="0,0,800,600" PadPage="true" Visible="false">
   <Image Name="CreatePage1Background" Source="Menu/Skins/White/Form_CreateRole_1.jpg" Position="30,135" Visible="false"/>
   <Image Name="CreatePage2Background" Source="Menu/Skins/White/Form_CreateRole_2.jpg" Position="30,135" Visible="false"/>
   <Image Name="CreatePage3Background" Source="Menu/Skins/White/Form_CreateRole_3.jpg" Position="30,135" Visible="false"/>

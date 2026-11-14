@@ -5,7 +5,7 @@
      the first: the controls here are in drawing order, the reverse of TPokeForm.Create.  View model:
      viewmodels/LuckyCardsWindow.cpp. -->
 <Panel Name="LuckyCardsLayer" Bounds="0,0,800,600">
-  <Panel Name="LuckyCardsForm" Bounds="0,0,800,600" Visible="false">
+  <Panel Name="LuckyCardsForm" Bounds="0,0,800,600" PadPage="true" Visible="false">
     <DrawingArea Name="LuckyCardsPage" Bounds="0,0,800,600" HitTest="true" MouseDown="onLuckyCardsDown">
       <!-- the first card's back: its place and size, and 176 px between columns and 246 px between rows -->
       <Spot Name="LuckyCardsCard" Bounds="56,35,160,230" Pitch="176,246"/>

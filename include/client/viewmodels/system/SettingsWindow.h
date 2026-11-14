@@ -34,7 +34,7 @@ namespace client {
             };
 
             /// @brief The window's tabs (numbered from 1 as the SettingsTab buttons).
-            enum class Tab { Game = 1, Sound, Chat, Video };
+            enum class Tab { Game = 1, Sound, Chat, Video, Pad };
 
             /// @brief Loads the window layout and wires its events.
             /// @param services Shared game services.
@@ -129,6 +129,13 @@ namespace client {
 
             /// @brief Stacks the Video tab's groups and hides the bodies of the closed ones.
             void layoutVideo();
+
+            /// @brief Opens or closes a group of the Game tab.
+            /// @param number The group number (from 1).
+            void toggleGameGroup(int number);
+
+            /// @brief Stacks the Game tab's groups and hides the bodies of the closed ones; before the login only the groups that need no server show.
+            void layoutGame();
 
             /// @brief Applies a change to the video settings and refreshes the tab.
             /// @param change Function that edits the settings.

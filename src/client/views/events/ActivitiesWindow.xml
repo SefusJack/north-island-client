@@ -4,7 +4,7 @@
      draws a form's controls from the last created to the first: the controls here are in drawing order, the reverse of TActionListForm.Create.
      View model: viewmodels/ActivitiesWindow.cpp. -->
 <Panel Name="ActivitiesLayer" Bounds="0,0,800,600">
-  <Window Name="ActivitiesWindow" Escape="onActivitiesClose" ScreenFit="true" Picture="Form_ActionList_2" Position="400,300" Size="556,360"
+  <Window Name="ActivitiesWindow" PadShoulders="ActivitiesPrevious,ActivitiesNext" Escape="onActivitiesClose" ScreenFit="true" Picture="Form_ActionList_2" Position="400,300" Size="556,360"
           Visible="false">
     <!-- DrawControl: the highlights and the texts -->
     <DrawingArea Name="ActivitiesPage" Bounds="0,0,556,360">
@@ -16,7 +16,7 @@
       <!-- the selected or hovered row bar: light blue with alpha -->
       <Spot Name="ActivitiesHighlight" Color="#C83D8BF9"/>
     </DrawingArea>
-    <DrawingArea Name="ActivitiesRows" Bounds="24,85,485,192" HitTest="true" MouseUp="onActivitiesRowUp" DoubleClick="onActivitiesRowDouble"/>
+    <DrawingArea Name="ActivitiesRows" PadCells="0,38" Bounds="24,85,485,192" HitTest="true" MouseUp="onActivitiesRowUp" DoubleClick="onActivitiesRowDouble"/>
     <ImageButton Name="ActivitiesQuery5" Picture="query" Position="503,255" Size="27,27" Visible="false" Click="onActivitiesQuery"
                  ClickSound="" ReleaseSound="sound/wav0154.wav"/>
     <ImageButton Name="ActivitiesQuery4" Picture="query" Position="503,214" Size="27,27" Visible="false" Click="onActivitiesQuery"

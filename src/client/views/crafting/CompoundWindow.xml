@@ -8,7 +8,7 @@
      the first: the controls here are in drawing order, the reverse of
      TRe_CompoundForm.Create. -->
 <Panel Name="CompoundWindowLayer" Bounds="0,0,800,600">
-  <Window Name="CompoundWindow" Escape="onCompoundWindowEscape" Picture="Form_Compound_1" Position="250,66" Visible="false">
+  <Window Name="CompoundWindow" PadStart="CompoundBag" Escape="onCompoundWindowEscape" Picture="Form_Compound_1" Position="250,66" Visible="false">
     <!-- DrawControl: the frames of large items, the cauldron, the item flying into the bag and
          the skill menu's marks -->
     <DrawingArea Name="CompoundPaint" Bounds="0,0,299,467">
@@ -19,11 +19,11 @@
       <!-- the count text in a slot, in RGB565 2113 -->
       <Spot Name="CompoundCount" Color="#080808"/>
     </DrawingArea>
-    <DrawingArea Name="CompoundSlot5" Bounds="206,383,66,32" HitTest="true" RightMouseDown="onCompoundSlotRemove"/>
-    <DrawingArea Name="CompoundSlot4" Bounds="206,332,66,32" HitTest="true" RightMouseDown="onCompoundSlotRemove"/>
-    <DrawingArea Name="CompoundSlot3" Bounds="206,281,66,32" HitTest="true" RightMouseDown="onCompoundSlotRemove"/>
-    <DrawingArea Name="CompoundSlot2" Bounds="206,230,66,32" HitTest="true" RightMouseDown="onCompoundSlotRemove"/>
-    <DrawingArea Name="CompoundSlot1" Bounds="206,167,66,44" HitTest="true" RightMouseDown="onCompoundSlotRemove"/>
+    <DrawingArea Name="CompoundSlot5" Bounds="206,383,66,32" PadCells="66,32" HitTest="true" RightMouseDown="onCompoundSlotRemove"/>
+    <DrawingArea Name="CompoundSlot4" Bounds="206,332,66,32" PadCells="66,32" HitTest="true" RightMouseDown="onCompoundSlotRemove"/>
+    <DrawingArea Name="CompoundSlot3" Bounds="206,281,66,32" PadCells="66,32" HitTest="true" RightMouseDown="onCompoundSlotRemove"/>
+    <DrawingArea Name="CompoundSlot2" Bounds="206,230,66,32" PadCells="66,32" HitTest="true" RightMouseDown="onCompoundSlotRemove"/>
+    <DrawingArea Name="CompoundSlot1" Bounds="206,167,66,44" PadCells="66,44" HitTest="true" RightMouseDown="onCompoundSlotRemove"/>
     <ImageButton Name="CompoundSynthesis" Picture="Btn_Compound_1" Position="83,429" Click="onCompoundSynthesis"/>
     <TextBox Name="CompoundJuniorLabel" Bounds="38,53,150,10" ReadOnly="true" FontColor="#080808" Visible="false"/>
     <ImageButton Name="CompoundJuniorCheck" Picture="btn_UnCheck_1" Position="21,50" Visible="false" Click="onCompoundJunior"/>

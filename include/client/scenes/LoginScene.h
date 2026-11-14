@@ -10,6 +10,7 @@
 #include "client/viewmodels/chat/PlayerMessages.h"
 #include "client/viewmodels/login/ReloginScreen.h"
 #include "client/viewmodels/login/SignUpForm.h"
+#include "client/viewmodels/system/PadKeyboard.h"
 #include "client/viewmodels/system/SettingsWindow.h"
 #include "client/scenes/Scene.h"
 #include "client/services/ServerEvents.h"
@@ -43,6 +44,28 @@ namespace client {
             /// @brief Overrides Scene::screen: gives the login screen.
             /// @return The screen.
             ui::Screen& screen() override { return m_screen; }
+
+            /// @brief Gives the pad's buttons to the keyboard on the screen while it is up (Scene::padAsk).
+            /// @param ask What is asked.
+            /// @return True when the keyboard took it.
+            bool padAsk(PadAsk ask) override {
+                if (m_padKeyboard.isOpen()) {
+                    return m_padKeyboard.padAsk(ask);
+                }
+                if (ask == PadAsk::Menu) {
+                    m_settings.toggle(); // the start button: the settings
+                    return true;
+                }
+                return false;
+            }
+
+            /// @brief Whether the pad's directions step through the keyboard on the screen (Scene::wantsPadSteps).
+            /// @return True while it is up.
+            bool wantsPadSteps() const override { return m_padKeyboard.isOpen(); }
+
+            /// @brief Takes whether a game pad is played with (Scene::setPadInUse): the keyboard on the screen comes up for it.
+            /// @param on True in controller mode.
+            void setPadInUse(bool on) override { m_padKeyboard.setPad(on); }
 
             /// @brief Overrides Scene::nextScene: the world (or quit) once the login is done.
             /// @return The next scene, or nothing while logging in.
@@ -169,6 +192,7 @@ namespace client {
             ReloginScreen m_relogin;
             ui::Element& m_settingsButton;
             SettingsWindow m_settings;
+            PadKeyboard m_padKeyboard;
 
             Stage m_stage = Stage::ChoosingServer;
             std::uint64_t m_nowMs = 0;

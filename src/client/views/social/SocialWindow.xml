@@ -10,7 +10,7 @@
      controls from the last created to the first: the controls here are in drawing order, the
      reverse of TSe_EmotiomForm.Create. -->
 <Panel Name="SocialWindowLayer" Bounds="0,0,800,600">
-  <Window Name="SocialWindow" Escape="onSocialWindowEscape" Picture="Form_Friend_2" Position="222,53" Visible="false" DoubleClick="onSocialDoubleClick">
+  <Window Name="SocialWindow" PadTabs="SocialTabFriend,SocialTabEmote,SocialTabSetup,SocialTabMarry" Escape="onSocialWindowEscape" Picture="Form_Friend_2" Position="222,53" Visible="false" DoubleClick="onSocialDoubleClick">
     <!-- DrawFriendListPage: faces, levels, elements, online states and the page numbers -->
     <DrawingArea Name="FriendPage" Bounds="0,0,356,493">
       <!-- the top left of the first friend row, one row down each step -->

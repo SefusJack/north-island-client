@@ -72,6 +72,18 @@ namespace ui {
             /// @return First visible item.
             int position() const { return m_position; }
 
+            /// @brief Gives how many items the bar was last told there are (setRange).
+            /// @return The item count.
+            int count() const { return m_count; }
+
+            /// @brief Whether there are items before the first visible one.
+            /// @return True when the list can scroll up.
+            bool canScrollUp() const { return m_position > 0; }
+
+            /// @brief Whether there are items after the last visible one.
+            /// @return True when the list can scroll down.
+            bool canScrollDown() const { return m_position + m_page < m_maximum; }
+
             /// @brief Tells whether the thumb is held by the mouse (FThumbDragging).
             /// @return True while dragging.
             bool isDragging() const { return m_dragging; }
@@ -118,6 +130,7 @@ namespace ui {
             std::optional<int> m_thumbX;
 
             int m_maximum = 0;
+            int m_count = 0; // the items there are, which m_maximum is at least
             int m_page = 0;
             int m_position = 0;
             int m_thumbPos = 0;

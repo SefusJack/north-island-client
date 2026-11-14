@@ -5,7 +5,7 @@
      The game draws a form's controls from the last created to the first: the controls here are
      in drawing order, the reverse of TDupDetailForm.Create. -->
 <Panel Name="InstanceDetailLayer" Bounds="0,0,800,600">
-  <Window Name="InstanceDetailForm" Picture="Form_DupDetail" Position="447,67" Size="326,473" ScreenFit="true" Visible="false">
+  <Window Name="InstanceDetailForm" PadShoulders="InstanceDetailUp,InstanceDetailDown" Picture="Form_DupDetail" Position="447,67" Size="326,473" ScreenFit="true" Visible="false">
     <ImageButton Name="InstanceDetailDown" Picture="Btn_ArrowDn_3" Position="289,390" Size="17,17" Click="onInstanceDetailDown"/>
     <ImageButton Name="InstanceDetailUp" Picture="Btn_ArrowUp_3" Position="289,333" Size="17,17" Click="onInstanceDetailUp"/>
     <ListBox Name="InstanceDetailMembers" Bounds="17,338,272,72" RowHeight="24" FontColor="#080808" HighlightColor="#89BFF5"
