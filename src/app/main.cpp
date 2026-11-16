@@ -18,9 +18,16 @@ int main(int argc, char** argv) {
     std::vector<std::string> arguments(argv + 1, argv + argc);
 
     std::filesystem::path programDirectory;
+#ifdef SDL_PLATFORM_ANDROID
+    // no program folder to put the game in: its files go in the app's own folder on the shared storage, which a computer can fill
+    if (const char* storage = SDL_GetAndroidExternalStoragePath()) {
+        programDirectory = std::filesystem::u8path(storage);
+    }
+#else
     if (const char* basePath = SDL_GetBasePath()) {
         programDirectory = std::filesystem::u8path(basePath);
     }
+#endif
 
     std::string error;
     auto options = client::LaunchOptions::parse(arguments, programDirectory, error);

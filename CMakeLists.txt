@@ -8,12 +8,14 @@
 #   thirdparty/         vendored SDL3, SDL3_mixer, stb, nlohmann
 #   build/              build trees
 #   out/                the Release program on Windows
+#   android/            the Android app (Gradle) around the same targets
 #
 # The libraries form levels; a library may only link libraries of a lower level (checked below
 # at configure time).
 #
 # Build: a preset for each platform (CMakePresets.json; Windows x64, ARM64 and XP, Linux, macOS):
 #   cmake --preset windows-x64 && cmake --build --preset windows-x64
+# Android is built by Gradle from android/ (it runs this file with the NDK): see the README.
 cmake_minimum_required(VERSION 3.15)
 
 project(north-island-client VERSION 0.4.0 LANGUAGES C CXX)
@@ -193,7 +195,14 @@ endforeach()
 
 # ---------------------------------------------------------------- the program (level 5)
 if(NORTH_ISLAND_BUILD_CLIENT)
-  add_executable(north-island-client WIN32 src/app/main.cpp)
+  if(ANDROID)
+    # Android starts the game from SDL's activity (android/), which loads it as libmain.so and calls its SDL_main
+    add_library(north-island-client SHARED src/app/main.cpp)
+    set_target_properties(north-island-client PROPERTIES OUTPUT_NAME main)
+  else()
+    add_executable(north-island-client WIN32 src/app/main.cpp)
+    target_compile_definitions(north-island-client PRIVATE SDL_MAIN_HANDLED)
+  endif()
   if(WIN32)
     target_sources(north-island-client PRIVATE src/app/north-island-client.rc)
     set(NORTH_ISLAND_VERSION_TEXT ${PROJECT_VERSION})
@@ -204,7 +213,6 @@ if(NORTH_ISLAND_BUILD_CLIENT)
     target_include_directories(north-island-client PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated)
   endif()
   target_link_libraries(north-island-client PRIVATE client)
-  target_compile_definitions(north-island-client PRIVATE SDL_MAIN_HANDLED)
   if(MSVC)
     set_target_properties(north-island-client PROPERTIES LINK_FLAGS "/ENTRY:mainCRTStartup")
   endif()

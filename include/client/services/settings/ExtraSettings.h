@@ -66,7 +66,11 @@ namespace client {
         bool sortButtons = false;
         bool partyLogin = false;
         bool modernBag = false; // things in the bag move the modern way: the left button carries a whole stack, the right one puts one down or takes half
+#ifdef __ANDROID__
+        SpeedupMode speedupMode = SpeedupMode::Auto; // a phone starts with the recommended speedups
+#else
         SpeedupMode speedupMode = SpeedupMode::None; // which speedups run ("mode" under "speedups" in the file)
+#endif
         Controller controller;
         core::Speedups speedups; // the player's own choice (used in SpeedupMode::Custom) and, in every mode, the busy wait
 

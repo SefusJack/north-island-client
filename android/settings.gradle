@@ -1,0 +1,2 @@
+rootProject.name = 'north-island-client'
+include ':app'

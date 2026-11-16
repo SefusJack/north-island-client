@@ -17,6 +17,7 @@
 #include "client/services/input/InputScript.h"
 #include "client/services/input/InputTranslator.h"
 #include "client/services/input/PadControls.h"
+#include "client/services/input/TouchPointer.h"
 #include "client/services/input/PadPointers.h"
 #include "client/services/photo/ScreenPhoto.h"
 #include "client/services/mods/ModPacks.h"
@@ -50,6 +51,7 @@
 #include "gfx/TextRenderer.h"
 #include "net/GameConnection.h"
 #include "net/NetworkSystem.h"
+#include "ui/TextBox.h"
 
 #include <SDL3/SDL.h>
 
@@ -58,7 +60,9 @@
 #include <fstream>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <optional>
+#include <string>
 #include <system_error>
 #include <utility>
 
@@ -78,7 +82,62 @@ namespace client {
             return gfx::WindowDisplay::Windowed;
         }
 
-        /// @brief Sends std::clog to a file for as long as it lives.
+#ifdef SDL_PLATFORM_ANDROID
+
+        /// @brief Hands each log line to the system log (logcat) as well as to the stream buffer it stands before.
+        class SystemLogBuffer : public std::streambuf {
+            public:
+                /// @brief Stands before a stream buffer.
+                /// @param next The buffer that still gets everything; may be null.
+                explicit SystemLogBuffer(
+                    std::streambuf* next
+                )
+                    : m_next(next) {}
+
+            protected:
+                int_type overflow(int_type character) override {
+                    if (traits_type::eq_int_type(character, traits_type::eof())) {
+                        return traits_type::not_eof(character);
+                    }
+                    const char one = traits_type::to_char_type(character);
+                    const std::lock_guard lock(m_lock);
+                    if (one == '\n') {
+                        SDL_Log("%s", m_line.c_str());
+                        m_line.clear();
+                    } else {
+                        m_line += one;
+                    }
+                    return m_next != nullptr ? m_next->sputc(one) : character;
+                }
+
+                int sync() override { return m_next != nullptr ? m_next->pubsync() : 0; }
+
+            private:
+                std::streambuf* m_next;
+                std::string m_line;
+                std::mutex m_lock;
+        };
+#endif
+
+        /// @brief Whether text is typed on a keyboard the system shows on the screen (a phone): it is then only asked for
+        /// while a text field has the keyboard, instead of for the whole run.
+        /// @return True on Android.
+        bool typesOnScreenKeyboard() {
+#ifdef SDL_PLATFORM_ANDROID
+            return true;
+#else
+            return false;
+#endif
+        }
+
+        /// @brief The program's name where the system shows one (a window's title, a message's heading).
+#ifdef SDL_PLATFORM_ANDROID
+        constexpr const char* kProgramTitle = "North Island";
+#else
+        constexpr const char* kProgramTitle = "Wonderland Online";
+#endif
+
+        /// @brief Sends std::clog to a file for as long as it lives (on Android to the system log too).
         class LogFile {
             public:
                 /// @brief Opens (truncates) the log file and redirects std::clog to it.
@@ -87,9 +146,13 @@ namespace client {
                     const std::filesystem::path& path
                 )
                     : m_file(path, std::ios::trunc) {
+#ifdef SDL_PLATFORM_ANDROID
+                    m_previous = std::clog.rdbuf(&m_system);
+#else
                     if (m_file) {
                         m_previous = std::clog.rdbuf(m_file.rdbuf());
                     }
+#endif
                 }
 
                 ~LogFile() {
@@ -103,6 +166,9 @@ namespace client {
 
             private:
                 std::ofstream m_file;
+#ifdef SDL_PLATFORM_ANDROID
+                SystemLogBuffer m_system{m_file ? m_file.rdbuf() : nullptr};
+#endif
                 std::streambuf* m_previous = nullptr;
         };
 
@@ -179,7 +245,7 @@ namespace client {
         /// @param message The error text.
         void showError(const std::string& message) {
             core::logError(message);
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Wonderland Online", message.c_str(), nullptr);
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, kProgramTitle, message.c_str(), nullptr);
         }
 
     }
@@ -187,6 +253,17 @@ namespace client {
     int Application::run() {
         std::error_code ignored;
         if (!std::filesystem::is_directory(m_options.dataDirectory / "data", ignored)) {
+#ifdef SDL_PLATFORM_ANDROID
+            // the folder is made now, so it is there (and the app's own) to copy the game into
+            std::filesystem::create_directories(m_options.dataDirectory, ignored);
+            const std::string missing =
+                "The game's files were not found.\n\nCopy the contents of the Wonderland Online folder (the data, pic and font folders and the rest) "
+                "from a computer into\n" +
+                m_options.dataDirectory.u8string() + "\nand start the game again.";
+            SDL_Log("%s", missing.c_str());
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, kProgramTitle, missing.c_str(), nullptr);
+            return 1;
+#else
             std::string installed;
             for (const auto& place : LaunchOptions::defaultInstallLocations()) {
                 installed += ", install the game to " + place.u8string();
@@ -197,6 +274,7 @@ namespace client {
                 " or start it with --data <that folder>."
             );
             return 1;
+#endif
         }
         if (!m_options.userGiven && !canWriteIn(m_options.userDirectory)) {
             const std::filesystem::path own = LaunchOptions::ownUserDirectory();
@@ -272,9 +350,14 @@ namespace client {
         );
 
         gfx::RenderDevice::Settings settings;
-        settings.title = "Wonderland Online";
+        settings.title = kProgramTitle;
         settings.mode = m_options.renderMode;
         settings.driver = live.renderer;
+#ifdef SDL_PLATFORM_ANDROID
+        if (settings.driver.empty()) {
+            settings.driver = "vulkan"; // quicker than SDL's own choice there (OpenGL ES); a phone without it falls back to that
+        }
+#endif
         settings.vsync = live.vsync();
         settings.width = live.windowWidth;
         settings.height = live.windowHeight;
@@ -283,6 +366,11 @@ namespace client {
         settings.display = windowDisplayOf(live.display);
         settings.resizable = true;
         settings.pixelScale = live.pixelScale;
+#ifdef SDL_PLATFORM_ANDROID
+        // a phone: the window is the whole screen, and the game's screen fills its height
+        settings.display = gfx::WindowDisplay::Borderless;
+        settings.fitScreen = true;
+#endif
         auto device = gfx::RenderDevice::create(settings);
         if (!device) {
             showError(std::string("cannot open the game window: ") + SDL_GetError());
@@ -502,7 +590,18 @@ namespace client {
         FrameGraph overlay;
         MachineLoad machineLoad;
 
-        SDL_StartTextInput(device->window());
+        const bool screenKeyboard = typesOnScreenKeyboard();
+        SDL_FPoint lastPress{0.0f, 0.0f}; // where the screen was last pressed, in the window: the place the screen keyboard must not cover
+        if (!screenKeyboard) {
+            SDL_StartTextInput(device->window());
+        }
+        TouchPointer touch; // fingers as the mouse, where the screen is what the game is played on
+        touch.setEnabled(screenKeyboard);
+        // whether a text field that can be typed in has the keyboard
+        const auto typingIn = [](ui::Screen& screen) {
+            const ui::TextBox* box = screen.textBoxOf(screen.focusedId());
+            return box != nullptr && !box->isReadOnly();
+        };
         const auto shownScene = [&]() -> Scene& {
             if (!party.started() || played->kind != SceneKind::World) {
                 return *played->scene;
@@ -611,8 +710,21 @@ namespace client {
                     live.controller.hideChat,
                     padControls.wantsShortcutBar()
                 );
+                touch.update(device->window(), frameStartPrecise);
                 while (SDL_PollEvent(&event)) {
+                    if (touch.seeEvent(event, device->window(), frameStartPrecise)) {
+                        continue;
+                    }
                     padControls.seeEvent(event, steered.screen());
+                    if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+                        lastPress = {event.button.x, event.button.y};
+                    }
+                    if (event.type == SDL_EVENT_DID_ENTER_BACKGROUND || event.type == SDL_EVENT_DID_ENTER_FOREGROUND) {
+                        // a phone put the game away or brought it back; SDL holds this loop (and the sound) in between
+                        core::logInfo(event.type == SDL_EVENT_DID_ENTER_BACKGROUND ? "the app went to the background" : "the app is back in the foreground");
+                        device->presentEverything();
+                        continue;
+                    }
                     SDL_ConvertEventToRenderCoordinates(device->renderer(), &event);
                     if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_F11 && !event.key.repeat) {
                         overlayLevel = (overlayLevel + 1) % FrameGraph::kLevels; // off, 1, 2, 3, off
@@ -646,9 +758,24 @@ namespace client {
                         continue;
                     }
                     running = forwardEvent(event, steered.screen(), canvas.origin()) && running;
+                    if (screenKeyboard && event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && event.button.button == SDL_BUTTON_LEFT &&
+                        typingIn(steered.screen()) && !SDL_TextInputActive(device->window())) {
+                        // a text field was pressed: the screen keyboard comes up, and the system keeps the pressed place in sight
+                        constexpr int kFieldWidth = 200; // px, about a text field around the pressed place
+                        constexpr int kFieldHeight = 32; // px
+                        const SDL_Rect field{static_cast<int>(lastPress.x) - kFieldWidth / 2, static_cast<int>(lastPress.y) - kFieldHeight / 2, kFieldWidth, kFieldHeight};
+                        SDL_SetTextInputArea(device->window(), &field, 0);
+                        SDL_StartTextInput(device->window());
+                    }
                     if (event.type == SDL_EVENT_MOUSE_WHEEL && (SDL_GetModState() & SDL_KMOD_CTRL) != 0 && event.wheel.integer_y != 0) {
                         wheelZoom(event.wheel.integer_y);
                     }
+                }
+                if (const int steps = touch.takeZoomSteps(); steps != 0) {
+                    wheelZoom(steps);
+                }
+                if (screenKeyboard && SDL_TextInputActive(device->window()) && !typingIn(steered.screen())) {
+                    SDL_StopTextInput(device->window()); // no text field has the keyboard any more: the screen keyboard goes away
                 }
                 const bool beat = !live.freeFrames() || beats.due(frameStart);
                 if (beat && script) {

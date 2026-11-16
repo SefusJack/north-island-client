@@ -74,6 +74,7 @@ namespace gfx {
         device.m_minWidth = settings.resizable ? settings.minWidth : settings.width;
         device.m_minHeight = settings.resizable ? settings.minHeight : settings.height;
         device.m_pixelScale = std::clamp(settings.pixelScale, 1, 3); // pixel scale range 1..3
+        device.m_fitScreen = settings.fitScreen;
         const SDL_PropertiesID properties = SDL_CreateProperties();
         SDL_SetStringProperty(properties, SDL_PROP_WINDOW_CREATE_TITLE_STRING, settings.title.c_str());
         SDL_SetNumberProperty(properties, SDL_PROP_WINDOW_CREATE_X_NUMBER, SDL_WINDOWPOS_CENTERED);
@@ -119,6 +120,10 @@ namespace gfx {
         }
 
         const char* name = SDL_GetRendererName(device.m_renderer.get());
+        if (settings.fitScreen) {
+            // the system gives the window its size (the screen), not the settings: asked for now, the size-changed event may come later
+            SDL_GetWindowSizeInPixels(device.m_window.get(), &device.m_windowWidth, &device.m_windowHeight);
+        }
         device.m_backendName = name != nullptr ? name : "unknown";
         device.m_accelerated = device.m_backendName != "software";
         SDL_SetDefaultTextureScaleMode(device.m_renderer.get(), SDL_SCALEMODE_NEAREST);
@@ -407,8 +412,8 @@ namespace gfx {
         m_width = std::max(m_windowWidth / m_pixelScale, m_minWidth);
         m_height = std::max(m_windowHeight / m_pixelScale, m_minHeight);
         m_drawScale = static_cast<float>(m_pixelScale);
-        const bool whole = m_pixelScale > 1 && m_windowWidth >= m_width * m_pixelScale && m_windowHeight >= m_height * m_pixelScale;
-        if (m_pixelScale > 1 && !whole) {
+        const bool whole = !m_fitScreen && m_pixelScale > 1 && m_windowWidth >= m_width * m_pixelScale && m_windowHeight >= m_height * m_pixelScale;
+        if (m_fitScreen || (m_pixelScale > 1 && !whole)) {
             const float fit = std::min(
                 static_cast<float>(m_windowWidth) / static_cast<float>(m_minWidth),
                 static_cast<float>(m_windowHeight) / static_cast<float>(m_minHeight)

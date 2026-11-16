@@ -48,3 +48,11 @@ desktop.ini
 /mods/
 /SERVER.INI
 *.log
+
+# Android build (Gradle and the NDK build trees, the SDK location)
+/android/.gradle/
+/android/build/
+/android/app/build/
+/android/app/.cxx/
+/android/local.properties
+*.apk

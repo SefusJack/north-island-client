@@ -42,6 +42,7 @@ namespace gfx {
                 RenderMode mode = RenderMode::Accelerated;
                 bool vsync = false;
                 int pixelScale = 1;
+                bool fitScreen = false; // a screen that is the whole window (a phone): the game's screen fills its height, whatever pixelScale says
                 std::string driver;
             };
 
@@ -254,6 +255,7 @@ namespace gfx {
             int m_minWidth = 0;
             int m_minHeight = 0;
             int m_pixelScale = 1;
+            bool m_fitScreen = false;
             float m_drawScale = 1;
             formats::PixelArtFilter m_pixelArtFilter = formats::PixelArtFilter::None;
             std::array<bool, 3> m_pixelArtParts{true, true, true}; // one flag per PixelArtPart (Pictures, Sprites, Text)

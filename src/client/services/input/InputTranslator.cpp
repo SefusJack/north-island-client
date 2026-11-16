@@ -19,6 +19,7 @@ namespace client {
                 case SDLK_RETURN: // Return key maps to Enter
                 case SDLK_KP_ENTER: return ui::Key::Enter; // keypad Enter maps to Enter
                 case SDLK_TAB: return ui::Key::Tab; // Tab key
+                case SDLK_AC_BACK: // a phone's Back button, as Escape
                 case SDLK_ESCAPE: return ui::Key::Escape; // Escape key
                 case SDLK_BACKSPACE: return ui::Key::Backspace; // Backspace key
                 case SDLK_DELETE: return ui::Key::Delete; // Delete key
