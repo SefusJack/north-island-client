@@ -247,10 +247,10 @@ namespace ui {
             /// @return True when the window was dealt with here; false when Escape is to be tried (it closes the window, or there is none).
             bool pressPadCancel();
 
-            /// @brief Names the grid whose drags work the modern way: while one of its things is dragged a right click puts one
+            /// @brief Names the grids whose drags work the modern way: while one of their things is dragged a right click puts one
             /// down and the drag goes on (a Drop with EventArgs::partial).
-            /// @param gridName The grid's element name; empty for none.
-            void setModernDrag(const std::string& gridName) { m_modernDragGrid = gridName; }
+            /// @param gridNames The grids' element names; empty for none.
+            void setModernDrag(std::vector<std::string> gridNames) { m_modernDragGrids = std::move(gridNames); }
 
             /// @brief Starts a drag of a grid's cell that follows the mouse with no button held, until a left click puts it down.
             /// @param gridName The grid's element name.
@@ -463,7 +463,7 @@ namespace ui {
             void raiseOpenedWindows();
 
             int m_textClickId = 0; // the text field last pressed on (takeTextClick)
-            std::string m_modernDragGrid; // the grid whose drags a right click puts one thing down of
+            std::vector<std::string> m_modernDragGrids; // the grids whose drags a right click puts one thing down of
             bool m_rightUpConsumed = false; // the right button's release belongs to a press that put a dragged thing down
             std::set<int> m_openWindows; // the windows shown at the last update: one that opens comes to the front
             bool m_openWindowsKnown = false; // m_openWindows was filled once

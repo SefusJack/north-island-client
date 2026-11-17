@@ -44,6 +44,9 @@ namespace formats {
             bool setText(int skillId, const std::optional<std::string>& name, const std::optional<std::string>& description);
 
         private:
+            /// @brief Sets each skill's tier (Attack 1, Hit 2, Beating 3) by following its prerequisites.
+            void setTiers();
+
             std::unordered_map<int, SkillRecord> m_skills;
             std::unordered_map<int, int> m_idsByKey;
     };

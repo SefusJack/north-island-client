@@ -5,6 +5,7 @@
 #include "protocol/ItemRequests.h"
 #include "protocol/StoreroomRequests.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <utility>
 
@@ -69,6 +70,7 @@ namespace client {
             }
         });
         screen.on("onStoreroomDrop", [this](const ui::EventArgs& args) { gridItemDropped(args); });
+        screen.on("onStoreroomRightClick", [this](const ui::EventArgs& args) { rightClickCell(args.index); });
     }
 
     void StoreroomWindow::open(int piece) {
@@ -253,6 +255,15 @@ namespace client {
                     }
                     return true;
                 });
+            } else if (target > grabCells && modern()) {
+                // the modern way: what is carried goes to the bag, topping up a stack there
+                const int bagSlot = target - grabCells;
+                const int want = carriedCount(args, m_grid.bagItem(source).count);
+                if (const int fits = m_bag.fitCount(bagSlot, itemId, want, 0); fits > 0) {
+                    m_services.connection.send(protocol::storeroomTakeRequest(source, bagSlot, fits, m_piece));
+                } else {
+                    requestTake(source, bagSlot, want, true);
+                }
             } else if (target > grabCells) {
                 requestTake(source, target - grabCells, 1, true);
             }
@@ -285,8 +296,21 @@ namespace client {
                 });
                 return;
             }
+            if (modern()) {
+                // the modern way: what is carried moves, topping up a stack there or splitting off into a free cell
+                const int want = carriedCount(args, m_grid.bagItem(source).count);
+                if (const int fits = m_grid.fitCount(destination, itemId, want, source); fits > 0) {
+                    m_services.connection.send(protocol::storeroomMoveRequest(source, destination, fits, m_piece));
+                } else {
+                    requestMove(source, destination, want, true);
+                }
+                return;
+            }
             requestMove(source, destination, 1, true);
         } else if (args.target.empty() || args.target == "WorldView") {
+            if (args.partial || args.carried > 0) {
+                return; // one of a stack, or a part taken up, is not dropped from the Storeroom
+            }
             if (m_hooks.dropOnWorld) {
                 m_hooks.dropOnWorld(source, itemId, 1, m_piece);
             }
@@ -332,7 +356,37 @@ namespace client {
             });
             return;
         }
+        if (modern()) {
+            // the modern way: what is carried (the whole stack, the half taken up, or one put down) goes in, topping up a stack there
+            const int want = carriedCount(args, m_bag.bagItem(source).count);
+            if (const int fits = m_grid.fitCount(destination, itemId, want, 0); fits > 0) {
+                m_services.connection.send(protocol::storeroomPutRequest(source, destination, fits, m_piece));
+            } else {
+                requestPut(source, destination, want, true);
+            }
+            return;
+        }
         requestPut(source, destination, 1, true);
+    }
+
+    bool StoreroomWindow::modern() const { return m_services.videoSettings().modernBag; }
+
+    int StoreroomWindow::carriedCount(const ui::EventArgs& args, int stackCount) {
+        if (args.partial) {
+            return 1;
+        }
+        return args.carried > 0 ? std::min(args.carried, stackCount) : stackCount;
+    }
+
+    void StoreroomWindow::rightClickCell(int cell) {
+        if (!modern() || cell < 1 || cell > kCells) {
+            return;
+        }
+        const protocol::ItemInstance& item = m_grid.bagItem(cell);
+        if (item.count > 1) {
+            // the modern way: half of the stack is taken up and follows the mouse until a click puts it down
+            m_screen.startStickyDrag("StoreroomCells", cell, item.count / 2);
+        }
     }
 
     void StoreroomWindow::updateSort(std::uint64_t nowMs) {

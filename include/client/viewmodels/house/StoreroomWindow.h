@@ -139,6 +139,20 @@ namespace client {
             /// @details Original: GetNeighborGridSlot.
             static int neighbour(int slot, int rows, int direction);
 
+            /// @brief Tells whether things move the modern way (the qol setting modernBag).
+            /// @return True when on.
+            bool modern() const;
+
+            /// @brief Gives how many things a drop moves the modern way: one put down, the part taken up, or else the whole stack.
+            /// @param args Drop event.
+            /// @param stackCount Count of the stack the drop comes from.
+            /// @return The count.
+            static int carriedCount(const ui::EventArgs& args, int stackCount);
+
+            /// @brief Takes up half of a Storeroom stack the modern way, to be put down by a click.
+            /// @param cell Storeroom cell 1..50.
+            void rightClickCell(int cell);
+
             /// @brief Closes the form when the piece is in another room than the player.
             /// @return True when the form went and the drop is lost.
             /// @details Original: HandleGridItemDrop.

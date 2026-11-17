@@ -3,6 +3,7 @@
 #include "core/ByteReader.h"
 
 #include <algorithm>
+#include <unordered_set>
 
 namespace formats {
 
@@ -88,6 +89,7 @@ namespace formats {
             skill.motionId = record.wordAt(102); // record offset of the motion id
             skill.statusKind = record.byteAt(104); // record offset of the status kind
             skill.tintKind = record.byteAt(106); // record offset of the tint kind
+            skill.rank = record.byteAt(30); // record offset of the rank
             if (skill.id == 0) {
                 continue;
             }
@@ -96,7 +98,38 @@ namespace formats {
             }
             table.m_skills[skill.id] = skill;
         }
+        table.setTiers();
         return table;
+    }
+
+    void SkillTable::setTiers() {
+        // a skill some other skill names as its prerequisite has a next step in its chain
+        std::unordered_set<int> followed;
+        for (const auto& [id, skill] : m_skills) {
+            if (skill.prerequisite != 0 && skill.prerequisite != id) {
+                followed.insert(skill.prerequisite);
+            }
+        }
+        constexpr int kLongestChain = 3; // Attack, Hit, Beating
+        for (auto& [id, skill] : m_skills) {
+            int tier = 1;
+            int at = id;
+            for (int step = 0; step < kLongestChain; ++step) {
+                const int before = m_skills.at(at).prerequisite;
+                if (before == 0) {
+                    break;
+                }
+                const auto previous = m_skills.find(before);
+                if (previous == m_skills.end() || before == at) {
+                    // a broken link (Wind Hit names 10007, Eddy Beating itself): a middle step if something follows it, else the last
+                    tier += followed.count(at) != 0 ? 1 : kLongestChain - tier;
+                    break;
+                }
+                ++tier;
+                at = before;
+            }
+            skill.tier = std::min(tier, kLongestChain);
+        }
     }
 
     std::optional<SkillRecord> SkillTable::find(int skillId) const {

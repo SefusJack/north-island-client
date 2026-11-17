@@ -202,6 +202,18 @@ namespace client {
             add(kNormalAttack, 1);
             add(kDefense, 1);
         }
+        // each tab lists the skills by rank, lowest first, then Attack, Hit, Beating; ties keep the order they were added in.
+        // the two built-in actions of tab 1 stay on top (Defense has rank 0)
+        const auto sortRows = [this] {
+            const auto order = [this](const Row& row) {
+                if (row.skillId == kNormalAttack || row.skillId == kDefense) {
+                    return std::make_pair(-1, 0);
+                }
+                const auto shown = shownSkill(row.skillId);
+                return shown ? std::make_pair(shown->rank, shown->tier) : std::make_pair(0, 0);
+            };
+            std::stable_sort(m_rows.begin(), m_rows.end(), [&order](const Row& a, const Row& b) { return order(a) < order(b); });
+        };
         if (const auto pet = shownPet()) {
             for (std::size_t i = 0; i < pet->get().info.skills.size(); ++i) {
                 const auto record = m_services.skills.find(pet->get().info.skills[i]);
@@ -209,6 +221,7 @@ namespace client {
                     add(record->id, pet->get().skillLevels[i]);
                 }
             }
+            sortRows();
             return;
         }
         for (const auto& [key, skill] : m_status.skills) {
@@ -224,6 +237,7 @@ namespace client {
                 add(record->id, skill.level);
             }
         }
+        sortRows();
     }
 
     int SkillWindow::visibleRows() const { return m_list.bounds().height / m_rowsSpot.pitch().y; }
