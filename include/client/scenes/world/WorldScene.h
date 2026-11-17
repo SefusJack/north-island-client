@@ -256,6 +256,7 @@
 #include "client/models/world/PlayerTrails.h"
 #include "client/models/world/WorldMap.h"
 #include "client/rendering/effects/WishEffects.h"
+#include "client/rendering/world/WorldLighting.h"
 #include "client/rendering/world/WorldPainter.h"
 #include "client/models/world/WorldPlayerRecords.h"
 #include "formats/DataArchive.h"
@@ -4209,6 +4210,8 @@ namespace client {
             std::optional<WorldMap> m_movieMap;
             Camera m_camera;
             WorldPainter m_painter;
+            WorldLighting m_lighting; // experimental: the light put over the drawn map
+            bool m_movieLit = false; // the lighting noted a movie's figures last, not the map's
             SceneEffects m_effects;
             LightEffect m_screenLight;
             bool m_darkMode = false;

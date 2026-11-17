@@ -277,6 +277,26 @@
             </Panel>
             <ImageButton Name="SettingsVideoArrow16" Picture="Btn_ArrowR_4" Position="330,328" Click="onSettingsVideoArrow"/>
           </Panel>
+          <!-- the experimental lighting (extra-settings.json "lighting"; its looks are in lighting.json): the whole of it and its
+               parts, the check boxes numbered in the view model's order -->
+          <Panel Name="SettingsVideoGroup5" Bounds="0,0,352,26">
+            <DrawingArea Name="SettingsVideoHead5" Bounds="0,0,352,26" HitTest="true" MouseDown="onSettingsVideoHead" MouseWheel="onSettingsVideoWheel"/>
+            <CheckBox Name="SettingsVideoOpen5" PadSkip="true" Picture="Btn_ArrowR_1" CheckedPicture="Btn_ArrowDn_3" Position="12,4" Click="onSettingsVideoOpen"/>
+            <Label Name="SettingsVideoTitle5" Position="36,6" Text="Lighting (experimental)" FontColor="#FFFF00" Effect="Shadow"/>
+          </Panel>
+          <Panel Name="SettingsVideoBody5" Bounds="0,0,352,162">
+            <Label Name="SettingsLightText1" Position="16,6" Text="Light the map and the battles" Effect="Shadow"/>
+            <CheckBox Name="SettingsLight1" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="330,5" Click="onSettingsLight"/>
+            <Label Name="SettingsLightHelp" Bounds="16,26,336,15" FontColor="#C8DCFF" Effect="Plain"/>
+            <Label Name="SettingsLightText2" Position="32,52" Text="Shadows of figures and objects" Effect="Shadow"/>
+            <CheckBox Name="SettingsLight2" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="330,51" Click="onSettingsLight"/>
+            <Label Name="SettingsLightText3" Position="32,80" Text="Drifting shade of clouds and leaves" Effect="Shadow"/>
+            <CheckBox Name="SettingsLight3" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="330,79" Click="onSettingsLight"/>
+            <Label Name="SettingsLightText4" Position="32,108" Text="Dust, light shafts and water glints" Effect="Shadow"/>
+            <CheckBox Name="SettingsLight4" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="330,107" Click="onSettingsLight"/>
+            <Label Name="SettingsLightText5" Position="32,136" Text="Ambient occlusion (dark edges at things)" Effect="Shadow"/>
+            <CheckBox Name="SettingsLight5" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="330,135" Click="onSettingsLight"/>
+          </Panel>
         </Panel>
         <ScrollBar Name="SettingsVideoScroll" Bounds="352,4,17,242" Track="Rail_H5" TrackCap="16" Thumb="bar_H4"
                    ThumbSource="0,0,9,21" ThumbCap="7" ThumbInset="3" Scroll="onSettingsVideoScroll"/>

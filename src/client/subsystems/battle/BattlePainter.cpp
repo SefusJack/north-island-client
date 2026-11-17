@@ -297,14 +297,17 @@ namespace client {
             constexpr int kSprite483 = 483; // NPC sprite id that gets its own transformed sprite
             const core::Point feet{fighter.position.x + shake.x, fighter.position.y - (fighter.jumping ? fighter.jumpHeight : 0) - dashLift(fighter) + shake.y};
             drawFigureShadow(canvas, fighter.position, fighter.npc ? fighter.npc->shadow : 0);
+            liftFigures(fighter.position.y + shake.y - feet.y);
             m_characters
                 .drawSignSprite(canvas, fighter.npc && fighter.npc->spriteId == kSprite483 ? kTransformedOf483 : kTransformed, feet, fighter.action, at);
+            liftFigures(0);
             return;
         }
         SpriteHighlight light = hovered ? SpriteHighlight{kHoverLight, true} : SpriteHighlight{};
         light.statusTint = fighter.statuses.tintKind;
         scaleFor(fighter, light);
         const core::Point body{fighter.position.x + shake.x, fighter.position.y - (fighter.jumping ? fighter.jumpHeight : 0) - dashLift(fighter) + shake.y};
+        liftFigures(fighter.position.y + shake.y - body.y);
         if (fighter.npc) {
             drawFigureShadow(canvas, fighter.position, fighter.npc->shadow);
             drawNpcFigure(canvas, fighter, body, slot, at, light);
@@ -312,6 +315,7 @@ namespace client {
             drawFigureShadow(canvas, fighter.position, 0);
             m_characters.drawFigure(canvas, *fighter.look, body, slot, at, light);
         }
+        liftFigures(0);
     }
 
     void BattlePainter::drawNpcFigure(

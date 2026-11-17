@@ -148,6 +148,9 @@ namespace gfx {
                 static_cast<float>(quad.color.b) / 255.0f,
                 static_cast<float>(quad.color.a) / 255.0f
             };
+            if (auto* echo = device.spriteEcho(); echo != nullptr && !m_additive) {
+                echo->push_back({loose(device), {fromX, fromY, static_cast<float>(area.width * m_detail), static_cast<float>(area.height * m_detail)}, {minX, minY, maxX - minX, maxY - minY}, false, false, quad.color.a});
+            }
             const int first = static_cast<int>(vertices.size());
             vertices.push_back({{minX, minY}, color, {minU, minV}});
             vertices.push_back({{maxX, minY}, color, {maxU, minV}});
@@ -176,6 +179,9 @@ namespace gfx {
         const SDL_FRect from = toFloat(area.x * m_detail, area.y * m_detail, area.width * m_detail, area.height * m_detail);
         const SDL_FRect to = toFloat(destination.x, destination.y, area.width, area.height);
         const auto flip = static_cast<SDL_FlipMode>((leftRight ? SDL_FLIP_HORIZONTAL : 0) | (topBottom ? SDL_FLIP_VERTICAL : 0));
+        if (auto* echo = device.spriteEcho(); echo != nullptr && !m_additive) {
+            echo->push_back({loose(device), from, to, leftRight, topBottom, 255});
+        }
         SDL_RenderTextureRotated(device.renderer(), loose(device), &from, &to, 0.0, nullptr, flip);
     }
 
@@ -189,6 +195,11 @@ namespace gfx {
         const bool plain = unscaled && !m_additive && m_alphaMod == 255 && m_colorMod.r == 255 && m_colorMod.g == 255 && m_colorMod.b == 255;
         // the encoded main texture takes the plain draws only; it never gets a colour, alpha or blend change
         SDL_Texture* texture = m_encoded && plain ? m_texture.get() : loose(device);
+        if (auto* echo = device.spriteEcho(); echo != nullptr && !m_additive) {
+            const SDL_FRect all = source ? toFloat(source->x * m_detail, source->y * m_detail, source->width * m_detail, source->height * m_detail)
+                                         : toFloat(0, 0, m_width * m_detail, m_height * m_detail);
+            echo->push_back({texture, all, to, false, false, 255});
+        }
         if (source) {
             const SDL_FRect from = toFloat(source->x * m_detail, source->y * m_detail, source->width * m_detail, source->height * m_detail);
             SDL_RenderTexture(device.renderer(), texture, &from, &to);

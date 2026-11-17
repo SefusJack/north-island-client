@@ -42,6 +42,14 @@ namespace client {
             &core::Speedups::quietWorkers,
             &core::Speedups::rememberRendererChecks
         };
+        /// @brief The lighting's switches of the Lighting group's check boxes, SettingsLight1 first.
+        constexpr std::array<bool ExtraSettings::Lighting::*, 5> kLightBoxes = {
+            &ExtraSettings::Lighting::enabled,
+            &ExtraSettings::Lighting::shadows,
+            &ExtraSettings::Lighting::clouds,
+            &ExtraSettings::Lighting::air,
+            &ExtraSettings::Lighting::occlusion
+        };
         constexpr std::array<double, 4> kSpinChoicesMs = {1.0, 0.5, 0.2, 0.0}; // busy wait choices, ms (1 as the client always had)
         // window size choices, width x height in px (sizes larger than the desktop are left out)
         constexpr std::array<core::Size, 26> kWindowSizes = {{{800, 600},   {1024, 768},  {1152, 864},  {1280, 720},  {1280, 800},  {1280, 960},  {1280, 1024},
@@ -136,7 +144,17 @@ namespace client {
         });
         screen.on("onSettingsVideoArrow", [this](const ui::EventArgs& args) { videoArrow(numberAfter(args.source, "SettingsVideoArrow")); });
         screen.on("onSettingsSpeedup", [this](const ui::EventArgs& args) { toggleSpeedup(numberAfter(args.source, "SettingsSpeedup")); });
-        screen.on("onSettingsVideoScroll", [this](const ui::EventArgs& args) { m_videoRows.scrollTo(args.index); });
+        screen.on("onSettingsLight", [this](const ui::EventArgs& args) {
+            const int number = numberAfter(args.source, "SettingsLight");
+            if (number < 1 || number > static_cast<int>(kLightBoxes.size())) {
+                return;
+            }
+            m_video = m_services.videoSettings();
+            const auto member = kLightBoxes[static_cast<std::size_t>(number - 1)];
+            const bool checked = m_screen.get<ui::CheckBox>(args.source).isChecked();
+            changeVideo([member, checked](ExtraSettings& video) { video.lighting.*member = checked; });
+        });
+        screen.on("onSettingsVideoScroll",[this](const ui::EventArgs& args) { m_videoRows.scrollTo(args.index); });
         screen.on("onSettingsVideoWheel", [this](const ui::EventArgs& args) { m_videoRows.wheel(args.index); });
         screen.on("onSettingsGameScroll", [this](const ui::EventArgs& args) { m_gameRows.scrollTo(args.index); });
         screen.on("onSettingsGameWheel", [this](const ui::EventArgs& args) { m_gameRows.wheel(args.index); });
@@ -577,6 +595,12 @@ namespace client {
         m_screen.get<ui::CheckBox>("SettingsPixelArtOnPictures").setChecked(m_video.pixelArtPictures);
         m_screen.get<ui::CheckBox>("SettingsPixelArtOnSprites").setChecked(m_video.pixelArtSprites);
         m_screen.get<ui::CheckBox>("SettingsPixelArtOnText").setChecked(m_video.pixelArtText);
+        for (std::size_t i = 0; i < kLightBoxes.size(); ++i) {
+            m_screen.get<ui::CheckBox>("SettingsLight" + std::to_string(i + 1)).setChecked(m_video.lighting.*kLightBoxes[i]);
+        }
+        // the software renderer lights nothing
+        m_screen.get<ui::Label>("SettingsLightHelp")
+            .setText(m_services.rendererInUse == "software" ? "Not with the software renderer." : "Shown at once. Looks: lighting.json.");
         const std::string renderer = speedupRenderer(m_video);
         const core::Speedups shown = m_video.speedupsFor(renderer);
         for (std::size_t i = 0; i < kSpeedupBoxes.size(); ++i) {

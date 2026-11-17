@@ -1,6 +1,7 @@
 #include "client/models/world/WorldMap.h"
 
 #include "core/Log.h"
+#include "formats/GamePixels.h"
 
 #include <map>
 #include <string>
@@ -58,6 +59,9 @@ namespace client {
             GroundObject object;
             object.info = *found->second;
             object.picture = pictures.find(std::to_string(object.info.pictureId), tint).value_or(gfx::PictureId{});
+            if (object.picture.isValid()) {
+                map.m_pictureNames.emplace(object.picture.value, std::to_string(object.info.pictureId));
+            }
             object.light = object.picture.isValid() &&
                            pictures.picture(object.picture).topLeft().toRgb565() == 1; // a top-left pixel of RGB565 value 1 marks a light (glow) object
             object.position = placement.position;
@@ -69,13 +73,49 @@ namespace client {
         return map;
     }
 
+    gfx::PictureId WorldMap::plain(gfx::PictureLibrary& pictures, gfx::PictureId picture) {
+        if (const auto known = m_plain.find(picture.value); known != m_plain.end()) {
+            return known->second;
+        }
+        gfx::PictureId result = picture;
+        if (const auto name = m_pictureNames.find(picture.value); name != m_pictureNames.end()) {
+            // only a picture with a checkerboard in it is loaded a second time: enough pixels that are alone between
+            // see-through ones, with another one at a corner
+            constexpr int kEnough = 30;
+            const gfx::Picture& data = pictures.picture(picture);
+            const int width = data.width();
+            const int height = data.height();
+            int alone = 0;
+            for (int y = 0; y < height && alone < kEnough; ++y) {
+                for (int x = 0; x < width && alone < kEnough; ++x) {
+                    if (data.isOpaque(x, y) && !data.isOpaque(x - 1, y) && !data.isOpaque(x + 1, y) && !data.isOpaque(x, y - 1) && !data.isOpaque(x, y + 1) &&
+                        (data.isOpaque(x - 1, y - 1) || data.isOpaque(x + 1, y - 1) || data.isOpaque(x - 1, y + 1) || data.isOpaque(x + 1, y + 1))) {
+                        ++alone;
+                    }
+                }
+            }
+            if (alone >= kEnough) {
+                core::Color tint = m_file.tint();
+                tint.a = formats::kWithoutDither;
+                result = pictures.find(name->second, tint).value_or(picture);
+            }
+        }
+        m_plain.emplace(picture.value, result);
+        return result;
+    }
+
     void WorldMap::placeTiles(gfx::PictureLibrary& pictures) {
         const core::Color tint = m_file.tint();
         const auto picture = [&](int number, int variant, int variants) {
-            if (variant < 1 || variant > variants) {
-                return pictures.find(std::to_string(number), tint).value_or(gfx::PictureId{});
+            std::string name = std::to_string(number);
+            if (variant >= 1 && variant <= variants) {
+                name += static_cast<char>('A' + variant - 1);
             }
-            return pictures.find(std::to_string(number) + static_cast<char>('A' + variant - 1), tint).value_or(gfx::PictureId{});
+            const gfx::PictureId found = pictures.find(name, tint).value_or(gfx::PictureId{});
+            if (found.isValid()) {
+                m_pictureNames.emplace(found.value, std::move(name));
+            }
+            return found;
         };
         if (m_file.tileMode() == 2) { // tile mode 2: large 480 x 480 pictures
             m_largeTile = pictures.find("500A", tint).value_or(gfx::PictureId{}); // picture 500A: the large ground tile
@@ -125,6 +165,9 @@ namespace client {
                     if (hasBack && source.groundVariant != 0) {
                         const std::string name = std::to_string(number) + static_cast<char>('A' + source.objectVariant - 1) + "_B";
                         tile.objectBack = pictures.find(name, tint).value_or(gfx::PictureId{});
+                        if (tile.objectBack.isValid()) {
+                            m_pictureNames.emplace(tile.objectBack.value, name);
+                        }
                         tile.objectBackPosition = {origin.x, origin.y - 150 + 1 + 3}; // back part sits 150 px up, nudged 1 + 3 px down
                     }
                 }

@@ -18,6 +18,7 @@
 
 #include "gfx/TextStyle.h"
 
+#include <unordered_map>
 #include <algorithm>
 #include <array>
 #include <functional>
@@ -93,6 +94,94 @@ namespace client {
 
     }
 
+    namespace {
+
+        /// @brief Whether a picture shows a thing that stands on the ground by itself: its outline ends inside the picture. A piece
+        /// a larger picture is cut into (a part of a building, of a tree's crown) is opaque up to its lower or side border.
+        /// @param pictures Picture library.
+        /// @param id The picture.
+        /// @param frames How many frames it holds, one under the other.
+        /// @return True when it stands by itself.
+        bool standsAlone(gfx::PictureLibrary& pictures, gfx::PictureId id, int frames) {
+            static std::unordered_map<int, bool> known;
+            if (const auto found = known.find(id.value); found != known.end()) {
+                return found->second;
+            }
+            const gfx::Picture& picture = pictures.picture(id);
+            const int width = picture.width();
+            const int height = picture.height() / std::max(1, frames);
+            bool alone = false;
+            if (width > 2 && height > 2) {
+                int under = 0;
+                for (int x = 0; x < width; ++x) {
+                    under += picture.isOpaque(x, height - 1) ? 1 : 0;
+                }
+                int beside = 0;
+                for (int y = height / 2; y < height; ++y) {
+                    beside += (picture.isOpaque(0, y) ? 1 : 0) + (picture.isOpaque(width - 1, y) ? 1 : 0);
+                }
+                constexpr float kCut = 0.15f; // more of a border than this opaque: the picture is cut there
+                alone = static_cast<float>(under) <= kCut * static_cast<float>(width) && static_cast<float>(beside) <= kCut * static_cast<float>(height);
+            }
+            known.emplace(id.value, alone);
+            return alone;
+        }
+
+        /// @brief Where a thing stands on the ground, in its picture: the middle of its trunk on the row it is sorted by, or of
+        /// its lowest part when that row is not in the lower half of it.
+        /// @param pictures Picture library.
+        /// @param id The picture, without a painted shadow.
+        /// @param frames How many frames it holds, one under the other.
+        /// @param depth The row it is sorted with the figures by.
+        /// @return The place in the first frame.
+        core::Point footOf(gfx::PictureLibrary& pictures, gfx::PictureId id, int frames, int depth) {
+            static std::unordered_map<int, core::Point> known;
+            if (const auto found = known.find(id.value); found != known.end()) {
+                return found->second;
+            }
+            const gfx::Picture& picture = pictures.picture(id);
+            const int width = picture.width();
+            const int height = picture.height() / std::max(1, frames);
+            constexpr int kBand = 14; // the lowest rows that are its foot
+            constexpr int kInset = 5; // the foot lies this far over its lowest row
+            core::Point foot{width / 2, height};
+            int lowest = -1;
+            int left = width;
+            int right = -1;
+            for (int y = height - 1; y >= 0 && (lowest < 0 || y > lowest - kBand); --y) {
+                for (int x = 0; x < width; ++x) {
+                    if (picture.isOpaque(x, y)) {
+                        lowest = std::max(lowest, y);
+                        left = std::min(left, x);
+                        right = std::max(right, x);
+                    }
+                }
+            }
+            if (lowest >= 0) {
+                foot = {(left + right) / 2, lowest - kInset};
+            }
+            if (depth > height / 2 && depth < lowest - kInset) {
+                // roots reach forward of where it stands: the widest piece on that row is the trunk
+                int best = 0;
+                int run = 0;
+                for (int x = 0; x <= width; ++x) {
+                    if (x < width && picture.isOpaque(x, depth)) {
+                        ++run;
+                        continue;
+                    }
+                    if (run > best) {
+                        best = run;
+                        foot = {x - run / 2, depth};
+                    }
+                    run = 0;
+                }
+            }
+            known.emplace(id.value, foot);
+            return foot;
+        }
+
+    }
+
     void WorldPainter::paint(
         gfx::Canvas& canvas,
         WorldMap& map,
@@ -145,13 +234,15 @@ namespace client {
         if (map.background().isValid()) {
             canvas.drawPicture(map.background(), camera.toScreen(map.file().backgroundPosition()));
         }
-        drawTiles(canvas, map, camera);
+        // the lighting casts the shadows: those painted on the map's pictures are left out
+        WorldMap* const plain = figureShadowsHidden() ? &map : nullptr;
+        drawTiles(canvas, map, camera, plain);
         if (display.houseFloor) {
             display.houseFloor(canvas);
         }
         for (GroundObject& object : map.objects()) {
             if (object.info.kind < kStandingKind) {
-                drawObject(canvas, object, camera, nowMs);
+                drawObject(canvas, object, camera, nowMs, plain);
             }
         }
         if (display.underStanding) {
@@ -292,7 +383,8 @@ namespace client {
             for (StandingList& list : std::array<std::reference_wrapper<StandingList>, 2>{sceneObjects, standing}) {
                 for (auto& [y, thing] : list) {
                     if (std::holds_alternative<std::reference_wrapper<GroundObject>>(thing)) {
-                        drawObject(canvas, std::get<std::reference_wrapper<GroundObject>>(thing), camera, nowMs);
+                        GroundObject& object = std::get<std::reference_wrapper<GroundObject>>(thing);
+                        drawStandingObject(canvas, object, camera, nowMs, plain);
                     } else if (std::holds_alternative<std::reference_wrapper<MapCharacter>>(thing)) {
                         MapCharacter& player = std::get<std::reference_wrapper<MapCharacter>>(thing);
                         if (!(player.id == display.ownId && display.hideOwnPlayer)) {
@@ -306,7 +398,11 @@ namespace client {
                         }
                     } else if (std::holds_alternative<std::reference_wrapper<const GroundTile>>(thing)) {
                         const GroundTile& tile = std::get<std::reference_wrapper<const GroundTile>>(thing);
-                        drawPicture(canvas, tile.object, camera.toScreen(tile.objectPosition));
+                        const std::size_t noted = beginFigureThing();
+                        drawPicture(canvas, plain != nullptr && tile.object.isValid() ? plain->plain(m_pictures, tile.object) : tile.object, camera.toScreen(tile.objectPosition));
+                        if (tile.object.isValid() && standsAlone(m_pictures, tile.object, 1)) {
+                            endFigureThing(noted);
+                        }
                     } else if (std::holds_alternative<std::reference_wrapper<MapPet>>(thing)) {
                         drawPet(canvas, std::get<std::reference_wrapper<MapPet>>(thing), camera, display, nowMs);
                     } else if (std::holds_alternative<std::reference_wrapper<const Camp>>(thing)) {
@@ -327,7 +423,7 @@ namespace client {
             }
             for (GroundObject& object : map.objects()) {
                 if (object.info.kind > kStandingKind) {
-                    drawObject(canvas, object, camera, nowMs);
+                    drawObject(canvas, object, camera, nowMs, plain);
                 }
             }
             if (showPeople) {
@@ -507,33 +603,52 @@ namespace client {
         }
     }
 
-    void WorldPainter::paintMovieGround(gfx::Canvas& canvas, WorldMap& map, const Camera& camera) {
-        if (map.background().isValid()) {
-            canvas.drawPicture(map.background(), camera.toScreen(map.file().backgroundPosition()));
+    void WorldPainter::drawStandingObject(gfx::Canvas& canvas, GroundObject& object, const Camera& camera, std::uint64_t nowMs, WorldMap* plain) {
+        const std::size_t noted = beginFigureThing(); // the lighting darkens the ground at its edge
+        drawObject(canvas, object, camera, nowMs, plain);
+        if (object.picture.isValid() && standsAlone(m_pictures, object.picture, std::max(1, object.info.frames))) {
+            endFigureThing(noted);
         }
-        drawTiles(canvas, map, camera);
-        for (const GroundTile& tile : map.tiles()) {
-            if (tile.object.isValid()) {
-                drawPicture(canvas, tile.object, camera.toScreen(tile.objectPosition));
+        if (plain != nullptr && object.picture.isValid() && !object.light) {
+            // its painted shadow is left out: the lighting casts one for it
+            if (const gfx::PictureId shown = plain->plain(m_pictures, object.picture); shown != object.picture) {
+                const int frames = std::max(1, object.info.frames);
+                const core::Point at = camera.toScreen(object.position) + canvas.origin();
+                const int frameTop = object.frame % frames * (m_pictures.picture(shown).height() / frames);
+                noteFigureCaster(noted, at + footOf(m_pictures, shown, frames, object.info.depth), shown, at, frameTop);
             }
         }
     }
 
-    void WorldPainter::paintMovieObject(gfx::Canvas& canvas, GroundObject& object, const Camera& camera, std::uint64_t nowMs) {
-        drawObject(canvas, object, camera, nowMs);
+    void WorldPainter::paintMovieGround(gfx::Canvas& canvas, WorldMap& map, const Camera& camera) {
+        if (map.background().isValid()) {
+            canvas.drawPicture(map.background(), camera.toScreen(map.file().backgroundPosition()));
+        }
+        WorldMap* const plain = figureShadowsHidden() ? &map : nullptr; // as on the map: the lighting casts the shadows
+        drawTiles(canvas, map, camera, plain);
+        for (const GroundTile& tile : map.tiles()) {
+            if (tile.object.isValid()) {
+                drawPicture(canvas, plain != nullptr ? plain->plain(m_pictures, tile.object) : tile.object, camera.toScreen(tile.objectPosition));
+            }
+        }
     }
 
-    void WorldPainter::drawTiles(gfx::Canvas& canvas, const WorldMap& map, const Camera& camera) {
+    void WorldPainter::paintMovieObject(gfx::Canvas& canvas, WorldMap& map, GroundObject& object, const Camera& camera, std::uint64_t nowMs) {
+        drawStandingObject(canvas, object, camera, nowMs, figureShadowsHidden() ? &map : nullptr);
+    }
+
+    void WorldPainter::drawTiles(gfx::Canvas& canvas, const WorldMap& map, const Camera& camera, WorldMap* plain) {
         for (const core::Point position : map.largeTilePositions()) {
             drawPicture(canvas, map.largeTile(), camera.toScreen(position));
         }
         for (const GroundTile& tile : map.tiles()) {
-            drawPicture(canvas, tile.ground, camera.toScreen(tile.groundPosition));
-            drawPicture(canvas, tile.objectBack, camera.toScreen(tile.objectBackPosition));
+            const auto shown = [&](gfx::PictureId picture) { return plain != nullptr && picture.isValid() ? plain->plain(m_pictures, picture) : picture; };
+            drawPicture(canvas, shown(tile.ground), camera.toScreen(tile.groundPosition));
+            drawPicture(canvas, shown(tile.objectBack), camera.toScreen(tile.objectBackPosition));
         }
     }
 
-    void WorldPainter::drawObject(gfx::Canvas& canvas, GroundObject& object, const Camera& camera, std::uint64_t nowMs) {
+    void WorldPainter::drawObject(gfx::Canvas& canvas, GroundObject& object, const Camera& camera, std::uint64_t nowMs, WorldMap* plain) {
         const formats::GroundObjectInfo& info = object.info;
         if (info.frames > 1 && nowMs > object.frameMs + static_cast<std::uint64_t>(info.frameMs)) {
             object.frame = (object.frame + 1) % info.frames;
@@ -552,9 +667,9 @@ namespace client {
         if (object.light) {
             canvas.drawPictureLight(object.picture, at, kMarkedLight, source);
         } else if (info.alpha == kOpaque) {
-            canvas.drawPicture(object.picture, at, source);
+            canvas.drawPicture(plain != nullptr ? plain->plain(m_pictures, object.picture) : object.picture, at, source);
         } else {
-            canvas.drawPictureLight(object.picture, at, kOpaque - info.alpha, source);
+            canvas.drawPictureLight(plain != nullptr ? plain->plain(m_pictures, object.picture) : object.picture, at, kOpaque - info.alpha, source);
         }
     }
 
