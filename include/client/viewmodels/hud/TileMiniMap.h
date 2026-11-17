@@ -63,7 +63,15 @@ namespace client {
             /// @param hidden Whether the map is hidden.
             void setHidden(bool hidden);
 
+            /// @brief Hides or shows the map while the main NPC talk box is up.
+            /// @details Original: the talk box's exclusive draw skips the mini map form (se_UI DrawAllForms).
+            /// @param hidden Whether the map is hidden.
+            void setTalkHidden(bool hidden);
+
         private:
+            /// @brief Shows the panel when a map is built, it may show one, and nothing hides it.
+            void applyVisible();
+
             /// @brief The tile a map point lies in and where in it.
             /// @details Original: MapPosToTile result.
             struct TileSpot {
@@ -195,6 +203,8 @@ namespace client {
             bool m_dragging = false;
             bool m_minimized = false;
             bool m_hidden = false;
+            bool m_talkHidden = false;
+            bool m_noMiniMap = false; // the map never shows one (Lost Desert)
             bool m_built = false;
             int m_scale = 1;
             int m_cellWidth = 0;

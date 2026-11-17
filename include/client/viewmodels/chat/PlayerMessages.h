@@ -47,6 +47,10 @@ namespace client {
             /// @details Original: TSe_ShortMsgPanel.RenderWithChildren.
             void keepBelow(int minTop);
 
+            /// @brief Puts the box at top while it is given (below the main talk box), back where it was once not.
+            /// @param top The top to use, or none.
+            void placeAt(std::optional<int> top);
+
         private:
             static constexpr std::uint64_t kGroupMs = 800; // messages shown within this many milliseconds of the panel appearing are grouped
             static constexpr std::size_t kGroupedLines = 15; // most lines in a grouped message panel

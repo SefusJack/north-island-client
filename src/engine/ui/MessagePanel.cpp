@@ -92,6 +92,18 @@ namespace ui {
         }
     }
 
+    void MessagePanel::placeAt(std::optional<int> top) {
+        if (top) {
+            if (!m_movedFromTop) {
+                m_movedFromTop = bounds().y;
+            }
+            setPosition({bounds().x, *top});
+        } else if (m_movedFromTop) {
+            setPosition({bounds().x, *m_movedFromTop});
+            m_movedFromTop.reset();
+        }
+    }
+
     void MessagePanel::update(UiContext& context) {
         if (!isVisible()) {
             return;

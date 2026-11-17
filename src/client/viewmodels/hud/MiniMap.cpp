@@ -144,6 +144,10 @@ namespace client {
         m_panel.setVisible(m_hasPicture && !m_hidden);
     }
 
+    void MiniMap::setTalkHidden(bool hidden) {
+        m_tile.setTalkHidden(hidden); // only the tile map: the world map form (FDrawWhenExclusive 1) stays over the talk
+    }
+
     void MiniMap::setDoors(const std::vector<formats::SceneDoor>& doors) {
         m_tile.setDoors(doors);
         m_doorPoints.clear();

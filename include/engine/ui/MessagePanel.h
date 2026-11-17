@@ -7,6 +7,7 @@
 
 #include <array>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -63,6 +64,12 @@ namespace ui {
             /// @param minTop The least top position.
             void keepBelow(int minTop);
 
+            /// @brief While top is given, puts the panel there; once it is not, puts it back where it was.
+            /// @details Original: TRe_TalkMsgFormPlus_1.RenderWithChildren sets FCtrlTop to the main talk box's bottom + 10
+            /// each frame while that box is visible.
+            /// @param top The top to use, or none.
+            void placeAt(std::optional<int> top);
+
         protected:
             /// @brief Draws the skin and the lines centred, red pieces in red.
             /// @param context The draw context.
@@ -97,6 +104,7 @@ namespace ui {
 
             std::vector<Line> m_lines;
             std::uint64_t m_closeAtMs = 0;
+            std::optional<int> m_movedFromTop; // the top before placeAt moved the panel
     };
 
 }

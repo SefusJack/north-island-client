@@ -27,6 +27,8 @@ namespace formats {
         std::array<int, 3> skills{};
         int shadow = 0;
         int directionKind = 0;
+        int lookSpriteId = 0; // weapon sprite drawn over the body when hasLookSprite is 1
+        int hasLookSprite = 0;
         int spriteSize = 0;
         int fixedSkill = 0;
         int faceSpriteId = 0;

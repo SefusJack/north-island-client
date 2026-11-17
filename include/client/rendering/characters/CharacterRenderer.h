@@ -267,6 +267,24 @@ namespace client {
                 SpriteHighlight highlight = {}
             );
 
+            /// @brief Draws a map or movie NPC's look sprite (its weapon) over the body, when it has one.
+            /// @details Original: THuman.DrawHumanLayers, FHumKind 3: direction kind 0 or 2, HasLookSprite 1, the weapon
+            /// bank of the body type, colours unchanged.
+            /// @param canvas Target canvas.
+            /// @param npc The NPC kind.
+            /// @param feet Screen position of the feet.
+            /// @param slot Action slot.
+            /// @param frame Animation frame.
+            /// @param highlight Mouse-over highlight.
+            void drawNpcLook(
+                gfx::Canvas& canvas,
+                const formats::NpcInfo& npc,
+                core::Point feet,
+                int slot,
+                int frame,
+                SpriteHighlight highlight = {}
+            );
+
             /// @brief Tells whether a screen point is on a drawn pixel of that NPC.
             /// @details Original: FMouseOver.
             /// @param npc The NPC kind.

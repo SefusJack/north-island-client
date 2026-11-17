@@ -62,8 +62,20 @@ namespace client {
             /// @return Map point.
             core::Point toMap(core::Point screenPoint) const { return {screenPoint.x + m_origin.x, screenPoint.y + m_origin.y}; }
 
+            /// @brief How far the half-speed background has scrolled (scene types 9 and 11).
+            /// @details Original: TMap.FBgScrollX / FBgScrollY; set to the view at centring, then moved by half of each view scroll.
+            /// @return The background scroll.
+            core::Point backgroundScroll() const { return m_bgScroll; }
+
+            /// @brief The map point the view was last centred on; the half-speed background starts around it.
+            /// @details Original: the X, Y of CenterMapView that sets FBgStartX / FBgStartY.
+            /// @return The centring point.
+            core::Point backgroundCentre() const { return m_bgCentre; }
+
         private:
             core::Point m_origin;
+            core::Point m_bgScroll;
+            core::Point m_bgCentre;
             core::Rect m_view{0, 0, kScreenWidth, kScreenHeight};
     };
 

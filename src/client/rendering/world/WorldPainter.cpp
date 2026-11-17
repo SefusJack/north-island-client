@@ -142,9 +142,7 @@ namespace client {
             m_lastMap = &map;
             m_lastGroundAt = groundAt;
         }
-        if (map.background().isValid()) {
-            canvas.drawPicture(map.background(), camera.toScreen(map.file().backgroundPosition()));
-        }
+        drawBackground(canvas, map, camera);
         drawTiles(canvas, map, camera);
         if (display.houseFloor) {
             display.houseFloor(canvas);
@@ -505,6 +503,25 @@ namespace client {
         if (at.x + data.width() >= window.left() && at.y + data.height() >= window.top() && at.x <= window.right() && at.y <= window.bottom()) {
             canvas.drawPicture(picture, at);
         }
+    }
+
+    void WorldPainter::drawBackground(gfx::Canvas& canvas, WorldMap& map, const Camera& camera) {
+        if (!map.background().isValid()) {
+            return;
+        }
+        if (m_sceneType != 9 && m_sceneType != 11) {
+            canvas.drawPicture(map.background(), camera.toScreen(map.file().backgroundPosition()));
+            return;
+        }
+        const gfx::Picture& data = m_pictures.picture(map.background());
+        const core::Rect& view = camera.view();
+        const core::Point centre = camera.backgroundCentre();
+        const core::Point scroll = camera.backgroundScroll();
+        const core::Point start{std::max(0, centre.x - data.width() / 2), std::max(0, centre.y - data.height() / 2)};
+        // clamped so the picture always covers the screen (the original clamps to 800 x 600; a bigger window uses its own size)
+        const int x = std::min(0, std::max(start.x - scroll.x, view.width - data.width()));
+        const int y = std::min(0, std::max(start.y - scroll.y, view.height - data.height()));
+        canvas.drawPicture(map.background(), {x + view.x, y + view.y});
     }
 
     void WorldPainter::paintMovieGround(gfx::Canvas& canvas, WorldMap& map, const Camera& camera) {
@@ -1033,11 +1050,17 @@ namespace client {
         const int frame = npc.isSceneObject() && npc.holdFrame != 255 ? npc.holdFrame : animated; // 255: no frame held
         const core::Point spot{feet.x, feet.y + npc.spriteOffsetY};
         SpriteHighlight light;
-        if (display.mouse && NpcHoverLight::applies(npc.info.npcId) && m_characters.npcContains(npc.info, spot, slot, frame, *display.mouse)) {
+        const bool tall = npc.info.heightMode == 1; // Npc.dat height mode 1: drawn twice the size, as in battle and movies
+        if (tall) {
+            light.scale = 20; // 20 / 10: twice the size
+            light.scaleDivisor = 10;
+        }
+        if (display.mouse && NpcHoverLight::applies(npc.info.npcId) && m_characters.npcContains(npc.info, spot, slot, frame, *display.mouse, light)) {
             light.light = NpcHoverLight::kStrength;
         }
         m_characters.drawNpc(canvas, npc.info, spot, slot, frame, light);
-        npc.body.emotion.draw(canvas, feet, m_characters.npcFrameSize(spriteId, slot).height, nowMs);
+        m_characters.drawNpcLook(canvas, npc.info, spot, slot, frame, light);
+        npc.body.emotion.draw(canvas, feet, m_characters.npcFrameSize(spriteId, slot).height * (tall ? 2 : 1), nowMs);
     }
 
     void WorldPainter::drawName(gfx::Canvas& canvas, const std::string& name, core::Color color, core::Point at) {

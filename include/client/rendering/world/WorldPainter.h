@@ -149,6 +149,13 @@ namespace client {
             /// @param at Screen position.
             void drawPicture(gfx::Canvas& canvas, gfx::PictureId picture, core::Point at);
 
+            /// @brief Draws the map's background picture; on scene types 9 and 11 it follows the view at half speed and always covers the screen.
+            /// @details Original: CY_Map.pas background draw (scene types 9, 11: FBgStart - FBgScroll, clamped to the screen).
+            /// @param canvas Target canvas.
+            /// @param map The map.
+            /// @param camera The view.
+            void drawBackground(gfx::Canvas& canvas, WorldMap& map, const Camera& camera);
+
             /// @brief Draws the ground of a map built from tiles over its background.
             /// @details Original: DrawMapTiles, DrawMapLargeTiles.
             /// @param canvas Target canvas.
