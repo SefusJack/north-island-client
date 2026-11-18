@@ -1038,14 +1038,17 @@ namespace ui {
     }
 
     void Screen::draw(gfx::Canvas& canvas, std::uint64_t nowMs) {
-        if (m_hoveredLayout != nullptr && !kept(*m_hoveredLayout)) {
+        const bool hoverHidden = m_hoveredLayout != nullptr && !kept(*m_hoveredLayout);
+        if (hoverHidden && m_refindHover) {
             // update found the hovered element without this filter (party member screens get it only to draw), in a
             // layout the filter hides: find it again among the kept layouts, so hidden layouts give no highlight or
             // hint. A hit in a kept layout is already what the filtered search would find: every layout searched
             // before it gave no hit.
             refreshHover();
         }
-        DrawContext context{canvas, m_hoveredId, m_context.focusedId, m_mouse, nowMs};
+        // a screen drawn in passes: the hovered element is another pass's, and nothing under it is highlighted in this one
+        const int hovered = hoverHidden && !m_refindHover ? 0 : m_hoveredId;
+        DrawContext context{canvas, hovered, m_context.focusedId, m_mouse, nowMs};
         const auto drawLayouts = [&](bool overlay) {
             for (const auto& layout : m_root->children()) {
                 if (!kept(*layout) || layout->isSlidAway()) {

@@ -606,7 +606,7 @@ namespace client {
         // order the screen's hit test takes them
         m_heldLayouts = screen.layoutsFrom(isPopupLayout);
         if (!m_heldLayouts.empty()) {
-            screen.setLayoutFilter([this](const ui::Element& layout) { return !listed(m_heldLayouts, layout); });
+            screen.setLayoutFilter([this](const ui::Element& layout) { return !listed(m_heldLayouts, layout); }, false);
         }
     }
 
@@ -632,7 +632,7 @@ namespace client {
             // the selected character's popups (and the windows raised over them) stay over the other characters' windows; only
             // these layouts are drawn again (a drag picture or game pad frame of the screen is drawn by both passes, at the same place)
             ui::Screen& screen = m_played->scene->screen();
-            screen.setLayoutFilter([&held](const ui::Element& layout) { return listed(held, layout); });
+            screen.setLayoutFilter([&held](const ui::Element& layout) { return listed(held, layout); }, false);
             screen.draw(canvas, nowMs);
             screen.setLayoutFilter({});
         }

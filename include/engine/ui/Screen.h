@@ -329,9 +329,15 @@ namespace ui {
             float hudScale() const { return m_hudScale; }
 
             /// @brief Restricts drawing and mouse hits to the layouts the filter keeps (none set: all of them).
-            /// @details The qol client's party members show their windows over the leader's screen this way.
+            /// @details The qol client's party members show their windows over the selected character's screen this way.
             /// @param filter Predicate on a layout root.
-            void setLayoutFilter(std::function<bool(const Element& layout)> filter) { m_layoutFilter = std::move(filter); }
+            /// @param refindHover When the hovered element lies in a layout the filter hides, draw finds the hover again among the kept
+            /// layouts (a screen updated without the filter); false draws no hover then (a screen drawn in passes, whose hovered element
+            /// is drawn by another pass).
+            void setLayoutFilter(std::function<bool(const Element& layout)> filter, bool refindHover = true) {
+                m_layoutFilter = std::move(filter);
+                m_refindHover = refindHover;
+            }
 
             /// @brief Tells whether an element of the kept layouts catches the mouse at a point of the screen.
             /// @param position Point in screen coordinates.
@@ -498,6 +504,7 @@ namespace ui {
             bool m_releaseConsumed = false;
             int m_nextId = 1;
             std::function<bool(const Element& layout)> m_layoutFilter;
+            bool m_refindHover = true; // draw finds the hover again when the filter hides the hovered layout (setLayoutFilter)
 
             /// @brief Tells whether the layout filter keeps a layout.
             /// @param layout The layout root.

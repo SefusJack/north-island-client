@@ -150,7 +150,8 @@ namespace client {
             /// while a member is in the world, so that drawWindows draws them over the members' windows; call it just before the played
             /// scene is drawn, and drawWindows after it. Every layout from the lowest popup up is held, so a window raised over the
             /// popups (ui::UiContext::bringAbovePopups: a count box, a shop) stays over them, as the screen's hit test takes it.
-            /// @details Each pass refinds the screen's hover among the layouts it keeps: take the cursor before the played scene is drawn.
+            /// @details Each pass draws the screen's hover only when the hovered element lies in a layout it keeps (the element under a
+            /// hovered popup is not highlighted, nor is its hint drawn).
             void holdPlayedPopups();
 
             /// @brief Draws the members' windows and popups over the played account's screen, each tagged with the member's name, then

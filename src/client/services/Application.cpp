@@ -873,8 +873,6 @@ namespace client {
                     canvas.setBetweenBeats(std::nullopt, frameStart);
                 }
                 Scene& shown = shownScene();
-                // taken before the draw: the party's passes over the played screen refind its hover among the layouts each keeps
-                const ui::CursorKind cursor = shown.screen().cursor();
                 const bool playedShown = &shown == played->scene.get();
                 if (playedShown) {
                     party.holdPlayedPopups();
@@ -928,7 +926,7 @@ namespace client {
                     remakeGpuTimer = false;
                 }
                 cursors.setScale(device->cursorScale(), device->pixelArtFilter(), frameStart);
-                cursors.show(cursor, frameStart);
+                cursors.show(shown.screen().cursor(), frameStart);
                 cursors.update(frameStart);
                 const double waitStart = core::nowPreciseMs();
                 sample.presentMs = waitStart - presentStart;
