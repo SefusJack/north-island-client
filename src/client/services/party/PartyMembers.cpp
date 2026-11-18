@@ -159,6 +159,7 @@ namespace client {
         services.partyEventStarted = nullptr;
         services.partyEventAnswered = nullptr;
         services.partyEventEnded = nullptr;
+        services.walkElsewhere = nullptr;
     }
 
     void PartyMembers::setUpPlayed(GameServices& services) {
@@ -188,6 +189,7 @@ namespace client {
         services.partyEventEnded = [this] {
             forMirroringMembers([](Member&, WorldScene& world) { world.mirrorLeaderEventEnded(); });
         };
+        services.walkElsewhere = [this, &services](core::Point mapPoint) { return walkToLeader(services, mapPoint); };
         if (m_setUpPlayed) {
             m_setUpPlayed(services);
         }
@@ -223,6 +225,50 @@ namespace client {
         services.partyEventStarted = nullptr;
         services.partyEventAnswered = nullptr;
         services.partyEventEnded = nullptr;
+        services.walkElsewhere = [this, &services](core::Point mapPoint) { return walkToLeader(services, mapPoint); };
+    }
+
+    WorldScene* PartyMembers::worldOf(const GameServices& services) {
+        if (&services == &played()) {
+            return m_played->kind == SceneKind::World && m_played->scene ? static_cast<WorldScene*>(m_played->scene.get()) : nullptr;
+        }
+        for (const auto& member : m_members) {
+            if (&member->bundle->services == &services) {
+                return member->world ? &member->world->get() : nullptr;
+            }
+        }
+        return nullptr;
+    }
+
+    WorldScene* PartyMembers::ownWorld(std::int32_t playerId) {
+        if (playerId == 0) {
+            return nullptr;
+        }
+        if (WorldScene* world = worldOf(played()); world && world->inWorld() && world->ownId() == playerId) {
+            return world;
+        }
+        for (const auto& member : m_members) {
+            if (member->world && !member->leavingSinceMs && member->world->get().inWorld() && member->world->get().ownId() == playerId) {
+                return &member->world->get();
+            }
+        }
+        return nullptr;
+    }
+
+    bool PartyMembers::walkToLeader(const GameServices& services, core::Point mapPoint) {
+        const WorldScene* self = worldOf(services);
+        if (self == nullptr || !self->inWorld()) {
+            return false;
+        }
+        const auto leaderId = self->teams().leaderOf(self->ownId());
+        if (!leaderId || *leaderId == self->ownId()) {
+            return false; // not in a team, or its leader: it walks itself
+        }
+        WorldScene* leader = ownWorld(*leaderId);
+        if (leader == nullptr || leader->ownMapId() != self->ownMapId()) {
+            return false; // led by someone else's character, or the leader is elsewhere
+        }
+        return leader->walkTo(mapPoint);
     }
 
     bool PartyMembers::isOwnCharacter(std::int32_t playerId) const {
@@ -624,12 +670,49 @@ namespace client {
             remove(pressed);
             return true;
         }
-        if (left) {
+        if (left && (SDL_GetModState() & SDL_KMOD_CTRL) != 0) {
+            moveLastWindowTo(pressed);
+        } else if (left) {
             select(pressed);
         } else if (member.world && !member.leavingSinceMs && member.world->get().inWorld()) {
             playedWorld.askPartyLogOut(member.world->get().ownId(), member.world->get().ownName());
         }
         return true;
+    }
+
+    void PartyMembers::moveLastWindowTo(int index) {
+        const Member& target = *m_members[static_cast<std::size_t>(index)];
+        if (!target.world || target.leavingSinceMs || !target.world->get().inWorld()) {
+            return;
+        }
+        WorldScene* owner = nullptr;
+        std::optional<WorldScene::MovableWindow> last;
+        const auto consider = [&](WorldScene* world) {
+            if (world == nullptr || !world->inWorld()) {
+                return;
+            }
+            if (const auto used = world->lastUsedWindow(); used && (!last || used->usedAtMs > last->usedAtMs)) {
+                last = used;
+                owner = world;
+            }
+        };
+        consider(worldOf(played()));
+        for (const auto& member : m_members) {
+            if (member->world && !member->leavingSinceMs) {
+                consider(&member->world->get());
+            }
+        }
+        WorldScene& targetWorld = target.world->get();
+        if (!last || owner == &targetWorld) {
+            return;
+        }
+        // opened on the clicked character first: a window that can't open there stays where it is
+        if (!targetWorld.openMovableWindow(last->key, last->position)) {
+            core::logInfo("party: the ", last->key, " window cannot open for ", targetWorld.ownName(), " now");
+            return;
+        }
+        owner->closeMovableWindow(last->key);
+        core::logInfo("party: the ", last->key, " window of ", owner->ownName(), " moved to ", targetWorld.ownName());
     }
 
     bool PartyMembers::handleEvent(const SDL_Event& event, core::Point origin, float hudScale, bool memberShown) {
@@ -720,12 +803,19 @@ namespace client {
         return false;
     }
 
+    bool PartyMembers::inShownBattle(const WorldScene& world) const {
+        if (m_played->kind != SceneKind::World || !m_played->scene) {
+            return false;
+        }
+        return static_cast<const WorldScene&>(*m_played->scene).fightsWith(world.ownId());
+    }
+
     std::optional<std::reference_wrapper<Scene>> PartyMembers::commandingScene(bool playedDone) {
         int found = -1;
         if (playedDone) {
             for (int index = 0; index < size(); ++index) {
                 const Member& member = *m_members[static_cast<std::size_t>(index)];
-                if (member.world && member.world->get().battleActor() != 0) {
+                if (member.world && !member.leavingSinceMs && member.world->get().battleActor() != 0 && inShownBattle(member.world->get())) {
                     found = index;
                     break;
                 }
@@ -894,6 +984,8 @@ namespace client {
                 const AccountSession& session = m_played->session;
                 const auto team = world.teams().leaderOf(world.ownId());
                 view.inTeam = team && session.ownPlayer && world.teams().leaderOf(session.ownPlayer->playerId) == team;
+                // its commands are due in a battle other than the shown one (or the selected character fights none): its row blinks until they are given
+                view.attention = world.battleActor() != 0 && !inShownBattle(world);
             }
             views.push_back(std::move(view));
         }

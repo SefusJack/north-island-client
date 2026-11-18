@@ -58,7 +58,7 @@ namespace client {
         std::string reason;
         bool inTeam = false; // in the selected character's team
         bool commanding = false; // its battle commands are given now, in the played account's place
-        bool attention = false; // the character needs the player: e.g. its battle commands are due in another battle (a blinking outline)
+        bool attention = false; // its battle commands are due in a battle other than the shown one, or while the selected character fights none (a blinking outline)
     };
 
     /// @brief A whisper or team line another own character heard, for the selected character's chat window.
@@ -86,7 +86,9 @@ namespace client {
     /// or in battle; a right click asks to log it out, and the "+" row after the rows logs another account in. A member follows
     /// from its login: while it is not in a team it is invited into the selected character's team (13/7, by that team's leader when it
     /// is an own character) when on its map, until it has been in a team and left it. Own characters accept each other's team
-    /// invitations and lead. Also covers manual battle turns shown in the played account's place, the members' windows over the screen,
+    /// invitations and lead. A ground click of a character in a team led by another own character walks that leader (walkToLeader); a
+    /// Ctrl+click on a row moves the last used window to that member (moveLastWindowTo). Also covers manual battle turns shown in the
+    /// played account's place (a member due in another battle asks for attention on its row), the members' windows over the screen,
     /// the whisper and team chat relay, the NPC mirror and the services' log in/out hooks (WorldScene::openPartyLogin, askPartyLogOut).
     class PartyMembers {
         public:
@@ -117,7 +119,9 @@ namespace client {
             /// @return The number of members.
             int size() const { return static_cast<int>(m_members.size()); }
 
-            /// @brief Finds the member whose battle commands are given now, shown and steered in the played account's place.
+            /// @brief Finds the member whose battle commands are given now, shown and steered in the played account's place: the first
+            /// member in the played account's own battle whose commands are due, once the played account's are given.
+            /// @details A member whose commands are due in another battle is not shown: its row asks for attention (PartyMemberView::attention).
             /// @param playedDone The played account is in a fight and its own fighters have their commands.
             /// @return The member's scene, or nothing for the played account.
             std::optional<std::reference_wrapper<Scene>> commandingScene(bool playedDone);
@@ -162,7 +166,8 @@ namespace client {
             /// @param nowMs The current time in milliseconds.
             void drawPanels(gfx::Canvas& canvas, float hudScale, const WorldScene& playedWorld, std::uint64_t nowMs);
 
-            /// @brief Handles an input event for the members: a click on a member's row (select), on the "+" row (WorldScene::openPartyLogin),
+            /// @brief Handles an input event for the members: a click on a member's row (select; with Ctrl, the last used window moves to
+            /// it: moveLastWindowTo), on the "+" row (WorldScene::openPartyLogin),
             /// a right click on a member's row (WorldScene::askPartyLogOut; a gone member's row goes), the mouse over a member's window,
             /// typing into a member's text box.
             /// @details Both buttons' presses and releases on the rows are taken, so nothing under the rows (a right-click menu) sees them.
@@ -271,11 +276,41 @@ namespace client {
             bool loginRowShown() const;
 
             /// @brief Takes a press or release of the mouse button on the rows: on a press, acts on the row under it (the left
-            /// button selects or opens the login form, the right one asks to log out); the release of a press taken is taken too.
+            /// button selects or opens the login form, with Ctrl held moves the last used window to it; the right one asks to log out);
+            /// the release of a press taken is taken too.
             /// @param event The SDL mouse button event.
             /// @param origin The game screen's place in the window.
             /// @return True when the event was taken.
             bool handleRowButton(const SDL_Event& event, core::Point origin);
+
+            /// @brief Moves the movable window used last by any own character in the world (WorldScene::lastUsedWindow) to a member, at
+            /// the same place on the screen: it opens there (or moves to the front of its own one), then closes for its owner. Nothing
+            /// happens when the member owns it already, or when it can't open for the member (the owner keeps it). The selected character stays.
+            /// @param index The member's row.
+            void moveLastWindowTo(int index);
+
+            /// @brief Finds the world scene of a character's services: the played account's or a member's.
+            /// @param services The character's services.
+            /// @return Its world scene, or null when it is not in a world scene.
+            WorldScene* worldOf(const GameServices& services);
+
+            /// @brief Finds the world scene of an own character in the world (the played account, or a member not logging out).
+            /// @param playerId The character's id.
+            /// @return Its world scene, or null for another player's character.
+            WorldScene* ownWorld(std::int32_t playerId);
+
+            /// @brief A character's ground click (GameServices::walkElsewhere): when it is in a team led by another own character on its
+            /// map, that leader walks there (its team follows) instead.
+            /// @param services The clicking character's services.
+            /// @param mapPoint The map point clicked.
+            /// @return True when the leader walks there; false when the character walks itself (no team, its leader, led by someone
+            /// else's character or from another map, or the leader can't walk now).
+            bool walkToLeader(const GameServices& services, core::Point mapPoint);
+
+            /// @brief Tells whether a character fights in the battle shown: the played account's.
+            /// @param world The character's world scene.
+            /// @return True when the played account is in a battle and the character is one of its fighters.
+            bool inShownBattle(const WorldScene& world) const;
 
             /// @brief Tells whether a character is one of this client's own (the played account or a member in the world, not logging out).
             /// @param playerId The character's id.
