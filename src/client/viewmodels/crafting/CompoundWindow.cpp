@@ -278,7 +278,7 @@ namespace client {
                 return;
             }
             if (compoundRefusal(m_services.items, item->id) != 0) {
-                m_messages.show(item->name + "Unable to combine", 2000); // message duration in ms
+                m_messages.show(item->name + " unable to combine", 2000); // message duration in ms
                 return;
             }
             blessType += item->type == kBlessType ? 1 : 0;
@@ -350,24 +350,24 @@ namespace client {
             const std::string name = "[ " + (record ? record->name : std::string()) + " ]";
             const auto gem = m_services.items.find(m_inventory.bagItem(gemSlot).itemId);
             if (target.insertItemId != 0) {
-                m_messages.show(name + "Mounted", 2000); // message duration in ms
+                m_messages.show(name + " mounted", 2000); // message duration in ms
                 return;
             }
             if (record && record->equipSlot == 6) { // equip slot 6: special items (only a job manteau may be set)
                 if (record->subType != kJobManteauSubType) {
-                    m_messages.show(name + "Special items cannot be set", 2000); // message duration in ms
+                    m_messages.show(name + ": special items cannot be set", 2000); // message duration in ms
                     return;
                 }
             } else if (record && record->type == kGunType) {
-                m_messages.show(name + "Guns cannot be set", 2000); // message duration in ms
+                m_messages.show(name + ": guns cannot be set", 2000); // message duration in ms
                 return;
             } else if (record && gem && gem->type == kCrystalType) {
                 if (record->equipSlot != 3) { // equip slot 3: the weapon slot
-                    m_messages.show(name + "It's not weapon, can't be embed with crystal", 2000); // message duration in ms
+                    m_messages.show(name + " is not a weapon, it can't be embedded with a crystal", 2000); // message duration in ms
                     return;
                 }
                 if (record->subType == kCriticalSubType) {
-                    m_messages.show(name + "Contains critical strike function, can't be embeded.", 2000); // message duration in ms
+                    m_messages.show(name + " has a critical strike function, it can't be embedded.", 2000); // message duration in ms
                     return;
                 }
             }

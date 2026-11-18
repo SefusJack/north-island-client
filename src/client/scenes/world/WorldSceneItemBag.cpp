@@ -41,7 +41,7 @@ namespace client {
     }
 
     void WorldScene::onSpaceContract(int kind, int flags, std::int32_t hours) {
-        const auto say = [this](const std::string& line) { m_chat.add(0, "(System Prompt):" + line); };
+        const auto say = [this](const std::string& line) { m_chat.add(0, "(System Prompt): " + line); };
         switch (kind) {
             case 1: // 23/136 kind 1: the Space Contract is on
                 m_itemBag.setSpaceContract(true);

@@ -105,7 +105,7 @@ namespace client {
                 }
                 const int worn = pet->worn[static_cast<std::size_t>(slot)].itemId;
                 if (isPeriodItem(worn)) {
-                    say(pet->name + "Equipped[" + nameOf(worn) + "] The usage period is over, the item has been destroyed");
+                    say(pet->name + " equipped [" + nameOf(worn) + "] The usage period is over, the item has been destroyed");
                 }
                 m_pets.clearEquipment(petPlace, slot);
                 if (newItemId != 0) {

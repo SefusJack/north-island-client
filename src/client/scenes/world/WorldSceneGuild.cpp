@@ -500,7 +500,7 @@ namespace client {
                 timing.onTimeout = [answer] { answer(3); };
                 // answers 1 accept, 2 refuse, 3 no answer
                 m_talk.ask(
-                    "Would you like to " + entry->get().orgName + "be allied.",
+                    "Would you like to be allied with " + entry->get().orgName + "?",
                     std::nullopt,
                     [answer] { answer(1); },
                     [answer] { answer(2); },

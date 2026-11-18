@@ -159,6 +159,10 @@ namespace client {
             /// @brief Logs every member in to the server the leader is on (once the leader is in the world); one added later logs in at once.
             void start();
 
+            /// @brief Logs the gone members (cut off from the server, could not log in) in again once the played account enters the world anew.
+            /// @details A gone member on the played account's own account now is dropped instead: logging it in would push the played account off.
+            void logInGone();
+
             /// @brief Adds another member (the group window's Log in); rows of members that could not log in go.
             /// @param account The account to log in.
             /// @return Empty, or why the account cannot be added.

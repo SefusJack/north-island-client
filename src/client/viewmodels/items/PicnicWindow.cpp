@@ -308,7 +308,7 @@ namespace client {
         }
         const bool fighting = m_hooks.fightState() != 0;
         if (!fighting) {
-            const std::string subject = target == 0 ? m_hooks.ownName() : m_hooks.ownName() + "help" + m_hooks.activePetName();
+            const std::string subject = target == 0 ? m_hooks.ownName() : m_hooks.ownName() + " helps " + m_hooks.activePetName();
             if (hp > 0) {
                 m_hooks.chatLine(subject + "recover HP:" + std::to_string(hp));
             }

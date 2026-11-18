@@ -469,7 +469,7 @@ namespace client {
         for (int i = 0; i < m_guild.count(); ++i) {
             const GuildMember& member = m_guild.at(i);
             if (member.checked && !m_guild.isLord(own) && member.record.rights[0]) {
-                m_messages.show("You have not enough authoriztion to modify" + member.record.name + "authoriztion of ", kNoticeMs);
+                m_messages.show("You don't have the authority to change the authority of " + member.record.name, kNoticeMs);
                 return;
             }
         }

@@ -37,7 +37,7 @@ namespace client {
             return mate ? std::optional<std::string>(mate->name) : std::nullopt;
         };
         hooks.message = [this](const std::string& text, int durationMs) { m_messages.show(text, durationMs); };
-        hooks.chat = [this](const std::string& text) { m_chat.add(0, "(System Prompt):" + text); };
+        hooks.chat = [this](const std::string& text) { m_chat.add(0, "(System Prompt): " + text); };
         hooks.detailOpen = [this] { return m_instanceDetail.isOpen(); };
         hooks.openDetail = [this] { m_instanceDetail.open(); };
         hooks.closeDetail = [this] { m_instanceDetail.close(); };

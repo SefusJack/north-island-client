@@ -206,7 +206,7 @@ namespace client {
         } else if (scene && (scene->flags & kNoTents) != 0) {
             m_messages.show("Cannot use tent here", kMessageMs);
         } else if (isHouseMap(mapId)) {
-            m_messages.show("Unable to use at home" + name(itemId), kMessageMs);
+            m_messages.show("Unable to use at home: " + name(itemId), kMessageMs);
         } else if (m_camps.ownMap() != 0) {
             m_messages.show(name(m_camps.ownItem()) + " is already open", kMessageMs);
         } else {
@@ -240,7 +240,7 @@ namespace client {
             if (m_camps.ownMap() != 0 && itemId == m_camps.ownItem()) {
                 const int mapId = m_map ? m_map->id() : 0;
                 if (isHouseMap(mapId) && m_house.furniture().ownerId() == m_player.id) {
-                    m_messages.show("Unable to take back now" + item->name, kMessageMs);
+                    m_messages.show("Unable to take back now: " + item->name, kMessageMs);
                 } else {
                     takeBackTent();
                 }

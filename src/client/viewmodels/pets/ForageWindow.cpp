@@ -293,7 +293,7 @@ namespace client {
             if (const auto info = m_services.npcs.find(m_petKind)) {
                 name = info->name;
             }
-            m_messages.show(name + "Not in your team", kShortMs);
+            m_messages.show(name + " is not in your team", kShortMs);
             cancel();
             reset();
             hide();

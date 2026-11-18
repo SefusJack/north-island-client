@@ -104,7 +104,7 @@ namespace client {
             return;
         }
         if (record->id == kCantForgeItem) {
-            m_messages.show(record->name + "Cannot be forged", kResultMs);
+            m_messages.show(record->name + " cannot be forged", kResultMs);
             return;
         }
         if (isMallEquipment(*record)) {

@@ -206,10 +206,10 @@ namespace client {
             const std::string name = record ? record->name : std::string();
             const std::string levels = "#R(" + std::to_string(oldLevel) + "->" + std::to_string(newLevel) + ")/#R";
             if (newLevel > oldLevel) {
-                m_messages.show(name + "Fusion succeeded" + levels, 3000); // message display time in ms
+                m_messages.show(name + " fusion succeeded" + levels, 3000); // message display time in ms
                 m_services.playSound("sound/SEB0300.wav");
             } else {
-                m_messages.show(name + "Fusion failed" + levels, 3000); // message display time in ms
+                m_messages.show(name + " fusion failed" + levels, 3000); // message display time in ms
                 m_services.playSound("sound/wav1607.wav");
             }
             m_requestSent = false;

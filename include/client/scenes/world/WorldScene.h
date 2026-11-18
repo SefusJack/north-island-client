@@ -437,6 +437,10 @@ namespace client {
             /// @return True when in the world.
             bool inWorld() const { return m_inWorld; }
 
+            /// @brief Overrides Scene::cutOff: the disconnect form is up (kicked by the server, or the connection lost).
+            /// @return True while the form is shown.
+            bool cutOff() const override { return m_disconnect.isOpen(); }
+
             /// @brief The own player's id.
             /// @return The id.
             std::int32_t ownId() const { return m_player.id; }
@@ -464,7 +468,7 @@ namespace client {
             void addPartyLine(int channel, const std::string& line, const std::string& memberName) {
                 constexpr std::size_t kRecentLines = 60; // how many of the latest chat lines to compare for a repeat
                 if (!m_chat.heardRecently(channel, line, kRecentLines)) {
-                    m_chat.add(channel, "[" + memberName + "]" + line, 0, false);
+                    m_chat.add(channel, "[" + memberName + "] " + line, 0, false);
                 }
             }
 
@@ -4531,6 +4535,7 @@ namespace client {
             bool m_padAim = false; // a game pad plays without the pointer: the NPC in front is marked
             ui::PadPointer m_padHand; // the hand that marks it
             int m_currentDoor = 0;
+            core::Point m_lastDoorAt{-1, -1}; // where the player stood when the last door event started
             std::uint64_t m_doorCheckMs = 0;
             std::int32_t m_innPrice = 0;
 

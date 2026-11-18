@@ -30,7 +30,7 @@ namespace client {
 
     void NpcTeamMenu::ask(const std::string& npcName) {
         constexpr std::size_t kFits = 20; // the question is cut to 20 characters (what fits in the label)
-        m_text.setText(("Do you want" + npcName + "to join the team?").substr(0, kFits));
+        m_text.setText(("Do you want " + npcName + " to join the team?").substr(0, kFits));
         m_window.setVisible(true);
         if (m_screen.context().bringToFront) {
             m_screen.context().bringToFront(m_window.id());

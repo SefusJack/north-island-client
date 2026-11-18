@@ -2123,7 +2123,14 @@ namespace client {
         if (door == m_doors.end() || m_eventRunner.isRunning()) {
             return;
         }
+        // two doors on one spot take turns only as the player moves: standing still where they overlap must not restart a
+        // door event on every check, which keeps the event runner busy and starves checkNearNpcs (1F Village Leader's 11009:
+        // doors 5 and 6 overlap where the Crossdrirt passage, a "near" NPC, is walked into)
+        if (m_currentDoor != 0 && m_lastDoorAt == m_player.position) {
+            return;
+        }
         m_currentDoor = door->index;
+        m_lastDoorAt = m_player.position;
         m_mouseHeld = false;
         // members first: a door that warps takes the team along, and a member's own 20/8 must reach the server before that
         if (m_services.partyEventStarted) {
@@ -2174,6 +2181,8 @@ namespace client {
                 placeOther(moved->get());
             } else if (!m_map || mapId != m_map->id()) {
                 m_others.erase(playerId);
+                m_mapPets.remove(playerId);
+                m_trails.remove(playerId);
             }
             return;
         }
@@ -2612,7 +2621,7 @@ namespace client {
             }
         }
         if (m_status.hp <= 1) {
-            m_chat.add(0, "(System Prompt):Press Alt+1 to recover HP and SP gradually");
+            m_chat.add(0, "(System Prompt): Press Alt+1 to recover HP and SP gradually");
         }
     }
 
@@ -2927,7 +2936,7 @@ namespace client {
             return;
         }
         const auto item = m_services.items.find(itemId);
-        const std::string counted = count > 0 ? std::to_string(count) + "Quantity" : std::string();
+        const std::string counted = count > 0 ? " x" + std::to_string(count) : std::string();
         m_services.playSound("sound/wav0152.wav");
         m_chat.add(
             10,
@@ -4206,7 +4215,7 @@ namespace client {
             name = pet->name + " " + (record ? record->name : "");
         }
         if (wear == kDestroyed && m_fightState == 0) {
-            m_messages.show(name + "Destroyed", 2000); // message display time in ms
+            m_messages.show(name + " destroyed", 2000); // message display time in ms
         }
     }
 
@@ -4230,7 +4239,7 @@ namespace client {
             name = pet->name + " " + record->name;
         }
         if (m_fightState != 0) {
-            m_messages.show(name + "Destroyed", 2000); // message display time in ms
+            m_messages.show(name + " destroyed", 2000); // message display time in ms
         }
     }
 
@@ -4718,7 +4727,7 @@ namespace client {
     void WorldScene::onPlayerLeft(std::int32_t playerId) {
         const std::string name = speakerName(playerId);
         if (m_inputBar.channel() == 3 && !m_inputBar.whisperName().empty() && m_inputBar.whisperName() == name) { // input channel 3: whisper
-            m_chat.add(10, "target to whisper " + name + "offline", playerId); // chat channel 10: notice line
+            m_chat.add(10, "Whisper target " + name + " is offline", playerId); // chat channel 10: notice line
         }
         m_inputBar.removeWhisperName(name);
         m_others.erase(playerId);
@@ -4739,7 +4748,7 @@ namespace client {
         }
         static const char* const kChannelNames[] = {"", "(World)", "(Local)", "(Whisper)", "(GM)", "(Team)", "(guild)", "(Ally)"};
         if (channel == 0) {
-            m_chat.add(0, speakerId == 0 ? "(System Prompt):" + text : text);
+            m_chat.add(0, speakerId == 0 ? "(System Prompt): " + text : text);
             return;
         }
         m_chat.add(channel, std::string(kChannelNames[channel]) + speakerName(speakerId) + ":" + text, speakerId);
@@ -4808,10 +4817,10 @@ namespace client {
                 }
                 const int radio = radioKind(m_inventory.equipped(kRadioSlot).itemId);
                 if (radio == 0) {
-                    return refuse("(System Prompt):World channel cannot be used without the radio set");
+                    return refuse("(System Prompt): World channel cannot be used without the radio set");
                 }
                 if (m_status.sp < kRadioSp) {
-                    return refuse("(System Prompt):Not enough SP, cannot use the Radio Set");
+                    return refuse("(System Prompt): Not enough SP, cannot use the Radio Set");
                 }
                 sendOn(1);
                 if (radio == kWorldRadio) {
@@ -4873,7 +4882,7 @@ namespace client {
                     return refuse("Unable to say when you close the Team Channel.");
                 }
                 if (!m_teams.inTeam(m_player.id)) {
-                    m_chat.add(10, "(System Prompt):Cannot use team channel without joining a team"); // chat channel 10: notice line
+                    m_chat.add(10, "(System Prompt): Cannot use team channel without joining a team"); // chat channel 10: notice line
                     m_inputBar.setChannel(2); // back to the local channel
                     return Sent::Dropped;
                 }
@@ -4887,7 +4896,7 @@ namespace client {
                     return refuse("Unable to say when you close the Guild Channel.");
                 }
                 if (m_guild.leaderId() == 0) {
-                    m_chat.add(10, "(System Prompt):Cannot use guild channel without joining a guild"); // chat channel 10: notice line
+                    m_chat.add(10, "(System Prompt): Cannot use guild channel without joining a guild"); // chat channel 10: notice line
                     m_inputBar.setChannel(2); // back to the local channel
                     return Sent::Kept;
                 }
@@ -4941,11 +4950,11 @@ namespace client {
 
     bool WorldScene::chatChannelAllowed(int channel) {
         if (channel == 4 && !m_teams.inTeam(m_player.id)) { // typed channel 4: team
-            m_chat.add(10, "(System Prompt):Cannot use party channel without joining a party"); // chat channel 10: notice line
+            m_chat.add(10, "(System Prompt): Cannot use party channel without joining a party"); // chat channel 10: notice line
             return false;
         }
         if (channel == 5 && m_guild.leaderId() == 0) { // typed channel 5: guild
-            m_chat.add(10, "(System Prompt):Cannot use guild channel without joining a guild"); // chat channel 10: notice line
+            m_chat.add(10, "(System Prompt): Cannot use guild channel without joining a guild"); // chat channel 10: notice line
             return false;
         }
         return true;
@@ -6341,7 +6350,7 @@ namespace client {
         } else if (answer == 2) { // answer 2: refused
             m_messages.show(name + " Refuse you", 1000); // message display time in ms
         } else if (answer == 3) { // answer 3: no response
-            m_messages.show(name + "did not respond", 1000); // message display time in ms
+            m_messages.show(name + " did not respond", 1000); // message display time in ms
         }
     }
 
@@ -6478,11 +6487,11 @@ namespace client {
         }
         const std::string name = playerName(m_teamTarget);
         if (answer == 1) {
-            m_messages.show(name + "Accept your invitation", 1000); // message display time in ms
+            m_messages.show(name + " accepted your invitation", 1000); // message display time in ms
         } else if (answer == 2) { // answer 2: refused
-            m_messages.show(name + "Refuse your invitation", 1000); // message display time in ms
+            m_messages.show(name + " refused your invitation", 1000); // message display time in ms
         } else if (answer == 3) { // answer 3: no response
-            m_messages.show(name + "did not respond", 1000); // message display time in ms
+            m_messages.show(name + " did not respond", 1000); // message display time in ms
         }
     }
 
@@ -6581,9 +6590,9 @@ namespace client {
         } else if (answer == 2) { // answer 2: refused
             m_messages.show("Player " + name + " Refuse to add the friend", 2000); // message display time in ms
         } else if (answer == 3) { // answer 3: no response
-            m_messages.show("Player " + name + "No response", 2000); // message display time in ms
+            m_messages.show("Player " + name + " did not respond", 2000); // message display time in ms
         } else {
-            m_messages.show("Player " + name + "The target is busy now.", 2000); // message display time in ms
+            m_messages.show("Player " + name + " is busy now.", 2000); // message display time in ms
         }
     }
 
@@ -7185,7 +7194,7 @@ namespace client {
     void WorldScene::onTeamLeaderAnswer(int answer, std::int32_t memberId) {
         m_groupWindow.leaderOfferEnded();
         if (answer == 2) { // leader answer 2: refused
-            m_messages.show(playerName(memberId) + "Refuse to be the team leader", 2000); // message display time in ms
+            m_messages.show(playerName(memberId) + " refused to be the team leader", 2000); // message display time in ms
         } else if (answer == 3) { // leader answer 3: no response
             m_messages.show("did not respond.", 2000); // message display time in ms
         } else if (answer == 5) { // leader answer 5: busy
@@ -7208,10 +7217,10 @@ namespace client {
         }
         m_groupWindow.leaderOfferEnded();
         if (isOwn(newLeaderId)) {
-            teamNotice(oldLeaderId, playerName(oldLeaderId) + "You are now the team leader", 2000); // notice display time in ms
+            teamNotice(oldLeaderId, playerName(oldLeaderId) + ", you are now the team leader", 2000); // notice display time in ms
             m_functionButtons.setTeamMode(2); // team mode 2: the invite cursor mode
         } else if (m_teams.leaderOf(m_player.id) == newLeaderId) {
-            teamNotice(oldLeaderId, playerName(newLeaderId) + "To be the team leader", 2000); // notice display time in ms
+            teamNotice(oldLeaderId, playerName(newLeaderId) + " is now the team leader", 2000); // notice display time in ms
         }
         m_groupWindow.refresh();
     }

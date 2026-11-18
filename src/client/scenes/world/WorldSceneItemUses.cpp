@@ -465,7 +465,7 @@ namespace client {
                 text = "The online time is not enough\241I\r" + name + " Abandon means destroy,Sure? ";
                 break;
             case 3: // reason 3: style and equipment
-                text = "Style and equipment" + name + " Abandon means destroy,\rSure? ";
+                text = "Style and equipment " + name + " Abandon means destroy,\rSure? ";
                 break;
             default: // any other reason: plain question
                 text = name + " Abandon means destroy,Sure? ";

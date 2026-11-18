@@ -48,6 +48,11 @@ namespace client {
             /// @return The next scene, or nothing while this one goes on.
             virtual std::optional<SceneKind> nextScene() const = 0;
 
+            /// @brief Tells whether the scene is cut off from the server: its disconnect form is up (kicked, locked, the connection failed or lost) and waits for a click.
+            /// @details A party member's unseen scene has nobody to click that form, so PartyMembers drops the member then.
+            /// @return True while cut off (the default: never).
+            virtual bool cutOff() const { return false; }
+
             /// @brief Does what a game pad asks for directly.
             /// @param ask What is asked.
             /// @return True when the scene took it: the pad then does nothing else with the button (the default takes nothing).

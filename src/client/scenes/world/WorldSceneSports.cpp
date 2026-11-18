@@ -178,7 +178,7 @@ namespace client {
     QuizGame::Hooks WorldScene::quizHooks() {
         QuizGame::Hooks hooks;
         static_cast<GameHooks&>(hooks) = sportHooks();
-        hooks.chat = [this](const std::string& text, bool byPlayer) { m_chat.add(0, byPlayer ? text : "(System Prompt):" + text, byPlayer ? m_player.id : 0); };
+        hooks.chat = [this](const std::string& text, bool byPlayer) { m_chat.add(0, byPlayer ? text : "(System Prompt): " + text, byPlayer ? m_player.id : 0); };
         hooks.playerName = [this](std::int32_t id) { return playerName(id); };
         hooks.ownId = [this] { return m_player.id; };
         hooks.mapId = [this] { return m_map ? m_map->id() : 0; };
@@ -208,7 +208,7 @@ namespace client {
     CompassGame::Hooks WorldScene::compassHooks() {
         CompassGame::Hooks hooks;
         static_cast<GameHooks&>(hooks) = sportHooks();
-        hooks.chat = [this](const std::string& text, bool byPlayer) { m_chat.add(0, byPlayer ? text : "(System Prompt):" + text, byPlayer ? m_player.id : 0); };
+        hooks.chat = [this](const std::string& text, bool byPlayer) { m_chat.add(0, byPlayer ? text : "(System Prompt): " + text, byPlayer ? m_player.id : 0); };
         hooks.playerName = [this](std::int32_t id) { return playerName(id); };
         hooks.ownId = [this] { return m_player.id; };
         hooks.mapId = [this] { return m_map ? m_map->id() : 0; };

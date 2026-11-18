@@ -823,6 +823,9 @@ namespace client {
                             break;
                         }
                         applyView(*played->scene);
+                        if (*next == SceneKind::World) {
+                            party.logInGone(); // members cut off with the old login follow the new one
+                        }
                         continue;
                     }
                     if (live.freeFrames()) {

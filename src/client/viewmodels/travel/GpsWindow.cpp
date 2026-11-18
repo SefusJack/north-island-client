@@ -180,7 +180,7 @@ namespace client {
             return;
         }
         m_crystalSlot = crystalSlot;
-        m_hooks.choose(" Use " + itemName(kMemoryCrystal), {itemName(kNormalGps) + "Upgrade", itemName(kAdvanceGps) + "Upgrade"}, [this](int choice) {
+        m_hooks.choose(" Use " + itemName(kMemoryCrystal), {itemName(kNormalGps) + " Upgrade", itemName(kAdvanceGps) + " Upgrade"}, [this](int choice) {
             upgradeChosen(choice);
         });
     }

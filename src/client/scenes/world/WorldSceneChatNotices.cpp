@@ -70,7 +70,7 @@ namespace client {
     void WorldScene::onFlowerReceived(std::int32_t senderId) {
         constexpr int kSystemChannel = 10; // chat channel 10: system messages
         if (const auto record = m_otherRecords.find(senderId); record != m_otherRecords.end()) {
-            m_chat.add(kSystemChannel, "You receive" + record->second.name + "flower", 0, false);
+            m_chat.add(kSystemChannel, "You receive " + record->second.name + " flower", 0, false);
         }
     }
 
@@ -107,11 +107,11 @@ namespace client {
         const std::string who = casterId == targetId ? *caster : *caster + "help" + *target;
         if (hp != 0) {
             // 10: the system chat channel
-            m_chat.add(10, who + "recover HP:" + std::to_string(hp), targetId);
+            m_chat.add(10, who + " recovers HP: " + std::to_string(hp), targetId);
         }
         if (sp != 0) {
             // 10: the system chat channel
-            m_chat.add(10, who + "recover SP:" + std::to_string(sp), targetId);
+            m_chat.add(10, who + " recovers SP: " + std::to_string(sp), targetId);
         }
     }
 
@@ -126,11 +126,11 @@ namespace client {
         }
         if (hp != 0) {
             // 10: the system chat channel
-            m_chat.add(10, name + "recover HP:" + std::to_string(hp), m_player.id);
+            m_chat.add(10, name + " recovers HP: " + std::to_string(hp), m_player.id);
         }
         if (sp != 0) {
             // 10: the system chat channel
-            m_chat.add(10, name + "recover SP:" + std::to_string(sp), m_player.id);
+            m_chat.add(10, name + " recovers SP: " + std::to_string(sp), m_player.id);
         }
     }
 

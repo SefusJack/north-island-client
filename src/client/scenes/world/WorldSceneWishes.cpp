@@ -111,9 +111,9 @@ namespace client {
             m_blessBalloon.release();
         }
         if (sender == target) {
-            m_chat.add(0, "(System Prompt):" + speakerName(sender) + " " + words);
+            m_chat.add(0, "(System Prompt): " + speakerName(sender) + " " + words);
         } else {
-            m_chat.add(0, "(System Prompt):" + speakerName(sender) + " told " + speakerName(target) + " " + words);
+            m_chat.add(0, "(System Prompt): " + speakerName(sender) + " told " + speakerName(target) + " " + words);
         }
     }
 
@@ -132,7 +132,7 @@ namespace client {
             m_loveFlower.release();
             return;
         }
-        const std::string line = "(System Prompt):" + speakerName(sender) + " told " + speakerName(target) + " " + words;
+        const std::string line = "(System Prompt): " + speakerName(sender) + " told " + speakerName(target) + " " + words;
         if (outcome == 1) {
             m_loveFlowerMessage.setDone();
             m_chat.add(0, line);

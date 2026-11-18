@@ -215,7 +215,7 @@ namespace client {
             return;
         }
         if (discount) {
-            m_centreMessages.show("Show" + card->name + " Purchasing", 2000); // message display time in ms
+            m_centreMessages.show("Show " + card->name + " purchasing", 2000); // message display time in ms
         }
         m_services.connection.send(protocol::npcStoreBuyRequest(lines));
         close();

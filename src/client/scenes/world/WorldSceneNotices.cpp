@@ -62,7 +62,7 @@ namespace client {
             if (record.slot >= 1 && record.slot <= Inventory::kBagSlots) {
                 m_inventory.addToBag(record.slot, record.item);
             }
-            list += itemTableName(m_services, record.item.itemId) + std::to_string(record.item.count) + "Quantity" + " ";
+            list += itemTableName(m_services, record.item.itemId) + " x" + std::to_string(record.item.count) + " ";
         }
         inventoryChanged();
         m_messages.show("Obtain " + list, 1200); // message display time in ms
@@ -72,9 +72,9 @@ namespace client {
     void WorldScene::onBagFullGifts(const std::vector<protocol::ItemInstance>& items) {
         std::string list;
         for (const protocol::ItemInstance& item : items) {
-            list += itemTableName(m_services, item.itemId) + std::to_string(item.count) + "Quantity" + " ";
+            list += itemTableName(m_services, item.itemId) + " x" + std::to_string(item.count) + " ";
         }
-        m_messages.show("Send presents sometimes because your inventory is full." + list, 2000); // message display time in ms
+        m_messages.show("Your inventory is full, so these were sent as presents: " + list, 2000); // message display time in ms
     }
 
     void WorldScene::onExpIncreased(std::int32_t playerId, int petPlace, std::int32_t exp) {
@@ -139,16 +139,16 @@ namespace client {
 
     void WorldScene::onFighterAbstains(std::int32_t playerId) {
         if (playerId == m_player.id || static_cast<std::uint32_t>(protocol::stripServerOffset(playerId)) == m_services.session.loginId) {
-            m_messages.show(m_player.name + "Abstain", 2000); // message display time in ms
+            m_messages.show(m_player.name + " abstains", 2000); // message display time in ms
         } else if (const auto other = m_others.find(playerId); other != m_others.end()) {
-            m_messages.show(other->second.name + "Abstain", 2000); // message display time in ms
+            m_messages.show(other->second.name + " abstains", 2000); // message display time in ms
         }
     }
 
     void WorldScene::onPetGearBackHome(int npcId) {
         const int place = m_pets.placeOf(npcId);
         if (place != 0 && m_pets.at(place)) {
-            m_chat.add(0, "(System Prompt):" + m_pets.at(place)->name + " The gear has been taken back into the warehouse at home");
+            m_chat.add(0, "(System Prompt): " + m_pets.at(place)->name + " The gear has been taken back into the warehouse at home");
         }
     }
 
@@ -174,7 +174,7 @@ namespace client {
     void WorldScene::onFighterMoved(int fromRow, int fromCol, int toRow, int toCol) { m_battle.moveFighter(fromRow, fromCol, toRow, toCol); }
 
     void WorldScene::onItemGlows(int itemId) {
-        m_messages.show(itemTableName(m_services, itemId) + "Give off a mysterious light", 2000);
+        m_messages.show(itemTableName(m_services, itemId) + " gives off a mysterious light", 2000);
     } // message display time in ms
 
     Top100::Hooks WorldScene::top100Hooks() {

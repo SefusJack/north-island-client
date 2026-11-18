@@ -280,6 +280,27 @@ namespace client {
         }
     }
 
+    void PartyMembers::logInGone() {
+        if (!m_started) {
+            return;
+        }
+        for (int index = size() - 1; index >= 0; --index) {
+            const Member& member = *m_members[static_cast<std::size_t>(index)];
+            if (!member.goneReason || member.leavingSinceMs) {
+                continue;
+            }
+            if (member.account.account == played().session.loginName) {
+                remove(index);
+                continue;
+            }
+            // a fresh member: no session, connection, timers or heard lines of the gone one are kept
+            auto fresh = std::make_unique<Member>(GameTables::of(played()), m_silent, member.account);
+            m_members[static_cast<std::size_t>(index)] = std::move(fresh);
+            setUpMember(*m_members[static_cast<std::size_t>(index)]);
+            logIn(*m_members[static_cast<std::size_t>(index)]);
+        }
+    }
+
     void PartyMembers::logIn(Member& member) {
         const AccountSession& leader = played().session;
         AccountSession& session = member.bundle->session;
@@ -358,7 +379,8 @@ namespace client {
     }
 
     void PartyMembers::beginLogOut(Member& member, const std::string& reason) {
-        if (const auto leader = member.world->get().teams().leaderOf(member.world->get().ownId())) {
+        const auto leader = member.world->get().teams().leaderOf(member.world->get().ownId());
+        if (leader && member.bundle->connection.isOpen()) { // a dead connection would hold the send until kLeaveWaitMs
             member.bundle->connection.send(protocol::leaveTeamRequest(*leader));
         }
         member.leavingSinceMs = m_nowMs;
@@ -392,6 +414,7 @@ namespace client {
         member.windowLayouts.clear();
         member.heard.clear();
         member.awaySinceMs.reset();
+        member.outOfTeamSinceMs.reset();
         setUpPlayed(played());
         setUpMember(member);
         m_played->scene->screen().setLayoutFilter({});
@@ -518,12 +541,21 @@ namespace client {
         if (event.type == SDL_EVENT_MOUSE_MOTION) {
             m_mouse = core::Point{static_cast<int>(event.motion.x) - origin.x, static_cast<int>(event.motion.y) - origin.y};
         }
+        // the rows are drawn in the world only: elsewhere (the login screen after a lost server) their last places catch nothing
+        const bool rowsShown = m_played->kind == SceneKind::World;
         if ((event.type == SDL_EVENT_MOUSE_BUTTON_DOWN || event.type == SDL_EVENT_MOUSE_BUTTON_UP) && event.button.button == SDL_BUTTON_LEFT) {
             const core::Point point{static_cast<int>(event.button.x) - origin.x, static_cast<int>(event.button.y) - origin.y};
-            const int pressed = event.type == SDL_EVENT_MOUSE_BUTTON_DOWN ? m_panels->memberAt(point) : -1;
+            const int pressed = event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && rowsShown ? m_panels->memberAt(point) : -1;
             const int row = pressed < size() ? pressed : -1;
             if (row >= 0) {
                 m_panelPressed = true;
+                const Member& member = *m_members[static_cast<std::size_t>(row)];
+                if (member.goneReason && !member.leavingSinceMs) {
+                    // a gone member's row has nothing to select: the click clears it away
+                    core::logInfo("party member ", member.account.account, ": row cleared");
+                    remove(row);
+                    return true;
+                }
                 m_selected = m_selected == row ? -1 : row;
                 core::logInfo(
                     "party: ",
@@ -539,7 +571,7 @@ namespace client {
         if ((event.type == SDL_EVENT_MOUSE_BUTTON_DOWN || event.type == SDL_EVENT_MOUSE_BUTTON_UP) && event.button.button == SDL_BUTTON_RIGHT) {
             // right click on a member's status row: make that member the team leader (the group window's appoint, unasked)
             const core::Point point{static_cast<int>(event.button.x) - origin.x, static_cast<int>(event.button.y) - origin.y};
-            const int pressed = event.type == SDL_EVENT_MOUSE_BUTTON_DOWN ? m_panels->memberAt(point) : -1;
+            const int pressed = event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && rowsShown ? m_panels->memberAt(point) : -1;
             const int row = pressed < size() ? pressed : -1;
             if (row >= 0) {
                 m_panelPressed = true;
@@ -755,6 +787,11 @@ namespace client {
             member.bundle->scene->update(nowMs);
             if (member.bundle->scene->nextScene()) {
                 changeScene(member);
+                continue;
+            }
+            if (member.bundle->scene->cutOff()) {
+                // kicked (0), locked, logged in elsewhere, or the server closed: nobody clicks the unseen disconnect form
+                gone(member, member.bundle->kind == SceneKind::Login ? "could not log in" : "disconnected");
                 continue;
             }
             if (member.bundle->kind == SceneKind::Login && !member.bundle->session.relogin) {

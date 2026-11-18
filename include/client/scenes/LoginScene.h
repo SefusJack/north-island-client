@@ -71,6 +71,10 @@ namespace client {
             /// @return The next scene, or nothing while logging in.
             std::optional<SceneKind> nextScene() const override { return m_next; }
 
+            /// @brief Overrides Scene::cutOff: the disconnect form is up (kicked, locked, the connection failed or lost).
+            /// @return True while the form is shown.
+            bool cutOff() const override { return m_disconnect.isOpen(); }
+
         private:
             /// @brief The step of the login flow the scene is in.
             enum class Stage { ChoosingServer, Relogin, Connecting, EnteringAccount, LoggingIn, ChoosingCharacter, CreatingCharacter, EnteringWorld };

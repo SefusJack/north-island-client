@@ -219,8 +219,18 @@ namespace client {
             return pet.visible && (own || display.otherPets) && petsAway.count(pet.ownerId) == 0 && !pet.body.inShallowWater() &&
                    pet.body.cellAttr != kDeepWater;
         };
+        // in a house only the pets of the players in the shown room are drawn
+        const auto sameRoom = [&](std::int32_t ownerId) {
+            for (const MapCharacter& player : players) {
+                if (player.id == ownerId) {
+                    return player.houseRoom == display.houseRoom || ownerId == display.ownId;
+                }
+            }
+            return false;
+        };
         const auto petNameShown = [&](const MapPet& pet) {
-            return !pet.walker && petShown(pet) && (pet.ownerId == display.ownId ? display.ownPetNames : display.otherPetNames);
+            return !pet.walker && petShown(pet) && (!display.houseCells || sameRoom(pet.ownerId)) &&
+                   (pet.ownerId == display.ownId ? display.ownPetNames : display.otherPetNames);
         };
         {
             // how far the map moved on the screen since the last frame of this map (the software renderer can move the shown picture)
@@ -250,14 +260,6 @@ namespace client {
         if (display.houseCells) {
             std::vector<HouseEntry> entries;
             if (showPeople) {
-                const auto sameRoom = [&](std::int32_t ownerId) {
-                    for (const MapCharacter& player : players) {
-                        if (player.id == ownerId) {
-                            return player.houseRoom == display.houseRoom || ownerId == display.ownId;
-                        }
-                    }
-                    return false;
-                };
                 const auto cellOf = [](core::Point feet) {
                     const HouseGrid::Cell cell = HouseGrid::screenToCell(feet);
                     return core::Point{cell.x, cell.y};

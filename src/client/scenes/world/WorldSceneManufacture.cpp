@@ -172,7 +172,7 @@ namespace client {
                 } else {
                     const int each = m_services.compounds.at(m_services.compounds.indexOfProduct(job.productId)).productCount +
                                      FurnitureBonus::extraProducts(m_house.furniture(), m_services.compounds, job.productId, 0);
-                    m_messages.show(" Manufacture " + nameOf(job.productId) + std::to_string(each * job.batches) + " Quantity " + " Finish ", kNoticeMs);
+                    m_messages.show(" Manufacture " + nameOf(job.productId) + " x" + std::to_string(each * job.batches) + " finished", kNoticeMs);
                 }
                 m_makeJobs.release(slot);
                 queueEnds(slot);

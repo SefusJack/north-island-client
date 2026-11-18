@@ -167,7 +167,7 @@ namespace client {
         a.skillSounds.clear();
         a.hitSounds.clear();
         if (skillId == kFlee && m_skill->skillType == kFleeType && !a.isPlayer() && a.kind != 4) { // kind 4: pet
-            context.notice(a.name + "Escape from the combat");
+            context.notice(a.name + " escaped from the combat");
         }
         setUpCaster(context);
         markTargets(context);

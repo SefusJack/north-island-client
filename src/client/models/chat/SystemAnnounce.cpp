@@ -46,7 +46,7 @@ namespace client {
                 return "Congratulations [" + player + "] Used Game Machine: " + *name + " Obtained " + prizeName + times;
             }
             case 4: // 2/15 kind 4: an online draw's prize
-                return "Congratulations [" + player + "Take part in the online draw Obtained " + prizeName + times;
+                return "Congratulations [" + player + "] Took part in the online draw. Obtained " + prizeName + times;
             default: // unknown kind: not announced
                 return {};
         }

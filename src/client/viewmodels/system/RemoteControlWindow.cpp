@@ -311,7 +311,7 @@ namespace client {
             setKeptItem(cell, m_kept[static_cast<std::size_t>(cell)]);
         }
         if (m_versionUpdated) {
-            m_hooks.systemMessage("(System Prompt):Remote control version updated");
+            m_hooks.systemMessage("(System Prompt): Remote control version updated");
             m_versionUpdated = false;
         }
     }

@@ -238,7 +238,7 @@ namespace client {
             }
             // the refusal messages from here to the usableBy switch show for 3000 ms
             if (place == 2 && record->id == kValueBar) {
-                m_messages.show(record->name + "Cannot be put into value bar", 3000);
+                m_messages.show(record->name + " cannot be put into the value bar", 3000);
                 return;
             }
             if (m_poseSlot != 0) {

@@ -130,7 +130,7 @@ namespace client {
                 case 23: // 20/23: u8 points, spell points obtained
                     context.events.onSoundEffect("sound/wav0152.wav");
                     context.events.onNoticeMessage(
-                        std::string(sub == 22 ? "Obtain ability points" : "Obtain spell points") + std::to_string(first) + " Points",
+                        std::string(sub == 22 ? "Obtain ability points " : "Obtain spell points ") + std::to_string(first) + " Points",
                         kShortMs
                     ); // 20/22 ability, 20/23 spell points
                     return true;

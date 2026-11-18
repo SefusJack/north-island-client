@@ -143,7 +143,7 @@ namespace client {
         const auto glass = m_services.items.find(kMagnifyingGlass);
         const std::string name = glass ? glass->name : std::string();
         if (m_glass == 0) {
-            m_messages.show(name + "Not enough , can't search", 1000); // message display time in ms
+            m_messages.show(name + " not enough, can't search", 1000); // message display time in ms
         } else {
             m_hooks.ask("Confirm " + name + " Search for file?", [this] { confirm(); });
         }

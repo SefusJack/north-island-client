@@ -44,7 +44,7 @@ namespace client {
             }
             const auto item = m_services.items.find(m_makeJobs.slot(slot).productId);
             if (item && !item->name.empty()) {
-                m_messages.show("Use sandglass" + item->name, kNoticeMs);
+                m_messages.show("Use sandglass " + item->name, kNoticeMs);
             }
         }
         if (m_sandglass.unused()) {
