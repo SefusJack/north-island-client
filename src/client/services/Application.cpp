@@ -697,10 +697,11 @@ namespace client {
                 }
                 FrameSample sample;
                 SDL_Event event;
-                Scene& steered = shownScene();
-                if (played->kind == SceneKind::World) {
-                    party.coverLeaderHud(played->scene->screen());
+                // a party row clicked last frame swaps the played account here, before any reference to its scene is taken for this frame
+                if (party.applySelection()) {
+                    applyView(*played->scene);
                 }
+                Scene& steered = shownScene();
                 padControls.update(frameStartPrecise, gamepad, device->window(), steered, canvas.origin(), live.controller.hideSeconds);
                 hudReveal.update(
                     frameStartPrecise,
@@ -797,11 +798,11 @@ namespace client {
                     if (!party.started() && played->kind == SceneKind::World) {
                         party.start();
                     }
-                    std::optional<std::reference_wrapper<const WorldScene>> leaderWorld;
+                    std::optional<std::reference_wrapper<const WorldScene>> playedWorld;
                     if (played->kind == SceneKind::World) {
-                        leaderWorld = std::cref(static_cast<const WorldScene&>(*played->scene));
+                        playedWorld = std::cref(static_cast<const WorldScene&>(*played->scene));
                     }
-                    party.update(frameStart, leaderWorld);
+                    party.update(frameStart, playedWorld);
                     if (played->kind == SceneKind::World) {
                         auto& world = static_cast<WorldScene&>(*played->scene);
                         for (const PartyChatLine& line : party.takeChatLines(frameStart)) {

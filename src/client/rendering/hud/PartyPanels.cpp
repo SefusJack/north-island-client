@@ -23,8 +23,7 @@ namespace client {
         constexpr int kDigitStep = 5; // px: x advance per level digit
         constexpr int kDigitPitch = 6; // px: height of one digit row in the digit picture
         const core::Color kCommanding{255, 230, 90, 255}; // yellow outline of the commanding member
-        const core::Color kSelected{120, 200, 255, 255}; // light blue window outline
-        const core::Color kGridBlue{74, 130, 165, 255}; // blue outline of a selected member row
+        const core::Color kWindowTag{120, 200, 255, 255}; // light blue outline of another character's window
         // the member's name and state lines in the chat's and the hints' look: shadowed text
         const gfx::TextStyle kState{{255, 255, 255, 255}, gfx::TextEffect::Shadow, std::nullopt}; // white text with shadow
         const gfx::TextStyle kGone{{255, 120, 120, 255}, gfx::TextEffect::Shadow, std::nullopt}; // red text with shadow
@@ -72,23 +71,6 @@ namespace client {
             }
         }
         return -1;
-    }
-
-    void PartyPanels::drawGrid(gfx::Canvas& canvas, const core::Rect& area) {
-        const auto grid = m_pictures.find("32X32Grid");
-        if (!grid) {
-            return;
-        }
-        const gfx::Picture& picture = m_pictures.picture(*grid);
-        for (int y = 0; y < area.height; y += picture.height()) {
-            for (int x = 0; x < area.width; x += picture.width()) {
-                canvas.drawPicture(
-                    *grid,
-                    {area.x + x, area.y + y},
-                    core::Rect{0, 0, std::min(picture.width(), area.width - x), std::min(picture.height(), area.height - y)}
-                );
-            }
-        }
     }
 
     void PartyPanels::drawRow(gfx::Canvas& canvas, const PartyMemberView& member, core::Point at) {
@@ -157,10 +139,6 @@ namespace client {
             const core::Point at = m_pivot + core::Point{kLeft, kTop + m_rows[index] * kRowHeight};
             const core::Rect
                 area{at.x - 2, at.y - 1, kRowWidth, kRowHeight - 2}; // row box: 2 left and 1 up of the row origin, 2 pixel shorter than the row pitch
-            if (member.selected) {
-                drawGrid(canvas, area);
-                canvas.drawRectOutline(area, kGridBlue, 1);
-            }
             drawRow(canvas, member, at);
             if (member.commanding) {
                 canvas.drawRectOutline(area, kCommanding, 1);
@@ -174,7 +152,7 @@ namespace client {
     }
 
     void PartyPanels::drawWindowTag(gfx::Canvas& canvas, const core::Rect& window, const std::string& name) {
-        canvas.drawRectOutline(window, kSelected, 2); // outline thickness in pixels
+        canvas.drawRectOutline(window, kWindowTag, 2); // outline thickness in pixels
         ui::drawHintBox(canvas, window.position(), name);
     }
 

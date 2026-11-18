@@ -12,8 +12,9 @@
 
 namespace client {
 
-    /// @brief The qol client's party rows: one row per member logged in with the played account, under the own status's gold line.
-    /// @details Drawn as the world view's pet (TRe_MiniPetInfo): the member's chat head facing left where the pet's figure goes, then level, HP and SP bars in the pet's pictures; how far its login has come while it is not in the world. The name shows over the row while the mouse is on it.
+    /// @brief The qol client's party rows: one row per other own character (logged in on this client besides the selected, played one), under the own status's gold line.
+    /// @details A left click on a row makes that character the selected one (PartyMembers::select); a right click offers it the team lead.
+    /// Drawn as the world view's pet (TRe_MiniPetInfo): the member's chat head facing left where the pet's figure goes, then level, HP and SP bars in the pet's pictures; how far its login has come while it is not in the world. The name shows over the row while the mouse is on it.
     class PartyPanels {
         public:
             static constexpr int kLeft = 8; // x of the rows from the HUD origin, px
@@ -58,10 +59,10 @@ namespace client {
             /// @return Member index, -1 for none.
             int memberAt(core::Point point) const;
 
-            /// @brief Draws a member's name in a hint box (like every hint) above one of its windows drawn over the leader's screen, with a frame around it.
+            /// @brief Draws a member's name in a hint box (like every hint) above one of its windows drawn over the selected character's screen, with a frame around it.
             /// @param canvas Target canvas.
             /// @param window Window rectangle.
-            /// @param name Member name.
+            /// @param name The character's name.
             static void drawWindowTag(gfx::Canvas& canvas, const core::Rect& window, const std::string& name);
 
         private:
@@ -75,11 +76,6 @@ namespace client {
             /// @param member The member.
             /// @param at Top-left of the row.
             void drawRow(gfx::Canvas& canvas, const PartyMemberView& member, core::Point at);
-
-            /// @brief Tiles the chat window's dithered grid (32X32Grid) over an area: the selected member's row.
-            /// @param canvas Target canvas.
-            /// @param area Area to fill.
-            void drawGrid(gfx::Canvas& canvas, const core::Rect& area);
 
             gfx::PictureLibrary& m_pictures;
             CharacterRenderer& m_characters;

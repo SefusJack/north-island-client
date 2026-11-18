@@ -56,12 +56,11 @@ namespace client {
         int job = 0;
         std::optional<CharacterLook> look;
         std::string reason;
-        bool inTeam = false;
+        bool inTeam = false; // in the selected character's team
         bool commanding = false;
-        bool selected = false;
     };
 
-    /// @brief A member's chat line for the leader's chat window.
+    /// @brief A whisper or team line another own character heard, for the selected character's chat window.
     struct PartyChatLine {
         int channel = 0;
         std::string line;
@@ -79,16 +78,21 @@ namespace client {
     class Scene;
     class WorldScene;
 
-    /// @brief The qol client's several accounts at once: the played account leads, each member runs the login and world scenes unseen and follows through the server's own team.
-    /// @details Covers team invitations (13/7), manual battle turns shown in the leader's place, member windows over the leader's screen, chat relay, leader swap and log in/out from the group window.
+    /// @brief The qol client's several own characters at once (up to kMostMembers + 1): the selected one is the played account (drawn, steered,
+    /// with the sound and its HUD), the others ("members") run their login and world scenes unseen and show as the party rows.
+    /// @details There is no leader on the client side: team leadership is only the server's (WorldScene::teams()). The first account of
+    /// --accounts is only the one shown at start; a click on a member's row swaps it with the played account (select). A member follows
+    /// from its login: while it is not in a team it is invited by the selected character (13/7) when on its map, until it has been in a team
+    /// and left it. Own characters accept each other's team invitations and lead. Also covers manual battle turns shown in the played
+    /// account's place, the members' windows over the screen, the whisper and team chat relay, the NPC mirror and log in/out from the group window.
     class PartyMembers {
         public:
             static constexpr int kMostMembers = 3; // most members (extra accounts) in the party
 
             /// @brief Sets up the members' accounts (not yet logged in).
-            /// @param played The played account's bundle, which the members share tables and settings of and which a member's replaces when it takes the lead.
+            /// @param played The played account's bundle, which the members share tables and settings of and which a member's swaps with when it is selected.
             /// @param device The open sound device (the played account's).
-            /// @param setUpPlayed What the Application gives the played account's services (message box, screenshots, Video tab); applied again for a member that takes the lead.
+            /// @param setUpPlayed What the Application gives the played account's services (message box, screenshots, Video tab); applied again for a member that is selected.
             /// @param accounts The members' accounts.
             PartyMembers(
                 std::unique_ptr<AccountBundle>& played,
@@ -110,29 +114,31 @@ namespace client {
             /// @return The number of members.
             int size() const { return static_cast<int>(m_members.size()); }
 
-            /// @brief Finds the member whose battle commands are given now, shown and steered in the leader's place.
-            /// @param leaderDone The leader is in a fight and its own fighters have their commands.
-            /// @return The member's scene, or nothing for the leader.
-            std::optional<std::reference_wrapper<Scene>> commandingScene(bool leaderDone);
+            /// @brief Finds the member whose battle commands are given now, shown and steered in the played account's place.
+            /// @param playedDone The played account is in a fight and its own fighters have their commands.
+            /// @return The member's scene, or nothing for the played account.
+            std::optional<std::reference_wrapper<Scene>> commandingScene(bool playedDone);
 
-            /// @brief Gives the member whose menus and shortcuts stand in for the leader's.
-            /// @return The member's row, or -1 when the leader has them.
-            int selected() const { return m_selected; }
+            /// @brief Asks to make a member the played account (the selected character); the swap waits for applySelection.
+            /// @details Only a member in the world (not logging out) while the played account is in the world can be selected.
+            /// @param index The member's row.
+            void select(int index);
 
-            /// @brief Takes the members' chat lines heard a moment ago (the leader's own copy of a shared line has come by then), each once.
+            /// @brief Swaps in the member asked for by select (a row click): it becomes the played account and the account left takes its
+            /// row. Call it where no Scene reference of the played account is held (the top of a frame).
+            /// @return True when the played account changed (its view and HUD scale want setting again).
+            bool applySelection();
+
+            /// @brief Takes the whispers and team lines the members heard a moment ago (the played account's own copy of a shared line has come by then), each once.
             /// @param nowMs The current time in milliseconds.
-            /// @return The lines for the leader's chat window.
+            /// @return The lines for the played account's chat window.
             std::vector<PartyChatLine> takeChatLines(std::uint64_t nowMs);
 
             /// @brief Takes the members' messages since the last call, for the played account's boxes (PlayerMessages::showGrouped).
             /// @return The messages.
             std::vector<PartyMessage> takeMessages() { return std::exchange(m_messages, {}); }
 
-            /// @brief Leaves the leader's HUD layouts out of its screen (drawing and mouse) while a member is selected, whose own stand in.
-            /// @param leader The leader's screen.
-            void coverLeaderHud(ui::Screen& leader) const;
-
-            /// @brief Draws the members' windows and popups over the leader's screen, each tagged with the member's name.
+            /// @brief Draws the members' windows and popups over the played account's screen, each tagged with the member's name.
             /// @param canvas The canvas, at the game screen's origin.
             /// @param nowMs The current time in milliseconds.
             /// @param hudScale The HUD scale.
@@ -141,10 +147,10 @@ namespace client {
             /// @brief Draws the members' rows under the own status (PartyPanels).
             /// @param canvas The canvas, at the game screen's origin.
             /// @param hudScale The HUD scale.
-            /// @param leaderWorld The played account's world scene, whose battle's own panels show the members fighting in it.
-            void drawPanels(gfx::Canvas& canvas, float hudScale, const WorldScene& leaderWorld);
+            /// @param playedWorld The played account's world scene, whose battle's own panels show the members fighting in it.
+            void drawPanels(gfx::Canvas& canvas, float hudScale, const WorldScene& playedWorld);
 
-            /// @brief Handles an input event for the members: a click on a member's row, the mouse over a member's window, the selected member's Ctrl shortcuts and Escape, typing into a member's text box.
+            /// @brief Handles an input event for the members: a click on a member's row (select), a right click (offer it the lead), the mouse over a member's window, typing into a member's text box.
             /// @param event The SDL event.
             /// @param origin The game screen's place in the window.
             /// @param hudScale The HUD scale.
@@ -156,14 +162,14 @@ namespace client {
             /// @return True once start() has run.
             bool started() const { return m_started; }
 
-            /// @brief Logs every member in to the server the leader is on (once the leader is in the world); one added later logs in at once.
+            /// @brief Logs every member in to the server the played account is on (once it is in the world); one added later logs in at once.
             void start();
 
             /// @brief Logs the gone members (cut off from the server, could not log in) in again once the played account enters the world anew.
             /// @details A gone member on the played account's own account now is dropped instead: logging it in would push the played account off.
             void logInGone();
 
-            /// @brief Adds another member (the group window's Log in); rows of members that could not log in go.
+            /// @brief Adds another member (the group window's Log in), refused once kMostMembers are logged in; rows of members that could not log in go.
             /// @param account The account to log in.
             /// @return Empty, or why the account cannot be added.
             std::string add(PartyAccount account);
@@ -173,14 +179,14 @@ namespace client {
             /// @return True when a member plays it.
             bool isMember(std::int32_t playerId) const;
 
-            /// @brief Makes that member leave the leader's team and log out; its row goes once the leave has been sent.
+            /// @brief Makes that member leave its team and log out; its row goes once the leave has been sent.
             /// @param playerId The member's character id.
             void logOut(std::int32_t playerId);
 
-            /// @brief Updates every member once a beat.
+            /// @brief Updates every member once a beat: its scenes, its following (team invites) and its view.
             /// @param nowMs The current time in milliseconds.
-            /// @param leaderWorld The played account's world scene (nothing: not in the world).
-            void update(std::uint64_t nowMs, std::optional<std::reference_wrapper<const WorldScene>> leaderWorld);
+            /// @param playedWorld The played account's world scene (nothing: not in the world).
+            void update(std::uint64_t nowMs, std::optional<std::reference_wrapper<const WorldScene>> playedWorld);
 
             /// @brief Moves the members' scenes before every frame.
             /// @param nowMs The current time in milliseconds.
@@ -197,14 +203,20 @@ namespace client {
             std::vector<PartyMemberView> views() const;
 
         private:
-            static constexpr int kMostInvites = 3; // most team invites a member sends before it stops asking
+            static constexpr int kMostInvites = 3; // most team invites a member gets before the selected character stops asking
             static constexpr std::uint64_t kInviteGapMs = 5000; // ms between two invites
-            static constexpr std::uint64_t kChatDelayMs = 1500; // ms a chat line a member heard waits before it is relayed to the leader
+            static constexpr std::uint64_t kChatDelayMs = 1500; // ms a chat line a member heard waits before it is relayed to the played account
             static constexpr std::uint64_t kChatRepeatMs = 5000; // ms a sent line is remembered against repeats
+            static constexpr int kWhisperChannel = 3; // chat channel 3: whisper
+            static constexpr int kTeamChannel = 5; // chat channel 5: team
 
             static constexpr std::uint64_t kLeaveWaitMs = 2000; // ms a logging-out member waits for its sends to finish before it is removed
-            static constexpr std::uint64_t kAwayMs = 10000; // ms a member may stay on another map than the leader before it is logged out
-            static constexpr std::uint64_t kOutOfTeamMs = 25000; // ms a member on the leader's map may stay out of the leader's team (re-invited meanwhile) before it is logged out
+
+            /// @brief A character's following of the selected one, which goes with the character when it is swapped.
+            struct Following {
+                bool on = true; // still invited to the selected character's team when out of a team (on at login)
+                bool wasInTeam = false; // has been in a team since it entered the world: leaving it turns the following off
+            };
 
             struct Member;
 
@@ -224,18 +236,18 @@ namespace client {
             /// @param member The member.
             void setUpMember(Member& member);
 
-            /// @brief Makes that member the played account and the played account that member (the sound and the hooks change hands).
+            /// @brief Makes that member the played account and the played account that member, in its row (the sound, the hooks and the following change hands).
             /// @param index The member's row.
-            void takeLead(int index);
+            void swapPlayed(int index);
 
-            /// @brief Starts a member's login scene on the leader's server.
+            /// @brief Tells whether a character is one of this client's own (the played account or a member in the world, not logging out).
+            /// @param playerId The character's id.
+            /// @return True for an own character.
+            bool isOwnCharacter(std::int32_t playerId) const;
+
+            /// @brief Starts a member's login scene on the played account's server.
             /// @param member The member.
             void logIn(Member& member);
-
-            /// @brief Counts the places of the leader's team taken by others than the members (the played account under another leader, other players).
-            /// @param leaderWorld The played account's world scene.
-            /// @return The number of such places.
-            int otherTeammates(const WorldScene& leaderWorld) const;
 
             /// @brief Sends the member's leave of the team, after which it is removed.
             /// @param member The member.
@@ -250,21 +262,20 @@ namespace client {
             /// @param member The member.
             void changeScene(Member& member);
 
-            /// @brief Watches that a member on the leader's map is in the leader's team: it leaves another team, gets new
-            /// invites (inviteToTeam) and is logged out after kOutOfTeamMs still outside. Battles pause the watch.
-            /// @param member The member, in the world.
-            /// @param leaderWorld The leader's world scene.
-            /// @param leaderMapId The leader's map.
-            /// @param nowMs The current time, ms.
-            void keepInTeam(Member& member, const WorldScene& leaderWorld, int leaderMapId, std::uint64_t nowMs);
+            /// @brief Follows a character's team: in a team it is marked as having been in one; out of it after that, its following goes off.
+            /// @param following The character's following.
+            /// @param world The character's world scene, in the world.
+            /// @param name The account, for the log.
+            static void watchTeam(Following& following, const WorldScene& world, const std::string& name);
 
-            /// @brief Sends the leader's team invitation to a member, a few tries and kInviteGapMs apart.
+            /// @brief Sends the selected character's team invitation to a following member out of a team on its map, a few tries
+            /// kInviteGapMs apart; only while the selected character leads a team with room or is in none.
             /// @param member The member to invite.
-            /// @param leaderWorld The played account's world scene.
+            /// @param playedWorld The played account's world scene.
             /// @param nowMs The current time in milliseconds.
-            void inviteToTeam(Member& member, const WorldScene& leaderWorld, std::uint64_t nowMs);
+            void inviteToTeam(Member& member, const WorldScene& playedWorld, std::uint64_t nowMs);
 
-            /// @brief Runs a call on the member's screen with only its windows, popups (and, selected, its menus) kept.
+            /// @brief Runs a call on the member's screen with only its windows and popups kept (its HUD left out).
             /// @tparam Call The callable type; it takes the member's ui::Screen.
             /// @param index The member's row.
             /// @param hudScale The HUD scale.
@@ -278,7 +289,7 @@ namespace client {
             /// @return The member's row, or -1 for none.
             int memberAt(core::Point point, float hudScale);
 
-            /// @brief Runs a call on each member in the world on the leader's map, while the NPC mirror is on.
+            /// @brief Runs a call on each member in the world on the played account's map and in its team, while the NPC mirror is on.
             /// @tparam Call The callable type; it takes the Member and its WorldScene.
             /// @param call What to run.
             template <typename Call>
@@ -296,11 +307,11 @@ namespace client {
             std::vector<std::unique_ptr<Member>> m_members;
             bool m_started = false;
             std::uint64_t m_nowMs = 0;
-            std::int32_t m_teamLeaderId = 0;
-            int m_otherTeammates = 0;
+            Following m_playedFollowing;
+            const Scene* m_playedScene = nullptr; // the played account's scene at the last update: a new one resets its following's team watch
             int m_commanding = -1;
             bool m_mirrorNpcs = false;
-            int m_selected = -1;
+            int m_pendingSelect = -1; // row asked for by select, swapped in by applySelection
             std::unique_ptr<PartyPanels> m_panels;
             std::vector<PartyMessage> m_messages;
             bool m_panelPressed = false;
@@ -309,7 +320,7 @@ namespace client {
             int m_keyboardOwner = -1;
             std::vector<SDL_Keycode> m_routedKeys;
 
-            /// @brief A chat line already handed to the leader, and when.
+            /// @brief A chat line already handed to the played account, and when.
             struct SentLine {
                 int channel;
                 std::string line;

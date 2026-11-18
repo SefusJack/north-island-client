@@ -68,20 +68,20 @@ namespace client {
         std::vector<std::string> renderDrivers;
         std::string rendererInUse;
         std::function<core::Size()> desktopSize = [] { return core::Size{}; };
-        std::function<bool(std::int32_t inviterId)> joinsTeamOf = [](std::int32_t) { return false; };
-        std::function<bool(std::int32_t leaderId)> takesLeadFrom = [](std::int32_t) { return false; };
-        std::function<void(int channel, const std::string& line, std::int32_t senderId)> chatHeard;
-        std::function<bool(int typedChannel, const std::string& text)> partyChat;
+        std::function<bool(std::int32_t inviterId)> joinsTeamOf = [](std::int32_t) { return false; }; // the invite is from another own character of the qol client: accepted unasked
+        std::function<bool(std::int32_t leaderId)> takesLeadFrom = [](std::int32_t) { return false; }; // the lead is offered by another own character: accepted unasked
+        std::function<void(int channel, const std::string& line, std::int32_t senderId)> chatHeard; // a member heard a chat line (its whispers and team lines go to the selected character's chat)
+        std::function<bool(int typedChannel, const std::string& text)> partyChat; // no longer set (the selected character is played and says its own lines); kept while WorldScene::sendChat asks it
         std::function<std::string(const std::string& account, const std::string& password, int slot)> partyLogIn;
-        std::function<bool(std::int32_t playerId)> isPartyMember;
+        std::function<bool(std::int32_t playerId)> isPartyMember; // no longer set by PartyMembers; goes once the group window stops asking it
         std::function<void(std::int32_t playerId)> partyLogOut;
         std::function<void(bool centre, const std::string& text, int durationMs)> partyMessage;
-        std::function<bool()> partyMirrorsNpcs; // the members follow the leader's NPC talk and doors (qol)
+        std::function<bool()> partyMirrorsNpcs; // the own characters in the selected character's team on its map follow its NPC talk and doors (qol)
         std::function<void(bool on)> setPartyMirrorsNpcs;
-        std::function<void(PartyTrigger trigger, int index)> partyEventStarted; // the leader started an NPC's or a door's event
-        std::function<void(int dataId, int code)> partyEventAnswered; // the leader answered an event dialog
-        std::function<void()> partyEventEnded; // the leader's event ended
-        bool unseenPartyMember = false; // a party member's account, played without its own screen (qol)
+        std::function<void(PartyTrigger trigger, int index)> partyEventStarted; // the selected character started an NPC's or a door's event
+        std::function<void(int dataId, int code)> partyEventAnswered; // the selected character answered an event dialog
+        std::function<void()> partyEventEnded; // the selected character's event ended
+        bool unseenPartyMember = false; // an own character other than the selected one, played without its own screen (qol); flips on a swap
         bool serverSorts = false;
         std::array<bool, 4> gameGroupsOpen = {true, false, false, false}; // which groups of the settings Game tab are open, until the game closes
         std::array<bool, 5> videoGroupsOpen = {true, false, false, false, false}; // which groups of the settings Video tab are open, until the game closes
