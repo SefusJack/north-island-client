@@ -708,10 +708,22 @@ namespace client {
         }
         const std::int32_t playedId = playedWorld.ownId();
         const Teams& teams = playedWorld.teams();
-        if (teams.isMember(playedId) || teams.members(playedId).size() >= Teams::kMostMembers) {
-            return; // the selected character follows another leader, or its team is full
+        // the selected character's team is joined: the invitation comes from its leader, the selected character itself or another own one
+        const std::int32_t leaderId = teams.leaderOf(playedId).value_or(playedId);
+        if (teams.members(leaderId).size() >= Teams::kMostMembers) {
+            return; // the team is full
         }
-        played().connection.send(protocol::inviteRequest(memberId));
+        net::GameConnection* inviter = &played().connection;
+        if (leaderId != playedId) {
+            const auto leader = std::find_if(m_members.begin(), m_members.end(), [leaderId](const auto& other) {
+                return other->world && !other->leavingSinceMs && other->world->get().inWorld() && other->world->get().ownId() == leaderId;
+            });
+            if (leader == m_members.end()) {
+                return; // led by someone else's character
+            }
+            inviter = &(*leader)->bundle->connection;
+        }
+        inviter->send(protocol::inviteRequest(memberId));
         ++member.invites;
         member.invitedMs = nowMs;
         core::logInfo("party member ", member.account.account, ": invited to the selected character's team (", member.invites, ")");

@@ -82,7 +82,7 @@ namespace client {
     /// with the sound and its HUD), the others ("members") run their login and world scenes unseen and show as the party rows.
     /// @details There is no leader on the client side: team leadership is only the server's (WorldScene::teams()). The first account of
     /// --accounts is only the one shown at start; a click on a member's row swaps it with the played account (select). A member follows
-    /// from its login: while it is not in a team it is invited by the selected character (13/7) when on its map, until it has been in a team
+    /// from its login: while it is not in a team it is invited into the selected character's team (13/7, by that team's leader when an own character) when on its map, until it has been in a team
     /// and left it. Own characters accept each other's team invitations and lead. Also covers manual battle turns shown in the played
     /// account's place, the members' windows over the screen, the whisper and team chat relay, the NPC mirror and log in/out from the group window.
     class PartyMembers {
@@ -273,7 +273,8 @@ namespace client {
             static void watchTeam(Following& following, const WorldScene& world, const std::string& name);
 
             /// @brief Sends the selected character's team invitation to a following member out of a team on its map, a few tries
-            /// kInviteGapMs apart; only while the selected character leads a team with room or is in none.
+            /// kInviteGapMs apart, while that team has room: from the selected character when it leads or is in none, from the leader's
+            /// connection when another own character leads it; never when someone else's character leads it.
             /// @param member The member to invite.
             /// @param playedWorld The played account's world scene.
             /// @param nowMs The current time in milliseconds.
