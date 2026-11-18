@@ -1333,6 +1333,7 @@ namespace client {
         m_itemWindow.setBagRequests(m_bagRequests);
         m_itemWindow.setItemBagDrop([this](const ui::EventArgs& args) { m_itemBag.bagItemDropped(args); });
         m_itemWindow.setStoreroomDrop([this](const ui::EventArgs& args) { m_storeroom.bagItemDropped(args); });
+        m_itemWindow.setQuickMove([this](int slot) { return m_storeroom.quickPut(slot); });
         m_itemWindow.setAutoCombat([this] { return m_remote.isOn() && m_remote.settings().ticks[1]; });
         m_battleMain.setAutoFight([this] { return m_remote.isOn() && m_remote.settings().ticks[1]; });
         m_battleMain.setToWindow([this](core::Point point) { return isViewZoomed() ? ViewZoom::toWindow(point, m_camera.view(), m_services.view) : point; });

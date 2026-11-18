@@ -55,7 +55,15 @@ namespace client {
             /// @param fromSlot Source bag place.
             /// @param count How many to move.
             /// @param toSlot Destination bag place.
-            void moveItem(int fromSlot, int count, int toSlot);
+            /// @return True when the move was sent.
+            bool moveItem(int fromSlot, int count, int toSlot);
+
+            /// @brief Swaps two bag places holding different things of the same size, the modern way's click with a whole stack
+            /// on another thing (the server swaps a whole stack moved onto another item).
+            /// @param fromSlot The carried stack's place.
+            /// @param toSlot The other thing's place.
+            /// @return True when the swap was asked for; false when it may not be (locked, in use, other sizes, a potion and its Bottle).
+            bool swapItems(int fromSlot, int toSlot);
 
             /// @brief Drops a count of the items of a place on the ground, with the game's refusals (the house maps' rules are the house editor's).
             /// @details Original: RequestDropBagItem.

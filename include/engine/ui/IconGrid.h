@@ -57,6 +57,35 @@ namespace ui {
                 return cell != m_cells.end() && cell->second.picture.isValid();
             }
 
+            /// @brief How many things a cell holds.
+            /// @param index The cell number.
+            /// @return Its count (1 for a thing with none shown); 0 for an empty cell.
+            int countAt(int index) const {
+                const auto cell = m_cells.find(index);
+                return cell == m_cells.end() || !cell->second.picture.isValid() ? 0 : cell->second.count.value_or(1);
+            }
+
+            /// @brief Whether a cell shows the same thing as a drag (the same picture), so what is carried may join it.
+            /// @param index The cell number.
+            /// @param drag The drag.
+            /// @return True when it does.
+            bool holdsSame(int index, const DragItem& drag) const {
+                const auto cell = m_cells.find(index);
+                return cell != m_cells.end() && cell->second.picture.isValid() && cell->second.picture == drag.picture && cell->second.source == drag.source;
+            }
+
+            /// @brief Raises QuickMove for a cell (a Shift click the modern way), when the layout gave it a handler.
+            /// @param context The UI context.
+            /// @param index The cell number.
+            /// @return True when the grid has a QuickMove handler and a thing in that cell.
+            bool quickMove(UiContext& context, int index) const {
+                if (!hasHandler("QuickMove") || !holdsIcon(index)) {
+                    return false;
+                }
+                raise(context, "QuickMove", index);
+                return true;
+            }
+
             /// @brief Whether the grid's things can be dragged (the Draggable attribute).
             /// @return True when draggable.
             bool isDraggable() const { return m_draggable; }

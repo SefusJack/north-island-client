@@ -88,6 +88,12 @@ namespace client {
             /// @details Original: Se_EquipUI HandleGridItemDrop.
             void bagItemDropped(const ui::EventArgs& args);
 
+            /// @brief Sends a bag stack in at once, the modern way's Shift click: it tops up stacks of the same thing, then takes a free
+            /// cell; what does not fit stays in the bag.
+            /// @param bagSlot The bag place.
+            /// @return True when the Storeroom is open and took the click (even when nothing fits).
+            bool quickPut(int bagSlot);
+
             /// @brief Redraws the cells from the item copy.
             /// @details Original: RefreshGarageItems.
             void refresh();
@@ -152,6 +158,16 @@ namespace client {
             /// @brief Takes up half of a Storeroom stack the modern way, to be put down by a click.
             /// @param cell Storeroom cell 1..50.
             void rightClickCell(int cell);
+
+            /// @brief Takes a Storeroom stack to the bag at once, the modern way's Shift click: it tops up stacks of the same thing,
+            /// then takes a free place; what does not fit stays.
+            /// @param cell Storeroom cell 1..50.
+            void quickTake(int cell);
+
+            /// @brief Tells whether a bag place's thing may go into the Storeroom, saying why not when it may not.
+            /// @param bagSlot The bag place.
+            /// @return True when it may.
+            bool storable(int bagSlot);
 
             /// @brief Closes the form when the piece is in another room than the player.
             /// @return True when the form went and the drop is lost.

@@ -40,14 +40,14 @@ namespace client {
           m_countBox(countBox),
           m_hooks(std::move(hooks)) {}
 
-    void BagRequests::moveItem(int fromSlot, int count, int toSlot) {
+    bool BagRequests::moveItem(int fromSlot, int count, int toSlot) {
         if (const auto notice = m_marks.lockNotice(fromSlot, 0)) {
             m_messages.show(notice->text, notice->ms);
-            return;
+            return false;
         }
         if (!m_marks.isAvailable(fromSlot)) {
             m_messages.show("Unable to operate when the item is locked", kLongMs);
-            return;
+            return false;
         }
         const auto from = m_services.items.find(m_bag.bagItem(fromSlot).itemId);
         const auto to = m_services.items.find(m_bag.bagItem(toSlot).itemId);
@@ -58,12 +58,48 @@ namespace client {
         if (pour) {
             if (m_hooks.bottlePool(toKind) >= kMostBottleFill) {
                 m_messages.show("The bottle is full", kLongMs);
-                return;
+                return false;
             }
         } else if (m_bag.fitCount(toSlot, m_bag.bagItem(fromSlot).itemId, count, fromSlot) != count) {
-            return;
+            return false;
         }
         m_services.connection.send(protocol::moveItemRequest(fromSlot, count, toSlot));
+        return true;
+    }
+
+    bool BagRequests::swapItems(int fromSlot, int toSlot) {
+        const protocol::ItemInstance& from = m_bag.bagItem(fromSlot);
+        const protocol::ItemInstance& to = m_bag.bagItem(toSlot);
+        if (from.empty() || to.empty() || from.itemId == to.itemId || fromSlot == toSlot) {
+            return false;
+        }
+        for (const int slot : {fromSlot, toSlot}) {
+            if (const auto notice = m_marks.lockNotice(slot, 0)) {
+                m_messages.show(notice->text, notice->ms);
+                return false;
+            }
+            if (!m_marks.isAvailable(slot) || m_marks.vehicleState(slot) != 0) {
+                m_messages.show("Unable to operate when the item is locked", kLongMs);
+                return false;
+            }
+        }
+        const auto fromRecord = m_services.items.find(from.itemId);
+        const auto toRecord = m_services.items.find(to.itemId);
+        if (!fromRecord || !toRecord) {
+            return false;
+        }
+        const int fromKind = bottleKind(*fromRecord);
+        const int toKind = bottleKind(*toRecord);
+        if ((fromKind == 1 && toKind == 3) || (fromKind == 2 && toKind == 4)) {
+            return false; // a potion on its Bottle pours, it is no swap
+        }
+        const core::Size fromSize = m_bag.cellsOf(from.itemId);
+        const core::Size toSize = m_bag.cellsOf(to.itemId);
+        if (fromSize.width != toSize.width || fromSize.height != toSize.height) {
+            return false; // things of other sizes would overlap others once swapped
+        }
+        m_services.connection.send(protocol::moveItemRequest(fromSlot, from.count, toSlot));
+        return true;
     }
 
     void BagRequests::dropItem(int slot, int count) {

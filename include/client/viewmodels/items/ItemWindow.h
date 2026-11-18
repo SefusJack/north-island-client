@@ -161,6 +161,10 @@ namespace client {
             /// @param drop Drop handler.
             void setStoreroomDrop(std::function<void(const ui::EventArgs&)> drop) { m_dropOnStoreroom = std::move(drop); }
 
+            /// @brief Sets where a Shift click sends a bag stack the modern way (an open Storeroom).
+            /// @param quickMove Handler given the bag place; it returns false when nothing is open to take it.
+            void setQuickMove(std::function<bool(int slot)> quickMove) { m_quickMove = std::move(quickMove); }
+
             /// @brief Gives the window the bag move/drop requests (questions and refusals).
             /// @param requests Request helper; the window asks how many with Ctrl held.
             void setBagRequests(BagRequests& requests) { m_requests = requests; }
@@ -466,6 +470,7 @@ namespace client {
             std::function<bool()> m_autoCombat;
             std::function<void(const ui::EventArgs&)> m_dropOnItemBag;
             std::function<void(const ui::EventArgs&)> m_dropOnStoreroom;
+            std::function<bool(int)> m_quickMove;
             InventorySorter m_sorter;
     };
 

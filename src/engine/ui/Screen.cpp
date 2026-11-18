@@ -620,8 +620,32 @@ namespace ui {
     void Screen::focus(const std::string& name) { m_context.focusedId = findByName(name).id(); }
 
     void Screen::mouseMove(core::Point position, bool leftHeld) {
+        const core::Point previous = m_mouse;
         m_mouse = position;
         refreshHover();
+        if (m_context.drag && ((m_spreading && leftHeld) || m_rightHeld)) {
+            // a quick sweep jumps many px between two mouse events: every cell on the way counts, not only where it lands
+            constexpr int kStepPx = 4; // px between the points tried along the way (under the smallest cell gap)
+            const int dx = position.x - previous.x;
+            const int dy = position.y - previous.y;
+            const int steps = std::max(1, std::max(std::abs(dx), std::abs(dy)) / kStepPx);
+            for (int step = 1; step <= steps && m_context.drag; ++step) {
+                const core::Point at{previous.x + dx * step / steps, previous.y + dy * step / steps};
+                const auto cell = spreadCellAt(at);
+                if (!cell) {
+                    continue;
+                }
+                if (m_spreading && leftHeld) {
+                    // the left button held while carrying: each new cell passed takes a share, no more cells than things carried
+                    if (std::find(m_spreadCells.begin(), m_spreadCells.end(), *cell) == m_spreadCells.end() &&
+                        static_cast<int>(m_spreadCells.size()) < carried()) {
+                        m_spreadCells.push_back(*cell);
+                    }
+                } else if (std::find(m_rightCells.begin(), m_rightCells.end(), *cell) == m_rightCells.end()) {
+                    putOneDown(at); // the right button held while carrying: each new cell passed gets one
+                }
+            }
+        }
         if (leftHeld && m_capturedId != 0) {
             if (auto captured = locate(m_capturedId)) {
                 captured->element.get().onMouseDrag(m_context, localMouse(*captured, position));
@@ -643,37 +667,304 @@ namespace ui {
         }
     }
 
-    void Screen::mouseDown(core::Point position, MouseButton button, int clicks, bool ctrl) {
+    const IconGrid* Screen::modernGrid(int id) {
+        const auto found = locate(id);
+        const auto* grid = found ? dynamic_cast<const IconGrid*>(&found->element.get()) : nullptr;
+        return grid && std::find(m_modernDragGrids.begin(), m_modernDragGrids.end(), grid->name()) != m_modernDragGrids.end() ? grid : nullptr;
+    }
+
+    int Screen::actualCount(int gridId, int index) {
+        const IconGrid* grid = modernGrid(gridId);
+        return grid ? grid->countAt(index) : 0;
+    }
+
+    int Screen::unanswered(const PendingMove& move) {
+        return std::max(0, move.before + move.amount - actualCount(move.gridId, move.index));
+    }
+
+    int Screen::pendingInto(int gridId, int index) {
+        int sum = 0;
+        for (const PendingMove& move : m_pending) {
+            if (move.gridId == gridId && move.index == index) {
+                sum += unanswered(move);
+            }
+        }
+        return sum;
+    }
+
+    int Screen::pendingOutOf(int gridId, int index) {
+        int sum = 0;
+        for (const PendingMove& move : m_pending) {
+            if (move.fromGridId == gridId && move.fromIndex == index) {
+                sum += unanswered(move);
+            }
+        }
+        return sum;
+    }
+
+    void Screen::notePlaced(const DragItem& drag, int gridId, int index) {
+        const int placed = m_placed;
+        m_placed = 0;
+        if (placed <= 0 || modernGrid(gridId) == nullptr || (gridId == drag.sourceId && index == drag.sourceIndex)) {
+            return;
+        }
+        // shown at once; the server's answer takes its place when it comes
+        PendingMove move;
+        move.gridId = gridId;
+        move.index = index;
+        move.picture = drag.picture;
+        move.source = drag.source;
+        move.before = actualCount(gridId, index) + pendingInto(gridId, index);
+        move.amount = placed;
+        move.fromGridId = drag.sourceId;
+        move.fromIndex = drag.sourceIndex;
+        m_pending.push_back(move);
+    }
+
+    int Screen::carried() {
+        if (!m_context.drag || modernGrid(m_context.drag->sourceId) == nullptr) {
+            return 0;
+        }
+        const int stack = actualCount(m_context.drag->sourceId, m_context.drag->sourceIndex) - pendingOutOf(m_context.drag->sourceId, m_context.drag->sourceIndex);
+        return std::max(0, m_context.drag->count > 0 ? std::min(m_context.drag->count, stack) : stack);
+    }
+
+    std::optional<std::pair<int, int>> Screen::spreadCellAt(core::Point position) {
+        if (!m_context.drag) {
+            return std::nullopt;
+        }
+        const int hit = hitAt(position);
+        const auto target = locate(hit);
+        const IconGrid* grid = target ? modernGrid(hit) : nullptr;
+        if (grid == nullptr) {
+            return std::nullopt;
+        }
+        const int index = grid->dropIndexAt(localMouse(*target, position));
+        if (index <= 0) {
+            return std::nullopt;
+        }
+        const bool own = grid->id() == m_context.drag->sourceId && index == m_context.drag->sourceIndex;
+        const bool pendingThere = pendingInto(grid->id(), index) > 0;
+        if (!own && (grid->holdsIcon(index) || pendingThere)) {
+            const bool same = grid->holdsIcon(index) ? grid->holdsSame(index, *m_context.drag) : true;
+            const int shown = grid->countAt(index) + pendingInto(grid->id(), index);
+            if (!same || (m_modernStackLimit > 0 && shown >= m_modernStackLimit)) {
+                return std::nullopt; // another thing, or a full stack
+            }
+        }
+        return std::make_pair(grid->id(), index);
+    }
+
+    void Screen::putOneDown(core::Point position) {
+        const auto cell = spreadCellAt(position);
+        if (!cell || carried() <= 0) {
+            return;
+        }
+        m_rightCells.push_back(*cell);
+        const DragItem drag = *m_context.drag;
+        const int left = carried() - 1;
+        if (cell->first != drag.sourceId || cell->second != drag.sourceIndex) {
+            const auto source = locate(drag.sourceId);
+            const auto target = locate(cell->first);
+            if (!source || !target) {
+                return;
+            }
+            m_placed = 0;
+            m_context.dropPartial = true;
+            m_context.dropCarried = drag.count;
+            source->element.get().onDropped(m_context, drag.sourceIndex, std::cref(target->element.get()), cell->second, position, drag.grab);
+            m_context.dropPartial = false;
+            m_context.dropCarried = 0;
+            if (m_placed <= 0) {
+                return; // refused: nothing left the mouse
+            }
+            notePlaced(drag, cell->first, cell->second);
+        } // one put back in its own cell only leaves it there
+        if (!m_context.drag) {
+            return;
+        }
+        if (left <= 0) {
+            m_context.drag.reset(); // the last one carried is down
+        } else {
+            m_context.drag->count = left;
+        }
+    }
+
+    void Screen::finishSpread(core::Point position) {
+        m_spreading = false;
+        const std::vector<std::pair<int, int>> cells = std::move(m_spreadCells);
+        m_spreadCells.clear();
+        if (cells.size() <= 1) {
+            dropDragged(position);
+            return;
+        }
+        const DragItem drag = *m_context.drag;
+        const int total = carried();
+        const int cellCount = static_cast<int>(cells.size());
+        const int share = total / cellCount;
+        int keep = total - share * cellCount; // what does not share out evenly stays carried
+        m_context.drag.reset();
+        const auto source = locate(drag.sourceId);
+        if (!source || share <= 0) {
+            return;
+        }
+        for (const auto& [gridId, index] : cells) {
+            if (gridId == drag.sourceId && index == drag.sourceIndex) {
+                continue; // the source cell's share stays where it is
+            }
+            const auto target = locate(gridId);
+            if (!target) {
+                keep += share;
+                continue;
+            }
+            m_placed = 0;
+            m_context.dropCarried = share;
+            source->element.get().onDropped(m_context, drag.sourceIndex, std::cref(target->element.get()), index, position, drag.grab);
+            const int placed = std::min(m_placed, share);
+            keep += share - placed; // what a cell did not take stays carried
+            m_placed = placed;
+            notePlaced(drag, gridId, index);
+        }
+        m_context.dropCarried = 0;
+        m_keepCarry.reset();
+        if (keep > 0) {
+            DragItem kept = drag;
+            kept.sticky = true;
+            kept.fromClick = false;
+            kept.count = keep;
+            m_context.drag = kept;
+        }
+    }
+
+    void Screen::buildPreviews(std::uint64_t nowMs) {
+        m_previews.clear();
+        // what the server has answered, or never will (refused, 3 s on), shows as it is
+        constexpr std::uint64_t kPendingMs = 3000; // ms a move shown before the server's answer is kept
+        for (PendingMove& move : m_pending) {
+            if (move.atMs == 0) {
+                move.atMs = nowMs;
+            }
+        }
+        m_pending.erase(
+            std::remove_if(
+                m_pending.begin(), m_pending.end(),
+                [&](const PendingMove& move) { return modernGrid(move.gridId) == nullptr || unanswered(move) == 0 || nowMs - move.atMs > kPendingMs; }
+            ),
+            m_pending.end()
+        );
+        std::map<std::pair<int, int>, int> change; // what each cell shows more (or less) than it holds
+        std::map<std::pair<int, int>, std::pair<gfx::PictureId, core::Rect>> looks; // the picture of what goes into an empty cell
+        for (const PendingMove& move : m_pending) {
+            const int left = unanswered(move);
+            change[{move.gridId, move.index}] += left;
+            change[{move.fromGridId, move.fromIndex}] -= left;
+            looks[{move.gridId, move.index}] = {move.picture, move.source};
+        }
+        if (m_context.drag && modernGrid(m_context.drag->sourceId) != nullptr) {
+            const DragItem& drag = *m_context.drag;
+            const int total = carried();
+            change[{drag.sourceId, drag.sourceIndex}] -= total; // what is carried has left its cell
+            if (m_spreading && m_spreadCells.size() >= 2) {
+                // a left button spread shows each cell's share while the button is held
+                const int share = total / static_cast<int>(m_spreadCells.size());
+                for (const auto& cell : m_spreadCells) {
+                    change[cell] += share;
+                    looks[cell] = {drag.picture, drag.source};
+                }
+            }
+        }
+        for (const auto& [cell, more] : change) {
+            if (more == 0) {
+                continue;
+            }
+            CellPreview preview;
+            if (const auto look = looks.find(cell); look != looks.end()) {
+                preview.picture = look->second.first;
+                preview.source = look->second.second;
+            }
+            preview.count = actualCount(cell.first, cell.second) + more;
+            m_previews[cell] = preview;
+        }
+    }
+
+    int Screen::cursorCount() {
+        const int total = carried();
+        if (m_spreading && m_spreadCells.size() >= 2) {
+            return total - total / static_cast<int>(m_spreadCells.size()) * static_cast<int>(m_spreadCells.size());
+        }
+        return total;
+    }
+
+    void Screen::refreshDrag() {
+        if (!m_context.drag) {
+            return;
+        }
+        const auto found = locate(m_context.drag->sourceId);
+        const auto* grid = found ? dynamic_cast<const IconGrid*>(&found->element.get()) : nullptr;
+        if (grid == nullptr || modernGrid(grid->id()) == nullptr) {
+            return;
+        }
+        if (const auto fresh = grid->dragOf(m_context.drag->sourceIndex)) {
+            m_context.drag->picture = fresh->picture;
+            m_context.drag->source = fresh->source;
+        } else {
+            m_context.drag.reset(); // the carried thing's cell is empty now
+            m_spreading = false;
+            m_rightHeld = false;
+        }
+    }
+
+    void Screen::mouseDown(core::Point position, MouseButton button, int clicks, bool ctrl, bool shift) {
         m_mouse = position;
         m_context.ctrlHeld = ctrl;
+        m_context.shiftHeld = shift;
         refreshHover();
         if (m_context.drag) {
-            const auto source = locate(m_context.drag->sourceId);
-            const bool modern = source && std::find(m_modernDragGrids.begin(), m_modernDragGrids.end(), source->element.get().name()) != m_modernDragGrids.end();
+            const bool modern = modernGrid(m_context.drag->sourceId) != nullptr;
             if (button == MouseButton::Right && modern) {
-                // one of what is carried is put down where the mouse is; the rest stays carried
-                const DragItem drag = *m_context.drag;
-                const auto target = locate(m_hoveredId);
-                std::optional<std::reference_wrapper<const Element>> targetElement;
-                if (target) {
-                    targetElement = std::cref(target->element.get());
-                }
-                const int targetIndex = target ? targetElement->get().dropIndexAt(localMouse(*target, position)) : -1;
-                m_context.dropPartial = true;
-                m_context.dropCarried = drag.count;
-                source->element.get().onDropped(m_context, drag.sourceIndex, targetElement, targetIndex, position, drag.grab);
-                m_context.dropPartial = false;
-                m_context.dropCarried = 0;
-                if (m_context.drag && m_context.drag->count > 0 && --m_context.drag->count == 0) {
-                    m_context.drag.reset(); // the last one of a counted drag is down
-                }
+                // one of what is carried is put down where the mouse is; the rest stays carried, and while the button is held each
+                // new cell passed gets one too
+                m_rightCells.clear();
+                m_rightHeld = true;
+                putOneDown(position);
                 m_rightUpConsumed = true;
                 return;
             }
             if (button == MouseButton::Left && m_context.drag->sticky) {
-                dropDragged(position);
-                m_releaseConsumed = true;
-                return;
+                const auto target = locate(m_hoveredId);
+                const bool onOwnCell = target && m_hoveredId == m_context.drag->sourceId &&
+                                       target->element.get().dropIndexAt(localMouse(*target, position)) == m_context.drag->sourceIndex;
+                if (modern && clicks >= 2 && m_context.drag->fromClick && onOwnCell) {
+                    // the second press of a double click: what its first click took up goes back, and the double click goes on
+                    m_context.drag.reset();
+                } else if (modern) {
+                    // what is carried goes down when the button comes up: where it was pressed, or shared out over the cells passed
+                    m_spreading = true;
+                    m_spreadCells.clear();
+                    if (const auto cell = spreadCellAt(position)) {
+                        m_spreadCells.push_back(*cell);
+                    }
+                    m_releaseConsumed = true;
+                    return;
+                } else {
+                    dropDragged(position);
+                    m_releaseConsumed = true;
+                    return;
+                }
+            }
+        }
+        if (button == MouseButton::Left && shift && !m_context.drag) {
+            const auto target = locate(m_hoveredId);
+            const auto* grid = target ? dynamic_cast<const IconGrid*>(&target->element.get()) : nullptr;
+            if (grid != nullptr && modernGrid(m_hoveredId) == nullptr &&
+                std::find(m_quickMoveGrids.begin(), m_quickMoveGrids.end(), grid->name()) == m_quickMoveGrids.end()) {
+                grid = nullptr; // a grid that does not quick-move
+            }
+            if (grid != nullptr) {
+                if (grid->quickMove(m_context, grid->cellAt(localMouse(*target, position)))) {
+                    m_releaseConsumed = true; // a Shift click moves the thing at once to where it goes
+                    return;
+                }
             }
         }
         m_context.focusedId = m_hoveredId;
@@ -721,12 +1012,30 @@ namespace ui {
         m_mouse = position;
         m_context.ctrlHeld = ctrl;
         refreshHover();
+        if (button == MouseButton::Right) {
+            m_rightHeld = false;
+            m_rightCells.clear();
+        }
         if (button == MouseButton::Right && m_rightUpConsumed) {
             m_rightUpConsumed = false;
             return;
         }
         if (button == MouseButton::Left && m_context.drag) {
-            dropDragged(position);
+            const auto target = locate(m_hoveredId);
+            const bool onOwnCell = target && m_hoveredId == m_context.drag->sourceId &&
+                                   target->element.get().dropIndexAt(localMouse(*target, position)) == m_context.drag->sourceIndex;
+            if (m_spreading) {
+                finishSpread(position);
+            } else if (!m_context.drag->sticky && onOwnCell && modernGrid(m_context.drag->sourceId) != nullptr) {
+                // a click on a thing the modern way takes it up: it follows the mouse until the next click puts it down
+                m_context.drag->sticky = true;
+                m_context.drag->fromClick = true;
+            } else {
+                dropDragged(position);
+            }
+        } else if (button == MouseButton::Left) {
+            m_spreading = false;
+            m_spreadCells.clear();
         }
         const int captured = button == MouseButton::Left ? m_capturedId : 0;
         if (button == MouseButton::Left) {
@@ -765,9 +1074,24 @@ namespace ui {
             targetElement = std::cref(target->element.get());
         }
         const int targetIndex = target ? targetElement->get().dropIndexAt(localMouse(*target, position)) : -1;
+        m_keepCarry.reset();
+        m_placed = 0;
         m_context.dropCarried = drag.count;
         source->element.get().onDropped(m_context, drag.sourceIndex, targetElement, targetIndex, position, drag.grab);
         m_context.dropCarried = 0;
+        if (target) {
+            notePlaced(drag, m_hoveredId, targetIndex);
+        }
+        m_placed = 0;
+        if (m_keepCarry && !m_context.drag) {
+            // what did not go down stays on the mouse, the modern way
+            DragItem kept = drag;
+            kept.sticky = true;
+            kept.fromClick = false;
+            kept.count = *m_keepCarry;
+            m_context.drag = kept;
+        }
+        m_keepCarry.reset();
     }
 
     void Screen::mouseWheel(int steps) {
@@ -780,6 +1104,8 @@ namespace ui {
         m_heldKeys.insert(key.key);
         if (key.key == Key::Escape && m_context.drag && m_context.drag->sticky) {
             m_context.drag.reset(); // what is carried without a button goes back
+            m_spreading = false;
+            m_rightHeld = false;
             return;
         }
         if (m_keyPreview && m_keyPreview(key)) {
@@ -992,7 +1318,13 @@ namespace ui {
             // before it gave no hit.
             refreshHover();
         }
+        refreshDrag();
         DrawContext context{canvas, m_hoveredId, m_context.focusedId, m_mouse, nowMs};
+        buildPreviews(nowMs);
+        const int carriedNow = cursorCount();
+        if (!m_previews.empty()) {
+            context.previews = &m_previews;
+        }
         const auto drawLayouts = [&](bool overlay) {
             for (const auto& layout : m_root->children()) {
                 if (!kept(*layout) || layout->isSlidAway()) {
@@ -1035,7 +1367,31 @@ namespace ui {
             }
         }
         if (m_context.drag) {
-            canvas.drawPicture(m_context.drag->picture, m_mouse - m_context.drag->grab, m_context.drag->source);
+            const core::Point at = m_mouse - m_context.drag->grab;
+            const bool sharedOut = modernGrid(m_context.drag->sourceId) != nullptr && carriedNow <= 0; // a spread leaves nothing on the mouse
+            if (!sharedOut) {
+                canvas.drawPicture(m_context.drag->picture, at, m_context.drag->source);
+            }
+            if (carriedNow > 1) {
+                // how many are carried, at the place a cell shows its count
+                constexpr core::Point kCountOffset{2, 20}; // px from the picture's top left, as IconGrid draws a cell's count
+                constexpr int kCountWidth = 32; // px width of the count text area
+                canvas.drawText(at + kCountOffset, std::to_string(carriedNow), {{255, 255, 255, 255}, gfx::TextEffect::Shadow, std::nullopt}, kCountWidth);
+            }
+            for (const auto& [gridId, index] : m_spreadCells) {
+                // the cells a held left button shares what is carried out over
+                if (m_spreadCells.size() < 2) {
+                    break;
+                }
+                const auto grid = locate(gridId);
+                const auto* cells = grid ? dynamic_cast<const IconGrid*>(&grid->element.get()) : nullptr;
+                if (cells != nullptr) {
+                    const core::Point topLeft = fromLayout(grid->screenPosition + cells->cellPosition(index), grid->layout);
+                    const core::Point bottomRight =
+                        fromLayout(grid->screenPosition + cells->cellPosition(index) + core::Point{cells->cellSize().width, cells->cellSize().height}, grid->layout);
+                    canvas.drawRectOutline({topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y}, {0xFF, 0xFF, 0xFF, 255}, 1);
+                }
+            }
             return;
         }
         drawHint(canvas);
