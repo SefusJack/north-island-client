@@ -20,7 +20,8 @@ namespace client {
     /// right click asks to log it out (WorldScene::askPartyLogOut). Drawn as the world view's pet (TRe_MiniPetInfo): the member's
     /// chat head facing left where the pet's figure goes, then level, HP and SP bars in the pet's pictures; how far its login has
     /// come while it is not in the world. The name shows over the row while the mouse is on it. A row under a window of the shown
-    /// screen (a shop, the globe, mail, the talk box, a menu) is left out: not drawn, and the clicks there go to the window.
+    /// screen (a shop, the globe, mail, a pop-up menu) or under a popup's box (the talk box, the maid's menu, an item or pet info
+    /// box, a message box; Screen::windowOver) is left out: not drawn, and the clicks there go to the window or popup.
     ///
     /// Placement (place): the rows keep to the view's left edge, between the HUD bars at its top left and bottom left, which grow
     /// with the HUD scale s (100% to 200%) from the view's corners: the own status (HP, SP, EXP, gold lines to y 192) down to
@@ -79,8 +80,8 @@ namespace client {
             /// @param hudScale Size of the HUD.
             /// @param mouse Mouse position in the screen's coordinates, if any.
             /// @param nowMs The current time in milliseconds (the attention outline's blink).
-            /// @param covered Tells whether a window of the shown screen lies over a row's box (in the screen's coordinates): that
-            /// row is neither drawn nor hit, so the window shows and takes the clicks there.
+            /// @param covered Tells whether a window or a popup's box of the shown screen lies over a row's box (in the screen's
+            /// coordinates): that row is neither drawn nor hit, so the window or popup shows and takes the clicks there.
             void draw(
                 gfx::Canvas& canvas,
                 const std::vector<PartyMemberView>& members,
@@ -160,7 +161,7 @@ namespace client {
             Placement m_place; // where the rows were last drawn
             int m_memberRows = 0; // members' rows as last drawn
             bool m_loginRow = false; // the "+" row was last drawn
-            std::vector<bool> m_covered; // per row as last drawn: a window of the shown screen lay over it (not drawn, not hit)
+            std::vector<bool> m_covered; // per row as last drawn: a window or a popup's box of the shown screen lay over it (not drawn, not hit)
     };
 
 }

@@ -878,24 +878,45 @@ namespace ui {
         return windows;
     }
 
-    bool Screen::windowOver(const core::Rect& area) const {
-        std::function<bool(const Element&, core::Point, LayoutRef)> search = [&](const Element& element, core::Point origin, LayoutRef layout) {
+    bool Screen::windowOver(const core::Rect& area, const std::function<bool(const Element& layout)>& popup) const {
+        // the element's own rectangle, in the screen's coordinates
+        const auto onScreen = [this](const Element& element, core::Point position, LayoutRef layout) {
+            const core::Point topLeft = fromLayout(position, layout);
+            const core::Point bottomRight = fromLayout(position + core::Point{element.bounds().width, element.bounds().height}, layout);
+            return core::Rect::fromEdges(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y);
+        };
+        // a popup's element takes the mouse at a point of the area (each pixel of the overlap, until one does)
+        const auto takesMouseIn = [&](const Element& element, core::Point position, LayoutRef layout) {
+            const core::Rect overlap = onScreen(element, position, layout).intersected(area);
+            for (int y = overlap.y; y < overlap.bottom(); ++y) {
+                for (int x = overlap.x; x < overlap.right(); ++x) {
+                    if (element.hitTest(toLayout({x, y}, layout) - position, m_pictures)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+        // an element, its screen origin, its layout and whether that layout is a popup's
+        using Search = std::function<bool(const Element&, core::Point, LayoutRef, bool)>;
+        Search search = [&](const Element& element, core::Point origin, LayoutRef layout, bool inPopup) {
             if (!element.isVisible()) {
                 return false;
             }
             const core::Point position = origin + element.bounds().position();
             if (element.padWindow() || dynamic_cast<const Window*>(&element) != nullptr) {
-                const core::Point topLeft = fromLayout(position, layout);
-                const core::Point bottomRight = fromLayout(position + core::Point{element.bounds().width, element.bounds().height}, layout);
-                return !core::Rect::fromEdges(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y).intersected(area).isEmpty();
+                return !onScreen(element, position, layout).intersected(area).isEmpty();
+            }
+            if (inPopup && takesMouseIn(element, position, layout)) {
+                return true;
             }
             return std::any_of(element.children().begin(), element.children().end(), [&](const auto& child) {
-                return search(*child, position, layout);
+                return search(*child, position, layout, inPopup);
             });
         };
         const core::Point rootOrigin = m_root->bounds().position();
         return std::any_of(m_root->children().begin(), m_root->children().end(), [&](const auto& layout) {
-            return kept(*layout) && !layout->isSlidAway() && search(*layout, rootOrigin, std::cref(*layout));
+            return kept(*layout) && !layout->isSlidAway() && search(*layout, rootOrigin, std::cref(*layout), popup && popup(*layout));
         });
     }
 

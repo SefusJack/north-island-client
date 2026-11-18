@@ -349,10 +349,12 @@ namespace ui {
             std::vector<core::Rect> shownWindows() const;
 
             /// @brief Tells whether a shown window (a ui::Window, or a pad window: a pop-up menu, a mini game) of the kept layouts
-            /// lies over any part of an area of the screen; HUD bars are taken at the HUD size.
+            /// lies over any part of an area of the screen, or, in a popup layout, a shown element takes the mouse at a point of
+            /// it (the talk box, the maid's menu, an item or pet info box, a message box); HUD bars are taken at the HUD size.
             /// @param area The area in screen coordinates.
+            /// @param popup Picks the popup layouts (layout roots), whose elements are not windows; none: no layout is one.
             /// @return True when one does.
-            bool windowOver(const core::Rect& area) const;
+            bool windowOver(const core::Rect& area, const std::function<bool(const Element& layout)>& popup = {}) const;
 
             /// @brief Lists the layouts from the lowest shown one a test picks up to the top, in drawing order: it and every layout
             /// drawn over it, picked or not (a window raised over the popups, say). The layout filter is not asked.
