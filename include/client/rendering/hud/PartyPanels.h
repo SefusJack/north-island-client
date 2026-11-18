@@ -24,24 +24,31 @@ namespace client {
     /// box, a message box; Screen::windowOver) is left out: not drawn, and the clicks there go to the window or popup.
     ///
     /// Placement (place): the rows keep to the view's left edge, between the HUD bars at its top left and bottom left, which grow
-    /// with the HUD scale s (100% to 200%) from the view's corners: the own status (HP, SP, EXP, gold lines to y 192) down to
-    /// kStatusBottom · s, its vehicle gauge (StatusVehicle at 0,195,200,100, shown while riding: the icon and rails from y 200) down
-    /// to kWorldTop · s, and the chat channel list from kChatUp · s above the view's bottom (y 448 of 600; the chat frame starts
-    /// lower, from about 465). Room is made for kMostRows rows (kBlockHeight, 126 px at scale 1), however many show, so the rows
-    /// stay put while characters come and go. The rows' scale shrinks the rows' box from their origin, x kLeft from the view's left.
+    /// with the HUD scale s (100% to 200%) from the view's corners: the own status (HP, SP, EXP, then the gold line: Main_Word_Gold
+    /// at y 180, 12 px high, to y 192) down to kStatusBottom · s, its vehicle gauge (StatusVehicle at 0,195,200,100 to y 295,
+    /// shown while riding: the icon and rails from y 200) down to kWorldTop · s, and the chat channel list from kChatUp · s above
+    /// the view's bottom (y 448 of 600; the chat frame starts lower, from about 465). Room is made for kMostRows rows
+    /// (kBlockHeight, 126 px at scale 1, the first row's box starting 1 px above its origin), however many show, so the rows stay
+    /// put while characters come and go. The rows' scale shrinks the rows' box from their origin, x kLeft from the view's left.
     /// - World: under the vehicle gauge (kWorldTop · s) at the HUD scale, or smaller down to 1 when the room above the channel list
     ///   is shorter. Else, while riding (the gauge shows), smaller under the gauge down to kLeastScale; when even that does not
     ///   fit, the rows are not shown (not drawn, not hit) until the ride ends: the least bad, as every place at the view's left
     ///   edge then meets the gauge, the status or the chat. Else (not riding) at scale 1 with the rows' bottom on the channel
     ///   list, rising over the gauge's empty place but not over the status; else (less room under the status than kBlockHeight)
-    ///   smaller under the status, down to kLeastScale. In an 800 x 600 window: 100% from y 300, scale 1, to y 425 (channel list 448); 125% the gauge reaches 369
-    ///   and the list 410, so the rows go from y 285 at scale 1; 150% the status reaches 293 and the list 372, scale 0.625; from
-    ///   175% the status runs past the channel list (the HUD bars meet each other) and the rows take kLeastScale under the status.
-    ///   A larger window gives the rows the HUD scale again (1920 x 1080 at 200%: the gauge to 600, the list from 776, scale 1.375).
+    ///   smaller under the status, down to kLeastScale. In an 800 x 600 window (box edges, px):
+    ///   - 100%: from y 300 at scale 1, the box 299-425 (channel list 448), riding or not.
+    ///   - 110%: not riding at scale 1 from y 308 (box to 433, the list); riding under the gauge (kWorldTop · s = 330) at 0.8125.
+    ///   - 125%: kWorldTop · s is 375 (the gauge's place to 369) and the list 410: not riding from y 285 at scale 1 (box 284-410);
+    ///     riding not shown, as from 120% (at 119% kLeastScale just fits: box 356-419, list 419).
+    ///   - 150%: the status reaches 293 and the list 372: scale 0.625 under the status (box 292-371); riding not shown.
+    ///   - From 175% the status runs past the channel list (the HUD bars meet each other) and the rows take kLeastScale under the
+    ///     status (accepted: they meet the list); riding not shown.
+    ///   A larger window gives the rows the HUD scale again (1920 x 1080 at 200%: kWorldTop · s 600, the list from 776, scale
+    ///   1.375).
     /// - Battle: from y kBattleTop of the game screen, at scale 1 at most, smaller down to kLeastScale until the rows clear the
     ///   chat channel list and the command ring. The battle form (BattleMainForm.xml, not anchored, not HUD-scaled) lies at the
     ///   game screen's fixed coordinates: its member panels (136 px from the top) and the own HP, SP, EXP and gold under them (to
-    ///   y 200), and the fighters; the vehicle gauge is not shown. The left side's back line (BattleField, row 1) stands at x
+    ///   y 199), and the fighters; the vehicle gauge is not shown. The left side's back line (BattleField, row 1) stands at x
     ///   210, 185, 160, 135 with its feet at y 266, 329, 392, 455, and the ring reaches 68 px left of, 96 px above and 39 px below
     ///   a fighter's feet (BattleMainForm kHomes, 28 px buttons), so its nearest buttons are at x 142 (y 170-305), 117
     ///   (233-368), 92 (296-431) and 67 (359-494). At scale 1 the rows' box (x 6-78, y 203-329) lies left of the x 92 button and
@@ -51,9 +58,9 @@ namespace client {
     class PartyPanels {
         public:
             static constexpr int kLeft = 8; // x of the rows' origin from the view's left at scale 1, px
-            static constexpr int kStatusBottom = 195; // HUD px from the view's top: under the own status's gold line (y 181, 12 px high)
-            static constexpr int kWorldTop = 300; // HUD px from the view's top: under the vehicle gauge (195 + 100)
-            static constexpr int kBattleTop = 204; // y of the first row in battle on the game screen, px: under the battle form's gold line (y 188, 12 px high)
+            static constexpr int kStatusBottom = 195; // HUD px from the view's top: 3 px under the own status's gold line (y 180 to 192)
+            static constexpr int kWorldTop = 300; // HUD px from the view's top: 5 px under the vehicle gauge's place (195 + 100)
+            static constexpr int kBattleTop = 204; // first row's y in battle, game screen px: 4 px under the battle gold line (y 187 to 199)
             static constexpr int kChatUp = 152; // HUD px from the view's bottom up to the chat channel list's top (600 - 448)
             static constexpr int kRowWidth = 72; // width of a row, px
             static constexpr int kRowHeight = 32; // row pitch, px
