@@ -418,7 +418,6 @@ namespace client {
         core::logInfo("party: ", member.account.account, " is selected, ", oldAccount.account, " takes its row");
         std::swap(m_played, member.bundle);
         std::swap(m_playedFollowing, member.following);
-        m_playedScene = m_played->scene.get();
         member.account = oldAccount;
         member.world.reset();
         if (auto* world = dynamic_cast<WorldScene*>(member.bundle->scene.get())) {
@@ -720,9 +719,6 @@ namespace client {
 
     void PartyMembers::update(std::uint64_t nowMs, std::optional<std::reference_wrapper<const WorldScene>> playedWorld) {
         const bool playedInWorld = playedWorld && playedWorld->get().inWorld();
-        if (std::exchange(m_playedScene, m_played->scene.get()) != m_played->scene.get()) {
-            m_playedFollowing.wasInTeam = false; // a new world scene (logged in again) starts without its team data
-        }
         if (playedInWorld) {
             watchTeam(m_playedFollowing, playedWorld->get(), played().session.loginName);
         }

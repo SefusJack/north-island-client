@@ -169,6 +169,10 @@ namespace client {
             /// @details A gone member on the played account's own account now is dropped instead: logging it in would push the played account off.
             void logInGone();
 
+            /// @brief Tells that the played account's scene was replaced (a login, or logged in again): its new world scene starts
+            /// without team data, so its following's team watch starts over.
+            void playedSceneChanged() { m_playedFollowing.wasInTeam = false; }
+
             /// @brief Adds another member (the group window's Log in), refused once kMostMembers are logged in; rows of members that could not log in go.
             /// @param account The account to log in.
             /// @return Empty, or why the account cannot be added.
@@ -308,7 +312,6 @@ namespace client {
             bool m_started = false;
             std::uint64_t m_nowMs = 0;
             Following m_playedFollowing;
-            const Scene* m_playedScene = nullptr; // the played account's scene at the last update: a new one resets its following's team watch
             int m_commanding = -1;
             bool m_mirrorNpcs = false;
             int m_pendingSelect = -1; // row asked for by select, swapped in by applySelection
