@@ -267,6 +267,7 @@
 #include "ui/DrawingArea.h"
 #include "ui/Element.h"
 #include "ui/Screen.h"
+#include "ui/Window.h"
 
 #include <array>
 #include <cstdint>
@@ -513,7 +514,60 @@ namespace client {
             /// @brief Tells the mirrored event that the selected (played) character's event ended.
             void mirrorLeaderEventEnded() { m_eventRunner.leaderEnded(); }
 
+            /// @brief Walks the own player to a map point the way a click on the ground there does (path finding, the walk sent to the server).
+            /// @details Nothing happens when the player can't walk now (a battle, an event, a team follower, a stall, ...).
+            /// @param mapPoint The map point.
+            void walkTo(core::Point mapPoint);
+
+            /// @brief A window the player opens themselves, as the party's Ctrl+click moves it (qol multi-login).
+            struct MovableWindow {
+                std::string key;        // stable id of the window kind, e.g. "item", "status", "pets"
+                core::Point position;   // its top left on the screen
+                std::uint64_t usedAtMs; // when it was last opened or clicked in (the scene's update time)
+            };
+
+            /// @brief The movable window the player used last, of those open now (qol multi-login).
+            /// @return The most recently used movable window that is open now, if any.
+            std::optional<MovableWindow> lastUsedWindow() const;
+
+            /// @brief Closes the movable window of that key if open.
+            /// @param key The window kind (MovableWindow::key).
+            /// @return True when it was open.
+            bool closeMovableWindow(const std::string& key);
+
+            /// @brief Opens the movable window of that key at a screen position, or moves it there and brings it to the front if already open.
+            /// @param key The window kind (MovableWindow::key).
+            /// @param position Its top left on the screen.
+            /// @return False for an unknown key or one that can't open now (e.g. in battle, or a precondition fails).
+            bool openMovableWindow(const std::string& key, core::Point position);
+
         private:
+            /// @brief A kind of window the player opens themselves, tracked for the party's Ctrl+click (qol multi-login).
+            struct MovableKind {
+                std::string key;                  // MovableWindow::key
+                std::vector<ui::Window*> windows; // its windows (the group's tabs are windows of their own); the first shown one is its place
+                std::function<void()> open;       // opens it the way its button or hot key does (it may stay closed: a precondition failed)
+                std::function<void()> close;      // closes it the way its Escape does
+                std::uint64_t usedAtMs = 0;       // when it was last opened or clicked in (m_nowMs)
+                bool wasOpen = false;             // whether it was open at the last check, to see it open
+            };
+
+            /// @brief Fills m_movableWindows and hooks the screen's presses to them (qol multi-login).
+            void setUpMovableWindows();
+
+            /// @brief Marks the movable windows that opened since the last check as used now.
+            void trackMovableWindows();
+
+            /// @brief The shown window of a movable kind.
+            /// @param kind The kind.
+            /// @return The window, or null when the kind is closed.
+            static ui::Window* shownWindowOf(const MovableKind& kind);
+
+            /// @brief Finds a movable kind by its key.
+            /// @param key The key.
+            /// @return The kind, or null when unknown.
+            MovableKind* movableKind(const std::string& key);
+
             /// @brief Loads a map and puts the own player at a position.
             /// @param mapId Map id.
             /// @param position Start position on the map.
@@ -668,6 +722,10 @@ namespace client {
             /// @return True when walking is allowed.
             bool canWalk() const;
 
+            /// @brief Whether the own player may walk now, or could but follows a team leader (who walks for the team).
+            /// @return True when walking is allowed, a team follower aside.
+            bool canWalkUnlessFollowing() const;
+
             /// @brief Turns the own player to face the mouse.
             /// @return True when the facing was changed.
             bool faceMouse();
@@ -681,7 +739,12 @@ namespace client {
             /// @param mapPoint The destination on the map.
             /// @param byKeyboard True when the walk comes from the arrow keys.
             /// @return The destination the own player was left with (Player.FDestX / FDestY), where the click's walk mark goes.
-            core::Point walkTo(core::Point mapPoint, bool byKeyboard = false);
+            core::Point walkOwnPlayer(core::Point mapPoint, bool byKeyboard = false);
+
+            /// @brief Hands a ground walk of the own player to another own character (GameServices::walkElsewhere, qol multi-login).
+            /// @param mapPoint The map point walked to.
+            /// @return True when another own character walks there instead; the walk mark shows at the point.
+            bool walkElsewhere(core::Point mapPoint);
 
             /// @brief The path through a floor room from one map point to another. Original: FindHouseMovePath and CellPathToScreen.
             /// @param from Start map point.
@@ -4569,6 +4632,7 @@ namespace client {
             bool m_mouseHeld = false;
             core::Point m_mouse;
             std::uint64_t m_lastWalkMs = 0;
+            std::vector<MovableKind> m_movableWindows; // the windows the player opens themselves (qol multi-login)
             std::uint64_t m_keyWalkMs = 0;
             bool m_padInUse = false; // a game pad is the input in use
             std::filesystem::path m_musicBeforeStars; // the music the star book took over from (empty: none remembered)

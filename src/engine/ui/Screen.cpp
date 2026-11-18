@@ -647,6 +647,9 @@ namespace ui {
         m_mouse = position;
         m_context.ctrlHeld = ctrl;
         refreshHover();
+        if (m_pressHook && m_hoveredId != 0) {
+            m_pressHook(m_hoveredId);
+        }
         if (m_context.drag) {
             const auto source = locate(m_context.drag->sourceId);
             const bool modern = source && std::find(m_modernDragGrids.begin(), m_modernDragGrids.end(), source->element.get().name()) != m_modernDragGrids.end();
@@ -890,6 +893,36 @@ namespace ui {
         const core::Point topLeft = fromLayout(located->screenPosition, located->layout);
         const core::Point bottomRight = fromLayout(located->screenPosition + core::Point{bounds.width, bounds.height}, located->layout);
         return core::Rect{topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y};
+    }
+
+    std::optional<core::Point> Screen::screenPositionOf(const Element& target) const {
+        std::function<std::optional<core::Point>(const Element&, core::Point, LayoutRef)> search =
+            [&](const Element& element, core::Point origin, LayoutRef layout) -> std::optional<core::Point> {
+            if (!element.isVisible()) {
+                return std::nullopt;
+            }
+            const core::Point position = origin + element.bounds().position();
+            if (&element == &target) {
+                return fromLayout(position, layout);
+            }
+            for (const auto& child : element.children()) {
+                if (auto found = search(*child, position, layout ? layout : LayoutRef(std::cref(*child)))) {
+                    return found;
+                }
+            }
+            return std::nullopt;
+        };
+        return search(*m_root, {0, 0}, std::nullopt);
+    }
+
+    bool Screen::placeAt(Element& element, core::Point position) {
+        const auto located = locate(element.id());
+        if (!located) {
+            return false;
+        }
+        const core::Point parentOrigin = located->screenPosition - element.bounds().position();
+        element.setPosition(toLayout(position, located->layout) - parentOrigin);
+        return true;
     }
 
     void Screen::raiseOpenedWindows() {

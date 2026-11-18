@@ -10,6 +10,7 @@
 #include "client/rendering/world/ViewZoom.h"
 #include "client/rendering/characters/CharacterRenderer.h"
 #include "client/data/EmoteCodes.h"
+#include "core/Point.h"
 #include "core/Size.h"
 #include "formats/CompoundTable.h"
 #include "formats/FormulaData.h"
@@ -79,6 +80,9 @@ namespace client {
         std::function<void(PartyTrigger trigger, int index)> partyEventStarted; // the selected character started an NPC's or a door's event
         std::function<void(int dataId, int code)> partyEventAnswered; // the selected character answered an event dialog
         std::function<void()> partyEventEnded; // the selected character's event ended
+        /// @brief Asked on a ground click of the own player that would walk it (WorldScene), with the clicked map point.
+        /// @details Unset: the player walks itself.
+        std::function<bool(core::Point mapPoint)> walkElsewhere = {}; // a ground click to walk to mapPoint: true when another own character walks there instead (qol multi-login), and this player stays
         bool unseenPartyMember = false; // an own character other than the selected one, played without its own screen (qol); flips on a swap
         bool serverSorts = false;
         std::array<bool, 4> gameGroupsOpen = {true, false, false, false}; // which groups of the settings Game tab are open, until the game closes

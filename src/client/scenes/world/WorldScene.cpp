@@ -1642,11 +1642,14 @@ namespace client {
                 clickVehicle(*vehicle);
                 return;
             }
+            if (walkElsewhere(m_camera.toMap(m_mouse))) {
+                return;
+            }
             if (canWalk()) {
                 if (m_player.stall) {
                     m_messages.show("Unable to move when you are setting a stall", 1500); // message display time in ms
                 } else {
-                    m_walkMark.start(walkTo(m_camera.toMap(m_mouse)));
+                    m_walkMark.start(walkOwnPlayer(m_camera.toMap(m_mouse)));
                 }
             }
             clickDoorAt(m_camera.toMap(m_mouse));
@@ -1764,6 +1767,7 @@ namespace client {
         m_screen.on("onMainGroup", [this](const ui::EventArgs&) { toggleWindow('g'); });
         m_screen.on("onMainSocial", [this](const ui::EventArgs&) { toggleWindow('e'); });
         m_screen.on("onMainCompound", [this](const ui::EventArgs&) { toggleWindow('c'); });
+        setUpMovableWindows();
         m_talk.setExclusiveHook([this](bool exclusive) {
             showGameWindows(!exclusive);
             m_miniMap.setTalkHidden(exclusive);
@@ -4402,10 +4406,12 @@ namespace client {
         return character ? character->level : 1;
     }
 
-    bool WorldScene::canWalk() const {
-        return !m_entering && m_inWorld && !m_eventRunner.isRunning() && !m_moveLocked && !m_inputLocked && !m_npcMaking && m_map &&
-               !m_teams.isMember(m_player.id) && !m_quiz.isOpen() && m_fightState == 0 && m_activeSport == 0 && m_innSleep == InnSleep::Awake && !m_darkMode &&
-               !m_remote.isWandering() && !m_mall.isOpen() && !m_cart.isOpen() && !m_maid.isActive() && !m_reFill.isOpen();
+    bool WorldScene::canWalk() const { return canWalkUnlessFollowing() && !m_teams.isMember(m_player.id); }
+
+    bool WorldScene::canWalkUnlessFollowing() const {
+        return !m_entering && m_inWorld && !m_eventRunner.isRunning() && !m_moveLocked && !m_inputLocked && !m_npcMaking && m_map && !m_quiz.isOpen() &&
+               m_fightState == 0 && m_activeSport == 0 && m_innSleep == InnSleep::Awake && !m_darkMode && !m_remote.isWandering() && !m_mall.isOpen() &&
+               !m_cart.isOpen() && !m_maid.isActive() && !m_reFill.isOpen();
     }
 
     bool WorldScene::faceMouse() {
@@ -4439,7 +4445,22 @@ namespace client {
         return true;
     }
 
-    core::Point WorldScene::walkTo(core::Point mapPoint, bool byKeyboard) {
+    void WorldScene::walkTo(core::Point mapPoint) {
+        if (canWalk() && !m_player.stall) {
+            m_walkMark.start(walkOwnPlayer(mapPoint));
+        }
+    }
+
+    bool WorldScene::walkElsewhere(core::Point mapPoint) {
+        if (!m_services.walkElsewhere || !canWalkUnlessFollowing() || m_player.stall || !m_services.walkElsewhere(mapPoint)) {
+            return false;
+        }
+        m_lastWalkMs = m_nowMs;
+        m_walkMark.start(mapPoint);
+        return true;
+    }
+
+    core::Point WorldScene::walkOwnPlayer(core::Point mapPoint, bool byKeyboard) {
         m_lastWalkMs = m_nowMs;
         m_ownTile = {m_player.position.x / formats::MapFile::kCellSize, m_player.position.y / formats::MapFile::kCellSize};
         std::vector<core::Point> path;
@@ -4547,8 +4568,11 @@ namespace client {
     }
 
     void WorldScene::moveCharacters(std::uint64_t nowMs) {
-        if (m_mouseHeld && m_player.walking && canWalk() && !m_player.stall && nowMs - m_lastWalkMs >= kHeldWalkMs) {
-            m_walkMark.start(walkTo(m_camera.toMap(m_mouse)));
+        if (m_mouseHeld && m_player.walking && canWalkUnlessFollowing() && !m_player.stall && nowMs - m_lastWalkMs >= kHeldWalkMs) {
+            const core::Point point = m_camera.toMap(m_mouse);
+            if (!walkElsewhere(point) && canWalk()) {
+                m_walkMark.start(walkOwnPlayer(point));
+            }
         }
         const auto stand = [this](MapCharacter& character) {
             if (character.horse) {
@@ -4618,7 +4642,7 @@ namespace client {
                 stop.x += (waysBefore & 2) != 0 ? kPadStop : (waysBefore & 1) != 0 ? -kPadStop : 0;
                 stop.y += (waysBefore & 8) != 0 ? kPadStop : (waysBefore & 4) != 0 ? -kPadStop : 0;
                 m_keyWalkMs = nowMs;
-                walkTo(stop, true);
+                walkOwnPlayer(stop, true);
             }
             return;
         }
@@ -4648,7 +4672,7 @@ namespace client {
         if (down) {
             target.y = m_player.position.y + kKeyStep;
         }
-        walkTo(target, true);
+        walkOwnPlayer(target, true);
     }
 
     void WorldScene::onEnterWorldFinished() { finishEntering(); }
@@ -5523,6 +5547,7 @@ namespace client {
         m_services.zoom.setOutAllowed(!m_battle.isOn());
         followView(nowMs);
         m_nowMs = nowMs;
+        trackMovableWindows();
         constexpr std::uint64_t kDimStepMs = 20; // time between two dim steps, ms
         if (m_dimStep != m_dimTarget && nowMs - m_dimStepMs >= kDimStepMs) {
             m_dimStepBefore = m_dimStep;

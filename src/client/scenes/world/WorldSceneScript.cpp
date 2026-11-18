@@ -120,7 +120,7 @@ namespace client {
             reason = "the player keeps a stall";
             return false;
         }
-        m_walkMark.start(walkTo(mapPoint));
+        walkTo(mapPoint);
         return true;
     }
 

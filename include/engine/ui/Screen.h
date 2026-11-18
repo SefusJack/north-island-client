@@ -133,6 +133,10 @@ namespace ui {
             /// TForm1.DXDraw1MouseUp skips DispatchMouseUp once (DZ_Game.pas:2071-2074).
             void consumeNextRelease() { m_releaseConsumed = true; }
 
+            /// @brief Sets the hook told of every mouse button press on an element, before the press is handled.
+            /// @param hook Called with the id of the element under the mouse (never 0).
+            void setPressHook(std::function<void(int elementId)> hook) { m_pressHook = std::move(hook); }
+
             /// @brief Sends a wheel turn to the element with the keyboard.
             /// @param steps Wheel steps (positive: up).
             void mouseWheel(int steps);
@@ -199,6 +203,17 @@ namespace ui {
             /// @param name Element name.
             /// @return The rectangle in screen coordinates, nothing when there is no such element or it is not shown.
             std::optional<core::Rect> screenRectOf(const std::string& name);
+
+            /// @brief Gives where a shown element's top left lies on the screen (HUD bars at the HUD size), without its layout's slide.
+            /// @param element The element.
+            /// @return The point in screen coordinates, nothing when it is not shown.
+            std::optional<core::Point> screenPositionOf(const Element& element) const;
+
+            /// @brief Moves a shown element so that its top left lies at a point of the screen.
+            /// @param element The element.
+            /// @param position The point in screen coordinates.
+            /// @return False when the element is not shown.
+            bool placeAt(Element& element, core::Point position);
 
             /// @brief Slides a layout off its place (Element::setSlide), by the layout's name.
             /// @param layoutName The layout root's name.
@@ -445,6 +460,7 @@ namespace ui {
             std::set<Key> m_heldKeys;
             std::function<bool(const KeyEvent&)> m_keyPreview;
             std::function<void()> m_textFallback;
+            std::function<void(int elementId)> m_pressHook;
             int m_hoveredId = 0;
             /// @brief Finds the topmost shown window.
             /// @return The window, or nothing.
