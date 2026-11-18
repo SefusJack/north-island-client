@@ -392,7 +392,7 @@ namespace client {
         if (taken) {
             return "That account is logged in already.";
         }
-        if (activeMembers() >= kMostMembers) {
+        if (heldRows() >= kMostMembers) {
             return "At most " + std::to_string(kMostMembers + 1) + " characters can be logged in.";
         }
         m_members.push_back(std::make_unique<Member>(GameTables::of(played()), m_silent, std::move(account)));
@@ -619,9 +619,10 @@ namespace client {
         }
     }
 
-    int PartyMembers::activeMembers() const {
+    int PartyMembers::heldRows() const {
+        // a gone member's row goes when another account is added; a leaving one's stays until it has left (kLeaveWaitMs at most)
         return static_cast<int>(std::count_if(m_members.begin(), m_members.end(), [](const auto& member) {
-            return !member->goneReason && !member->leavingSinceMs;
+            return !member->goneReason || member->leavingSinceMs;
         }));
     }
 
@@ -629,7 +630,7 @@ namespace client {
         if (!played().videoSettings().partyLogin || m_played->kind != SceneKind::World || !m_played->scene) {
             return false;
         }
-        return static_cast<const WorldScene&>(*m_played->scene).inWorld() && activeMembers() < kMostMembers;
+        return static_cast<const WorldScene&>(*m_played->scene).inWorld() && heldRows() < kMostMembers;
     }
 
     void PartyMembers::drawPanels(gfx::Canvas& canvas, float hudScale, const WorldScene& playedWorld, std::uint64_t nowMs) {

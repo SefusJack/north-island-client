@@ -194,8 +194,8 @@ namespace client {
             /// without team data, so its following's team watch starts over.
             void playedSceneChanged() { m_playedFollowing.wasInTeam = false; }
 
-            /// @brief Adds another member (the login form of WorldScene::openPartyLogin), refused once kMostMembers are logged in (members
-            /// logging out not counted); rows of members that could not log in go.
+            /// @brief Adds another member (the login form of WorldScene::openPartyLogin), refused while kMostMembers hold a row (heldRows:
+            /// members logging out count until they have left); rows of members that could not log in go.
             /// @param account The account to log in.
             /// @return Empty, or why the account cannot be added.
             std::string add(PartyAccount account);
@@ -266,12 +266,13 @@ namespace client {
             /// @param index The member's row.
             void swapPlayed(int index);
 
-            /// @brief Counts the members logged in or logging in (not gone, not logging out).
+            /// @brief Counts the members whose rows stay when another account is added: logged in, logging in or logging out (a
+            /// leaving member's row stays until it has left); only a gone member's row goes.
             /// @return The number of members.
-            int activeMembers() const;
+            int heldRows() const;
 
-            /// @brief Tells whether the "+" row shows: multi-login on, the played account in the world and fewer than kMostMembers + 1
-            /// characters logged in or logging in.
+            /// @brief Tells whether the "+" row shows: multi-login on, the played account in the world and fewer than kMostMembers
+            /// members holding a row (heldRows), so that at most kMostMembers + 1 rows show.
             /// @return True when it shows.
             bool loginRowShown() const;
 
