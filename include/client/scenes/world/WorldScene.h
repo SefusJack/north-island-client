@@ -479,7 +479,7 @@ namespace client {
             /// @return The fighter (0: none, between the rounds, or every own fighter has its command).
             int battleActor() const { return m_battle.isOn() ? m_battle.actor() : 0; }
 
-            /// @brief Adds a party member's chat line to the leader's chat window, unless the leader heard it already.
+            /// @brief Adds a party member's chat line to the selected (played) character's chat window, unless it heard it already.
             /// @param channel Chat channel.
             /// @param line The line.
             /// @param memberName Name of the party member who heard it.
@@ -490,7 +490,7 @@ namespace client {
                 }
             }
 
-            /// @brief Shows a party member's message in the leader's top or middle box, grouped with those shown just before.
+            /// @brief Shows a party member's message in the selected (played) character's top or middle box, grouped with those shown just before.
             /// @param centre True for the middle box, false for the top one.
             /// @param text The message.
             /// @param durationMs How long it shows, in milliseconds.
@@ -498,19 +498,19 @@ namespace client {
                 (centre ? m_centreMessages : m_messages).showGrouped(text, durationMs);
             }
 
-            /// @brief Starts the event of the NPC or door the party leader started (qol NPC mirror), even as a team follower, who
-            /// is never near it nor checks doors and NPC proximity.
-            /// @param trigger How the leader started it.
+            /// @brief Starts the event of the NPC or door the selected (played) character started (qol NPC mirror), even as a team
+            /// follower, who is never near it nor checks doors and NPC proximity.
+            /// @param trigger How the selected character started it.
             /// @param index Index of the NPC or the door.
             /// @return True when the event was asked for.
             bool mirrorEvent(PartyTrigger trigger, int index);
 
-            /// @brief Passes the party leader's dialog answer to the mirrored event.
-            /// @param dataId The leader's dialog surface.
-            /// @param code The leader's answer code.
+            /// @brief Passes the selected (played) character's dialog answer to the mirrored event.
+            /// @param dataId The selected character's dialog surface.
+            /// @param code The selected character's answer code.
             void mirrorEventAnswer(int dataId, int code) { m_eventRunner.leaderAnswered(dataId, code); }
 
-            /// @brief Tells the mirrored event that the party leader's event ended.
+            /// @brief Tells the mirrored event that the selected (played) character's event ended.
             void mirrorLeaderEventEnded() { m_eventRunner.leaderEnded(); }
 
         private:

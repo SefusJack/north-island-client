@@ -82,9 +82,10 @@ namespace client {
     /// with the sound and its HUD), the others ("members") run their login and world scenes unseen and show as the party rows.
     /// @details There is no leader on the client side: team leadership is only the server's (WorldScene::teams()). The first account of
     /// --accounts is only the one shown at start; a click on a member's row swaps it with the played account (select). A member follows
-    /// from its login: while it is not in a team it is invited into the selected character's team (13/7, by that team's leader when an own character) when on its map, until it has been in a team
-    /// and left it. Own characters accept each other's team invitations and lead. Also covers manual battle turns shown in the played
-    /// account's place, the members' windows over the screen, the whisper and team chat relay, the NPC mirror and log in/out from the group window.
+    /// from its login: while it is not in a team it is invited into the selected character's team (13/7, by that team's leader when it
+    /// is an own character) when on its map, until it has been in a team and left it. Own characters accept each other's team
+    /// invitations and lead. Also covers manual battle turns shown in the played account's place, the members' windows over the screen,
+    /// the whisper and team chat relay, the NPC mirror and the services' log in/out hooks (WorldScene::openPartyLogin, askPartyLogOut).
     class PartyMembers {
         public:
             static constexpr int kMostMembers = 3; // most members (extra accounts) in the party
@@ -173,7 +174,7 @@ namespace client {
             /// without team data, so its following's team watch starts over.
             void playedSceneChanged() { m_playedFollowing.wasInTeam = false; }
 
-            /// @brief Adds another member (the group window's Log in), refused once kMostMembers are logged in; rows of members that could not log in go.
+            /// @brief Adds another member (the login form of WorldScene::openPartyLogin), refused once kMostMembers are logged in; rows of members that could not log in go.
             /// @param account The account to log in.
             /// @return Empty, or why the account cannot be added.
             std::string add(PartyAccount account);

@@ -52,7 +52,7 @@ namespace client {
         }
     };
 
-    /// @brief One account's own objects (sound, connection, session, zoom, services and scene), swapped whole when a party member takes the lead.
+    /// @brief One account's own objects (sound, connection, session, zoom, services and scene), swapped whole when a party member becomes the selected (played) character.
     struct AccountBundle {
         /// @brief Builds the account's objects; the message box only logs and screenshots go nowhere until the owner sets them.
         /// @param tables The shared game tables.

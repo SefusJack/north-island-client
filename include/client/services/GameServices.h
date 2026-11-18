@@ -32,11 +32,11 @@
 
 namespace client {
 
-    /// @brief What started the party leader's event, for the members that mirror it (qol): the 20/x trigger it sent.
+    /// @brief What started the selected (played) character's event, for the members that mirror it (qol): the 20/x trigger it sent.
     enum class PartyTrigger {
-        NpcClick, // 20/1: the leader clicked an NPC
-        NpcNear, // 20/2: the leader came near an NPC whose events start so
-        Door, // 20/8: the leader walked into a door with events
+        NpcClick, // 20/1: the selected character clicked an NPC
+        NpcNear, // 20/2: the selected character came near an NPC whose events start so
+        Door, // 20/8: the selected character walked into a door with events
     };
 
     /// @brief What the screens of the game share; the Application owns all of it.
