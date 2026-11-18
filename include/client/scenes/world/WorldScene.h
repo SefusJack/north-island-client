@@ -432,6 +432,10 @@ namespace client {
             /// @return True in a battle.
             bool inBattle() const { return m_battle.isOn(); }
 
+            /// @brief Whether the own status shows the vehicle gauge (MainStatus::paintVehicle): the player drives a vehicle.
+            /// @return True while the gauge shows.
+            bool vehicleGaugeShown() const { return vehicleGauge().has_value(); }
+
             /// @brief Whether the server has put the own player in the world (5/4).
             /// @return True when in the world.
             bool inWorld() const { return m_inWorld; }

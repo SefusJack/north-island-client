@@ -68,7 +68,7 @@ namespace client {
 
     }
 
-    PartyPanels::Placement PartyPanels::place(const core::Rect& view, float hudScale, bool battle) {
+    std::optional<PartyPanels::Placement> PartyPanels::place(const core::Rect& view, float hudScale, bool battle, bool riding) {
         const float hud = hudScale > 0 ? hudScale : 1.0f;
         const int chatTop = view.bottom() - scaled(kChatUp, hud);
         const int statusBottom = view.y + scaled(kStatusBottom, hud);
@@ -102,8 +102,13 @@ namespace client {
             // the battle form's own status lies at the game screen's fixed coordinates, not HUD-scaled
             return fit(kBattleTop, 1.0f, kLeastScale).value_or(at(kBattleTop, kLeastScale));
         }
-        if (const auto underGauge = fit(view.y + scaled(kWorldTop, hud), hud, 1.0f)) {
+        const int gaugeBottom = view.y + scaled(kWorldTop, hud);
+        if (const auto underGauge = fit(gaugeBottom, hud, 1.0f)) {
             return *underGauge;
+        }
+        if (riding) {
+            // the vehicle gauge shows: the rows stay under it, smaller down to kLeastScale, or are not shown at all
+            return fit(gaugeBottom, 1.0f, kLeastScale);
         }
         // at scale 1 the rows' box reaches kBlockHeight - 1 px below the first row's origin (its box starts 1 px above it)
         if (const int top = chatTop - (kBlockHeight + rowBox(0).y); top >= statusBottom) {
@@ -203,16 +208,22 @@ namespace client {
         const std::vector<PartyMemberView>& members,
         bool loginRow,
         bool battle,
+        bool riding,
         const core::Rect& view,
         float hudScale,
         std::optional<core::Point> mouse,
         std::uint64_t nowMs,
         const std::function<bool(const core::Rect& box)>& covered
     ) {
-        m_place = place(view, hudScale, battle);
+        const std::optional<Placement> placed = place(view, hudScale, battle, riding);
         m_memberRows = static_cast<int>(members.size());
         m_loginRow = loginRow;
-        m_covered.assign(static_cast<std::size_t>(m_memberRows + (loginRow ? 1 : 0)), false);
+        // no room for the rows: every row is left out, as under a window
+        m_covered.assign(static_cast<std::size_t>(m_memberRows + (loginRow ? 1 : 0)), !placed);
+        if (!placed) {
+            return;
+        }
+        m_place = *placed;
         for (int row = 0; row < static_cast<int>(m_covered.size()); ++row) {
             m_covered[static_cast<std::size_t>(row)] = covered && covered(screenBox(row));
         }

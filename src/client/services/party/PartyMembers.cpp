@@ -660,7 +660,18 @@ namespace client {
         // a window of the shown screen (a shop, the globe, mail) or what one of its popups takes the mouse on (the talk box, the
         // maid's menu, an item or pet info box) under a row keeps that row out of sight and its clicks
         const auto covered = [&shown](const core::Rect& box) { return shown.windowOver(box, isPopupLayout); };
-        m_panels->draw(canvas, views(), loginRow, playedWorld.inBattle(), m_played->scene->screen().view(), hudScale, m_mouse, nowMs, covered);
+        m_panels->draw(
+            canvas,
+            views(),
+            loginRow,
+            playedWorld.inBattle(),
+            playedWorld.vehicleGaugeShown(),
+            m_played->scene->screen().view(),
+            hudScale,
+            m_mouse,
+            nowMs,
+            covered
+        );
     }
 
     bool PartyMembers::handleRowButton(const SDL_Event& event, core::Point origin) {

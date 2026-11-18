@@ -30,9 +30,11 @@ namespace client {
     /// lower, from about 465). Room is made for kMostRows rows (kBlockHeight, 126 px at scale 1), however many show, so the rows
     /// stay put while characters come and go. The rows' scale shrinks the rows' box from their origin, x kLeft from the view's left.
     /// - World: under the vehicle gauge (kWorldTop · s) at the HUD scale, or smaller down to 1 when the room above the channel list
-    ///   is shorter; else at scale 1 with the rows' bottom on the channel list, rising over the vehicle gauge's place (empty unless
-    ///   riding) but not over the status; else (less room under the status than kBlockHeight) smaller under the status, down to
-    ///   kLeastScale. In an 800 x 600 window: 100% from y 300, scale 1, to y 425 (channel list 448); 125% the gauge reaches 369
+    ///   is shorter. Else, while riding (the gauge shows), smaller under the gauge down to kLeastScale; when even that does not
+    ///   fit, the rows are not shown (not drawn, not hit) until the ride ends: the least bad, as every place at the view's left
+    ///   edge then meets the gauge, the status or the chat. Else (not riding) at scale 1 with the rows' bottom on the channel
+    ///   list, rising over the gauge's empty place but not over the status; else (less room under the status than kBlockHeight)
+    ///   smaller under the status, down to kLeastScale. In an 800 x 600 window: 100% from y 300, scale 1, to y 425 (channel list 448); 125% the gauge reaches 369
     ///   and the list 410, so the rows go from y 285 at scale 1; 150% the status reaches 293 and the list 372, scale 0.625; from
     ///   175% the status runs past the channel list (the HUD bars meet each other) and the rows take kLeastScale under the status.
     ///   A larger window gives the rows the HUD scale again (1920 x 1080 at 200%: the gauge to 600, the list from 776, scale 1.375).
@@ -76,6 +78,8 @@ namespace client {
             /// @param members The party members, a row each.
             /// @param loginRow Draw the "+" row after the members' rows.
             /// @param battle The played account is in a battle (the rows go higher and clear the command ring, see the class).
+            /// @param riding The played account's status shows the vehicle gauge (WorldScene::vehicleGaugeShown): the rows stay
+            /// under it, see the class.
             /// @param view The played account's screen (the window in the screen's coordinates).
             /// @param hudScale Size of the HUD.
             /// @param mouse Mouse position in the screen's coordinates, if any.
@@ -87,6 +91,7 @@ namespace client {
                 const std::vector<PartyMemberView>& members,
                 bool loginRow,
                 bool battle,
+                bool riding,
                 const core::Rect& view,
                 float hudScale,
                 std::optional<core::Point> mouse,
@@ -121,8 +126,9 @@ namespace client {
             /// @param view The played account's screen (the window in the screen's coordinates).
             /// @param hudScale Size of the HUD.
             /// @param battle The played account is in a battle.
-            /// @return The placement.
-            static Placement place(const core::Rect& view, float hudScale, bool battle);
+            /// @param riding The vehicle gauge shows (not asked in battle).
+            /// @return The placement, or none when the rows have no room (riding, see the class).
+            static std::optional<Placement> place(const core::Rect& view, float hudScale, bool battle, bool riding);
 
             /// @brief Gives a row's box (the members' rows' and the "+" row's backing) in the rows' own coordinates.
             /// @param row Row index.
