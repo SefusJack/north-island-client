@@ -886,6 +886,7 @@ namespace client {
                         canvas,
                         static_cast<float>(live.hudScale) / 100.0f,
                         static_cast<const WorldScene&>(*played->scene),
+                        shown.screen(),
                         frameStart
                     ); // hudScale 100 = 1.0 (percent to factor)
                 }

@@ -878,6 +878,27 @@ namespace ui {
         return windows;
     }
 
+    bool Screen::windowOver(const core::Rect& area) const {
+        std::function<bool(const Element&, core::Point, LayoutRef)> search = [&](const Element& element, core::Point origin, LayoutRef layout) {
+            if (!element.isVisible()) {
+                return false;
+            }
+            const core::Point position = origin + element.bounds().position();
+            if (element.padWindow() || dynamic_cast<const Window*>(&element) != nullptr) {
+                const core::Point topLeft = fromLayout(position, layout);
+                const core::Point bottomRight = fromLayout(position + core::Point{element.bounds().width, element.bounds().height}, layout);
+                return !core::Rect::fromEdges(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y).intersected(area).isEmpty();
+            }
+            return std::any_of(element.children().begin(), element.children().end(), [&](const auto& child) {
+                return search(*child, position, layout);
+            });
+        };
+        const core::Point rootOrigin = m_root->bounds().position();
+        return std::any_of(m_root->children().begin(), m_root->children().end(), [&](const auto& layout) {
+            return kept(*layout) && !layout->isSlidAway() && search(*layout, rootOrigin, std::cref(*layout));
+        });
+    }
+
     std::vector<const Element*> Screen::layoutsFrom(const std::function<bool(const Element& layout)>& pick) const {
         const auto& layouts = m_root->children();
         const auto lowest = std::find_if(layouts.begin(), layouts.end(), [&pick](const auto& layout) {

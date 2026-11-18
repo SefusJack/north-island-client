@@ -121,11 +121,16 @@ namespace client {
         };
     }
 
+    core::Rect PartyPanels::screenBox(int row) const {
+        const core::Rect box = rowBox(row);
+        const core::Point topLeft = m_place.origin + core::Point{scaled(box.x, m_place.scale), scaled(box.y, m_place.scale)};
+        return {topLeft.x, topLeft.y, scaled(box.width, m_place.scale), scaled(box.height, m_place.scale)};
+    }
+
     int PartyPanels::rowAt(core::Point point) const {
         const core::Point at = toRows(point);
-        const int count = m_memberRows + (m_loginRow ? 1 : 0);
-        for (int row = 0; row < count; ++row) {
-            if (rowBox(row).contains(at)) {
+        for (int row = 0; row < static_cast<int>(m_covered.size()); ++row) {
+            if (!m_covered[static_cast<std::size_t>(row)] && rowBox(row).contains(at)) {
                 return row;
             }
         }
@@ -201,14 +206,22 @@ namespace client {
         const core::Rect& view,
         float hudScale,
         std::optional<core::Point> mouse,
-        std::uint64_t nowMs
+        std::uint64_t nowMs,
+        const std::function<bool(const core::Rect& box)>& covered
     ) {
         m_place = place(view, hudScale, battle);
         m_memberRows = static_cast<int>(members.size());
         m_loginRow = loginRow;
+        m_covered.assign(static_cast<std::size_t>(m_memberRows + (loginRow ? 1 : 0)), false);
+        for (int row = 0; row < static_cast<int>(m_covered.size()); ++row) {
+            m_covered[static_cast<std::size_t>(row)] = covered && covered(screenBox(row));
+        }
         const bool blinkOn = nowMs / kBlinkMs % 2 == 0; // on for kBlinkMs, then off as long
         canvas.beginScale(m_place.origin, m_place.scale);
         for (std::size_t index = 0; index < members.size(); ++index) {
+            if (m_covered[index]) {
+                continue;
+            }
             const PartyMemberView& member = members[index];
             const core::Point at = m_place.origin + core::Point{0, static_cast<int>(index) * kRowHeight};
             const core::Rect area = rowBox(0).translated(at);
@@ -221,7 +234,7 @@ namespace client {
             }
         }
         const bool onLoginRow = mouse && loginRowAt(*mouse);
-        if (loginRow) {
+        if (loginRow && !m_covered.back()) {
             drawLoginRow(canvas, m_place.origin + core::Point{0, m_memberRows * kRowHeight}, onLoginRow);
         }
         canvas.endScale();

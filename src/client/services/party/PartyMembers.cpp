@@ -652,12 +652,14 @@ namespace client {
         return static_cast<const WorldScene&>(*m_played->scene).inWorld() && heldRows() < kMostMembers;
     }
 
-    void PartyMembers::drawPanels(gfx::Canvas& canvas, float hudScale, const WorldScene& playedWorld, std::uint64_t nowMs) {
+    void PartyMembers::drawPanels(gfx::Canvas& canvas, float hudScale, const WorldScene& playedWorld, const ui::Screen& shown, std::uint64_t nowMs) {
         const bool loginRow = loginRowShown();
         if (m_members.empty() && !loginRow) {
             return;
         }
-        m_panels->draw(canvas, views(), loginRow, playedWorld.inBattle(), m_played->scene->screen().view(), hudScale, m_mouse, nowMs);
+        // a window of the shown screen (a shop, the globe, mail) under a row keeps that row out of sight and its clicks
+        const auto covered = [&shown](const core::Rect& box) { return shown.windowOver(box); };
+        m_panels->draw(canvas, views(), loginRow, playedWorld.inBattle(), m_played->scene->screen().view(), hudScale, m_mouse, nowMs, covered);
     }
 
     bool PartyMembers::handleRowButton(const SDL_Event& event, core::Point origin) {

@@ -165,8 +165,10 @@ namespace client {
             /// @param canvas The canvas, at the game screen's origin.
             /// @param hudScale The HUD scale.
             /// @param playedWorld The played account's world scene (in a battle the rows go higher).
+            /// @param shown The shown screen (the played account's, or a member's giving its battle commands): a row under one of its
+            /// windows is left out, not drawn and not hit.
             /// @param nowMs The current time in milliseconds.
-            void drawPanels(gfx::Canvas& canvas, float hudScale, const WorldScene& playedWorld, std::uint64_t nowMs);
+            void drawPanels(gfx::Canvas& canvas, float hudScale, const WorldScene& playedWorld, const ui::Screen& shown, std::uint64_t nowMs);
 
             /// @brief Handles an input event for the members: a click on a member's row (select; with Ctrl, the last used window moves to
             /// it: moveLastWindowTo), on the "+" row (WorldScene::openPartyLogin),
