@@ -878,6 +878,18 @@ namespace ui {
         return windows;
     }
 
+    std::vector<const Element*> Screen::layoutsFrom(const std::function<bool(const Element& layout)>& pick) const {
+        const auto& layouts = m_root->children();
+        const auto lowest = std::find_if(layouts.begin(), layouts.end(), [&pick](const auto& layout) {
+            return layout->isVisible() && !layout->isSlidAway() && pick(*layout);
+        });
+        std::vector<const Element*> picked;
+        for (auto layout = lowest; layout != layouts.end(); ++layout) {
+            picked.push_back(layout->get());
+        }
+        return picked;
+    }
+
     std::optional<core::Rect> Screen::screenRectOf(const std::string& name) {
         Element* element = nullptr;
         try {

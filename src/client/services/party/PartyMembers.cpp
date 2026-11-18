@@ -44,6 +44,14 @@ namespace client {
         /// @return True for a popup.
         bool isPopupLayout(const ui::Element& layout) { return kPopupLayouts.count(layout.name()) != 0; }
 
+        /// @brief Tells whether a layout is one of a list.
+        /// @param layouts The layout roots.
+        /// @param layout The layout root.
+        /// @return True when listed.
+        bool listed(const std::vector<const ui::Element*>& layouts, const ui::Element& layout) {
+            return std::find(layouts.begin(), layouts.end(), &layout) != layouts.end();
+        }
+
         constexpr std::uint8_t kLayoutPopup = 1; // a layout in kPopupLayouts
         constexpr std::uint8_t kLayoutWindow = 2; // a layout holding a window
 
@@ -562,7 +570,12 @@ namespace client {
             return false;
         }
         ui::Screen& screen = m_played->scene->screen();
-        screen.setLayoutFilter(isPopupLayout);
+        const std::vector<const ui::Element*> over = screen.layoutsFrom(isPopupLayout);
+        if (over.empty()) {
+            return false;
+        }
+        // the layouts holdPlayedPopups holds back: the topmost layouts of the screen, so a hit there is the screen's own topmost one
+        screen.setLayoutFilter([&over](const ui::Element& layout) { return listed(over, layout); });
         const bool caught = screen.catchesAt(point);
         screen.setLayoutFilter({});
         return caught;
@@ -588,12 +601,18 @@ namespace client {
         if (!memberShown || !m_played->scene) {
             return;
         }
-        m_popupsHeld = true;
-        m_played->scene->screen().setLayoutFilter([](const ui::Element& layout) { return !isPopupLayout(layout); });
+        ui::Screen& screen = m_played->scene->screen();
+        // from the lowest popup up, so that a window raised over the popups (bringAbovePopups) stays over them: drawn in the
+        // order the screen's hit test takes them
+        m_heldLayouts = screen.layoutsFrom(isPopupLayout);
+        if (!m_heldLayouts.empty()) {
+            screen.setLayoutFilter([this](const ui::Element& layout) { return !listed(m_heldLayouts, layout); });
+        }
     }
 
     void PartyMembers::drawWindows(gfx::Canvas& canvas, std::uint64_t nowMs, float hudScale) {
-        if (m_popupsHeld && m_played->scene) {
+        const std::vector<const ui::Element*> held = std::exchange(m_heldLayouts, {});
+        if (!held.empty() && m_played->scene) {
             m_played->scene->screen().setLayoutFilter({});
         }
         for (int index = 0; index < size(); ++index) {
@@ -609,11 +628,11 @@ namespace client {
                 }
             });
         }
-        if (std::exchange(m_popupsHeld, false) && m_played->scene) {
-            // the selected character's popups stay over the other characters' windows; only these layouts are drawn again (a drag
-            // picture or game pad frame of the screen is drawn by both passes, at the same place)
+        if (!held.empty() && m_played->scene) {
+            // the selected character's popups (and the windows raised over them) stay over the other characters' windows; only
+            // these layouts are drawn again (a drag picture or game pad frame of the screen is drawn by both passes, at the same place)
             ui::Screen& screen = m_played->scene->screen();
-            screen.setLayoutFilter(isPopupLayout);
+            screen.setLayoutFilter([&held](const ui::Element& layout) { return listed(held, layout); });
             screen.draw(canvas, nowMs);
             screen.setLayoutFilter({});
         }

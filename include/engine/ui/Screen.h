@@ -342,6 +342,12 @@ namespace ui {
             /// @return Their rectangles in the screen's coordinates.
             std::vector<core::Rect> shownWindows() const;
 
+            /// @brief Lists the layouts from the lowest shown one a test picks up to the top, in drawing order: it and every layout
+            /// drawn over it, picked or not (a window raised over the popups, say). The layout filter is not asked.
+            /// @param pick Predicate on a layout root.
+            /// @return The layout roots; empty when no shown layout is picked.
+            std::vector<const Element*> layoutsFrom(const std::function<bool(const Element& layout)>& pick) const;
+
             /// @brief Runs one frame of updates and refreshes the hover.
             /// @param nowMs Current time in milliseconds.
             void update(std::uint64_t nowMs);

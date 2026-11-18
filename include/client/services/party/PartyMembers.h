@@ -148,7 +148,8 @@ namespace client {
 
             /// @brief Keeps the played account's popups (talk box, messages, menus, item and pet info) out of its screen's coming draw
             /// while a member is in the world, so that drawWindows draws them over the members' windows; call it just before the played
-            /// scene is drawn, and drawWindows after it.
+            /// scene is drawn, and drawWindows after it. Every layout from the lowest popup up is held, so a window raised over the
+            /// popups (ui::UiContext::bringAbovePopups: a count box, a shop) stays over them, as the screen's hit test takes it.
             /// @details Each pass refinds the screen's hover among the layouts it keeps: take the cursor before the played scene is drawn.
             void holdPlayedPopups();
 
@@ -357,7 +358,8 @@ namespace client {
             template <typename Call>
             void withWindows(int index, float hudScale, const Call& call);
 
-            /// @brief Tells whether the played account's popups catch the mouse at a point of the game screen.
+            /// @brief Tells whether the played account's popups, or the windows raised over them, catch the mouse at a point of the
+            /// game screen: the layouts holdPlayedPopups holds, drawn over the members' windows.
             /// @param point The point, in the game screen's coordinates.
             /// @return True when one does.
             bool playedPopupAt(core::Point point);
@@ -389,7 +391,7 @@ namespace client {
             Following m_playedFollowing;
             int m_commanding = -1;
             bool m_mirrorNpcs = false;
-            bool m_popupsHeld = false; // holdPlayedPopups kept the played account's popups for drawWindows
+            std::vector<const ui::Element*> m_heldLayouts; // the played screen's layouts holdPlayedPopups kept for drawWindows
             int m_pendingSelect = -1; // row asked for by select, swapped in by applySelection
             std::unique_ptr<PartyPanels> m_panels;
             std::vector<PartyMessage> m_messages;
