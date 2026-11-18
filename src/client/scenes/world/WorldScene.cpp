@@ -139,7 +139,6 @@ namespace client {
                [this] { return m_map ? m_map->id() : 0; },
                [this](bool pet) { return m_battleSkills.recent(pet); },
                [this](int itemId) { return m_inventory.nextSlotWith(itemId); },
-               [this] { m_itemWindow.close(); },
                [this](std::int32_t ownerId, int npcId) -> std::optional<std::pair<int, std::int32_t>> {
                    const int place = ownerId == m_player.id ? m_pets.placeOf(npcId) : 0;
                    const auto& pet = place != 0 ? m_pets.at(place) : std::nullopt;

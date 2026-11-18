@@ -55,7 +55,6 @@ namespace client {
                 std::function<int()> mapId;
                 std::function<std::array<int, 3>(bool pet)> recentSkills;
                 std::function<int(int itemId)> bagSlotOf;
-                std::function<void()> hideItems;
                 std::function<std::optional<std::pair<int, std::int32_t>>(std::int32_t, int)> petWeapon;
                 std::function<bool()> remoteOn;
                 std::function<AutoBattleSettings(int kind)> playSets;
