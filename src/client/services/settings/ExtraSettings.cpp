@@ -86,6 +86,15 @@ namespace client {
 
         constexpr double kMostSpinMs = 5.0; // the longest busy wait before a capped frame, ms
 
+        /// @brief The lighting's switches by their names in the settings file.
+        constexpr std::array<std::pair<const char*, bool ExtraSettings::Lighting::*>, 5> kLighting{{
+            {"enabled", &ExtraSettings::Lighting::enabled},
+            {"shadows", &ExtraSettings::Lighting::shadows},
+            {"clouds", &ExtraSettings::Lighting::clouds},
+            {"air", &ExtraSettings::Lighting::air},
+            {"occlusion", &ExtraSettings::Lighting::occlusion}
+        }};
+
         /// @brief The on / off speedups by their names in the settings file.
         constexpr std::array<std::pair<const char*, bool core::Speedups::*>, 9> kSpeedups{{
             {"softwareEncodedTextures", &core::Speedups::softwareEncodedTextures},
@@ -200,7 +209,7 @@ namespace client {
                pixelArtSprites == other.pixelArtSprites && pixelArtText == other.pixelArtText && hudScale == other.hudScale && display == other.display &&
                loadingMusicVolume == other.loadingMusicVolume && loadingMusicOn == other.loadingMusicOn && loadingSoundVolume == other.loadingSoundVolume &&
                loadingSoundOn == other.loadingSoundOn && sortButtons == other.sortButtons && partyLogin == other.partyLogin && modernBag == other.modernBag && speedupMode == other.speedupMode && speedups == other.speedups &&
-               controller == other.controller;
+               controller == other.controller && lighting == other.lighting;
     }
 
     std::filesystem::path ExtraSettings::fileIn(const std::filesystem::path& userRoot) { return userRoot / "extra-settings.json"; }
@@ -277,6 +286,11 @@ namespace client {
             readBool(*controller, "hideChat", settings.controller.hideChat);
             readInt(*controller, "hideSeconds", settings.controller.hideSeconds, 0, 600); // up to ten minutes
         }
+        if (const auto lighting = root.find("lighting"); lighting != root.end() && lighting->is_object()) {
+            for (const auto& [name, member] : kLighting) {
+                readBool(*lighting, name, settings.lighting.*member);
+            }
+        }
         if (const auto speedups = root.find("speedups"); speedups != root.end() && speedups->is_object()) {
             for (const auto& [name, member] : kSpeedups) {
                 readBool(*speedups, name, settings.speedups.*member);
@@ -326,6 +340,9 @@ namespace client {
             {"hideChat", controller.hideChat},
             {"hideSeconds", controller.hideSeconds}
         };
+        for (const auto& [name, member] : kLighting) {
+            root["lighting"][name] = lighting.*member;
+        }
         Json& listed = root["speedups"];
         listed["mode"] = speedupModeName(speedupMode);
         for (const auto& [name, member] : kSpeedups) {

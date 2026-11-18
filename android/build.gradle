@@ -1,0 +1,19 @@
+// The Android build of north-island-client: a Gradle app around SDL's SDLActivity. The game itself is built by the
+// repository's own CMakeLists.txt (app/build.gradle hands it to the NDK), so there is one build description for every platform.
+
+buildscript {
+    repositories {
+        mavenCentral()
+        google()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:9.0.1'
+    }
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+        google()
+    }
+}

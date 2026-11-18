@@ -39,6 +39,10 @@ namespace client {
                 std::function<void(gfx::Canvas&, core::Point origin)> paintMapGround;
                 std::function<void(gfx::Canvas&, std::size_t object, core::Point origin, std::uint64_t nowMs)> paintMapObject;
                 std::function<void(gfx::Canvas&, core::Point origin, int forceKind, bool over, std::uint64_t nowMs)> paintSceneEffects;
+                // the experimental lighting of a map ground: under what stands on it (people: where the roles stand on the
+                // map), and over it
+                std::function<void(gfx::Canvas&, core::Point origin, const std::vector<core::Point>& people, std::uint64_t nowMs)> lightMapGround;
+                std::function<void(gfx::Canvas&, core::Point origin, const std::vector<core::Point>& people, std::uint64_t nowMs)> lightMapOver;
                 std::function<std::optional<MovieRoleLook>(int surface)> roleLook;
                 std::function<void()> closeTalk;
             };
@@ -122,6 +126,28 @@ namespace client {
                 std::uint64_t nowMs
             ) const {
                 m_hooks.paintSceneEffects(canvas, origin, forceKind, over, nowMs);
+            }
+
+            /// @brief Puts the lighting's shadows on the map ground just painted, and has what is drawn next noted for it.
+            /// @param canvas Target canvas.
+            /// @param origin View origin.
+            /// @param people Where the roles stand on the map.
+            /// @param nowMs Current clock in ms.
+            void lightMapGround(gfx::Canvas& canvas, core::Point origin, const std::vector<core::Point>& people, std::uint64_t nowMs) const {
+                if (m_hooks.lightMapGround) {
+                    m_hooks.lightMapGround(canvas, origin, people, nowMs);
+                }
+            }
+
+            /// @brief Puts the lighting over the map ground and what stands on it.
+            /// @param canvas Target canvas.
+            /// @param origin View origin.
+            /// @param people Where the roles stand on the map.
+            /// @param nowMs Current clock in ms.
+            void lightMapOver(gfx::Canvas& canvas, core::Point origin, const std::vector<core::Point>& people, std::uint64_t nowMs) const {
+                if (m_hooks.lightMapOver) {
+                    m_hooks.lightMapOver(canvas, origin, people, nowMs);
+                }
             }
 
             /// @brief Paints the map ground for the movie layer.

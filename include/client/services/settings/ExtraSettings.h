@@ -44,6 +44,22 @@ namespace client {
             }
         };
 
+        /// @brief The experimental lighting of the map and the battles ("lighting" in the file); its looks are in lighting.json.
+        struct Lighting {
+            bool enabled = false; // anything is lit at all
+            bool shadows = true; // figures and objects cast shadows
+            bool clouds = true; // the drifting shade of clouds and leaves
+            bool air = true; // specks in the air, shafts of light, glints on water
+            bool occlusion = true; // the ground is darker right where a figure or an object stands on it
+
+            /// @brief Compares all settings.
+            /// @param other The settings to compare with.
+            /// @return True when every setting matches.
+            bool operator==(const Lighting& other) const {
+                return enabled == other.enabled && shadows == other.shadows && clouds == other.clouds && air == other.air && occlusion == other.occlusion;
+            }
+        };
+
         Frames frames = Frames::Original;
         int fpsCap = 144; // default frame cap in frames per second
         int perfOverlay = 0; // the performance overlay: 0 off, 1 the frame rate, 2 with processor, graphics card and RAM use and the times, 3 with the graph
@@ -66,8 +82,13 @@ namespace client {
         bool sortButtons = false;
         bool partyLogin = false;
         bool modernBag = false; // things in the bag move the modern way: the left button carries a whole stack, the right one puts one down or takes half
+#ifdef __ANDROID__
+        SpeedupMode speedupMode = SpeedupMode::Auto; // a phone starts with the recommended speedups
+#else
         SpeedupMode speedupMode = SpeedupMode::None; // which speedups run ("mode" under "speedups" in the file)
+#endif
         Controller controller;
+        Lighting lighting;
         core::Speedups speedups; // the player's own choice (used in SpeedupMode::Custom) and, in every mode, the busy wait
 
         /// @brief Tells whether frames are paced by anything but the original's beat.

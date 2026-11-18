@@ -40,8 +40,47 @@ namespace client {
             if (m_movieMap && object < m_movieMap->objects().size()) {
                 Camera camera;
                 camera.setOrigin(origin);
-                m_painter.paintMovieObject(canvas, m_movieMap->objects()[object], camera, nowMs);
+                m_painter.paintMovieObject(canvas, *m_movieMap, m_movieMap->objects()[object], camera, nowMs);
             }
+        };
+        // the lighting of the movie's map, as the map itself has it: the roles stand in for the players
+        const auto lighted = [this](gfx::Canvas& canvas, core::Point origin, const std::vector<core::Point>& people, std::uint64_t nowMs, bool over) {
+            if (!m_movieMap) {
+                return;
+            }
+            m_lighting.setOptions(m_services.videoSettings().lighting);
+            Camera camera;
+            camera.setOrigin(origin);
+            const auto scene = m_scenes ? m_scenes->find(m_movieMap->id()) : std::nullopt;
+            const int type = scene ? scene->type : 0;
+            std::vector<MapCharacter> roles(people.size());
+            std::vector<std::reference_wrapper<MapCharacter>> characters;
+            for (std::size_t i = 0; i < people.size(); ++i) {
+                roles[i].position = people[i];
+                characters.emplace_back(roles[i]);
+            }
+            if (!over) {
+                if (!m_movieLit) { // the figures the map noted last are not the movie's
+                    m_lighting.forgetFigures();
+                    m_movieLit = true;
+                }
+                m_lighting.paintGround(canvas, m_services.pictures, *m_movieMap, camera, type, characters, {}, {}, nowMs);
+                hideFigureShadows(m_lighting.castsShadows());
+                if (m_lighting.notesFigures()) {
+                    beginFigureEcho();
+                    noteFigureCovers(canvas.device());
+                }
+                return;
+            }
+            m_lighting.apply(canvas, m_services.pictures, *m_movieMap, camera, type, characters, nowMs);
+            hideFigureShadows(false);
+            endFigureEcho(canvas.device());
+        };
+        hooks.lightMapGround = [lighted](gfx::Canvas& canvas, core::Point origin, const std::vector<core::Point>& people, std::uint64_t nowMs) {
+            lighted(canvas, origin, people, nowMs, false);
+        };
+        hooks.lightMapOver = [lighted](gfx::Canvas& canvas, core::Point origin, const std::vector<core::Point>& people, std::uint64_t nowMs) {
+            lighted(canvas, origin, people, nowMs, true);
         };
         hooks.paintSceneEffects = [this](gfx::Canvas& canvas, core::Point origin, int forceKind, bool over, std::uint64_t nowMs) {
             SceneEffects::Conditions conditions = effectConditions();

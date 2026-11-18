@@ -1,6 +1,7 @@
 #include "client/rendering/characters/CharacterRenderer.h"
 
 #include "client/data/EquipDrawOrder.h"
+#include "client/rendering/characters/FigureShadow.h"
 
 #include "formats/GamePixels.h"
 #include "formats/Image.h"
@@ -286,6 +287,7 @@ namespace client {
         int frame,
         SpriteHighlight highlight
     ) {
+        const FigureEchoScope echo(canvas, feet); // the lighting may cast its shadow
         const std::string prefix = bankPrefix(look.bodyType);
         const int base = idBase(look.bodyType);
         const Layer body{prefix, base + look.bodySprite, 0};
@@ -421,6 +423,7 @@ namespace client {
         int slot,
         int frame
     ) {
+        const FigureEchoScope echo(canvas, feet); // the lighting may cast its shadow
         if (const auto layer = petLayer(npc.roleSpriteId)) {
             drawLayer(canvas, *layer, npcPattern(npc), Tint::Figure, feet, slot, frame);
         }
@@ -498,6 +501,7 @@ namespace client {
         int frame,
         SpriteHighlight highlight
     ) {
+        const FigureEchoScope echo(canvas, feet); // the lighting may cast its shadow
         if (const auto layer = npcLayerOf(npc)) {
             drawLayer(canvas, *layer, npcPattern(npc), Tint::Figure, feet, slot, frame, highlight);
         }
@@ -533,6 +537,7 @@ namespace client {
         int frame,
         SpriteHighlight highlight
     ) {
+        const FigureEchoScope echo(canvas, feet); // the lighting may cast its shadow
         formats::ColorPattern pattern = npcPattern(npc);
         std::optional<Layer> weapon;
         const bool human = npc.bodyType >= 1 && npc.bodyType <= 4 &&
@@ -811,6 +816,7 @@ namespace client {
         int slot,
         int frame
     ) {
+        const FigureEchoScope echo(canvas, feet); // the lighting may cast its shadow
         drawLayer(canvas, Layer{"006", spriteId, 0}, formats::ColorPattern{}, Tint::None, feet, slot, frame); // 006 bank: vehicle sprites
     }
 

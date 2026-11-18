@@ -1,4 +1,6 @@
 #include "client/scenes/world/WorldScene.h"
+
+#include "client/rendering/characters/FigureShadow.h"
 #include "client/services/photo/ScreenPhoto.h"
 
 #include "client/actions/MessageDispatcher.h"
@@ -98,6 +100,7 @@ namespace client {
           m_mapArchive(formats::DataArchive::open(services.game.data("Data/Ground.MMG"))),
           m_objectArchive(formats::DataArchive::open(services.game.data("Data/Wem.MMG"))),
           m_painter(services.characters, services.pictures, services.items),
+          m_lighting(services.game.user("lighting.json")),
           m_effects(services.pictures),
           m_inventory(services.items),
           m_bank(services.items),
@@ -1408,6 +1411,7 @@ namespace client {
             [this](int itemId, int slot, int count) { m_battle.chooseItem(itemId, slot, count); }
         );
         m_view.setPainter([this](gfx::Canvas& canvas, core::Point, std::uint64_t nowMs) {
+            m_lighting.setOptions(m_services.videoSettings().lighting);
             const std::optional<core::Rect> skillPart = m_battleShown ? m_battle.skillZoomPart() : std::nullopt;
             const std::optional<core::Rect> skillZoom = skillPart ? std::optional<core::Rect>(SkillZoom::sourceIn(*skillPart, m_services.view)) : std::nullopt;
             const bool frozen = !m_battleShown && m_dimStep == kDarkStep && m_dimTarget == kDarkStep;
@@ -1425,6 +1429,7 @@ namespace client {
                 }
                 if (m_battleShown) {
                     m_battle.paintGround(canvas);
+                    m_lighting.battleGround(canvas, nowMs);
                 } else {
                     paintWorld(canvas, nowMs);
                 }
@@ -1452,7 +1457,17 @@ namespace client {
                 }
             }
             if (m_fightState != 0) {
+                const bool lit = m_battleShown && m_lighting.isOn();
+                if (lit) {
+                    hideFigureShadows(m_lighting.castsShadows());
+                    beginFigureEcho();
+                }
                 m_battle.paintField(canvas, m_screen.mouse(), nowMs);
+                if (lit) {
+                    m_lighting.battleApply(canvas, nowMs); // while the fighters drawn are noted still
+                    endFigureEcho(canvas.device());
+                    hideFigureShadows(false);
+                }
                 if (skillZoom) {
                     canvas.endZoom(*skillZoom); // the labels are drawn over the stretched frame (DrawFightScene after StretchBufToScreen)
                 }
@@ -5723,7 +5738,8 @@ namespace client {
         }
         display.mapId = m_map->id();
         display.sceneType = sceneType();
-        display.underStanding = [this, nowMs](gfx::Canvas& under) {
+        display.underStanding = [this, nowMs, &characters](gfx::Canvas& under) {
+            m_lighting.paintGround(under, m_services.pictures, *m_map, m_camera, sceneType(), characters, m_npcs, m_mapPets.pets(), nowMs);
             for (const std::int32_t owner :
                  m_vehicleWrecks.draw(under, m_camera.origin(), nowMs, [this](std::int32_t id) { return characterOf(id).has_value(); })) {
                 m_services.connection.send(protocol::wreckSeenRequest(owner));
@@ -5733,6 +5749,7 @@ namespace client {
             if (specFloorShown()) {
                 m_specFloor.draw(under, ownHouse(), m_camera, specFloorHovered());
             }
+            noteFigureCovers(under.device()); // what stands on the map is drawn from here on: the lighting darkens the ground at its edges
         };
         setHouseDisplay(display, nowMs);
         display.hideOwnPlayer = m_transmit.hidesPlayer() || m_gpsEffect.hidesPlayer();
@@ -5786,12 +5803,23 @@ namespace client {
             }
         };
         const bool zoomed = canvas.isZooming();
+        const auto light = [&](gfx::Canvas& lit) { m_lighting.apply(lit, m_services.pictures, *m_map, m_camera, sceneType(), characters, nowMs); };
+        display.beforeLabels = light; // the names and what lies over the people keep their own colours
         if (zoomed) {
             display.beforeLabels = [&](gfx::Canvas& zoomedCanvas) {
                 overPeople(zoomedCanvas);
+                light(zoomedCanvas);
                 zoomedCanvas.endZoom(m_camera.view());
             };
             display.onWindow = [part = m_camera.view(), window = m_services.view](core::Point point) { return ViewZoom::toWindow(point, part, window); };
+        }
+        if (m_movieLit) { // the figures noted last were a movie's
+            m_lighting.forgetFigures();
+            m_movieLit = false;
+        }
+        hideFigureShadows(m_lighting.castsShadows());
+        if (m_lighting.notesFigures()) {
+            beginFigureEcho();
         }
         m_painter.paint(
             canvas,
@@ -5808,6 +5836,8 @@ namespace client {
             display,
             nowMs
         );
+        hideFigureShadows(false);
+        endFigureEcho(canvas.device());
         if (!zoomed) {
             overPeople(canvas);
         }

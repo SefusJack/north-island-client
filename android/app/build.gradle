@@ -1,0 +1,55 @@
+plugins {
+    id 'com.android.application'
+}
+
+// SDL's Java side (SDLActivity and its helpers) is compiled from the vendored SDL, not copied here
+def sdlJava = "${rootDir}/../thirdparty/SDL3/android-project/app/src/main/java"
+
+android {
+    namespace = "org.northisland.client"
+    compileSdk = 35
+    ndkVersion = project.property('ndkVersion')
+    defaultConfig {
+        applicationId "org.northisland.client"
+        minSdk = 21
+        targetSdk = 35
+        versionCode 1
+        versionName "0.4.0-prealpha"
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_PLATFORM=android-21", "-DANDROID_STL=c++_static"
+                targets "north-island-client"
+                abiFilters(*project.property('abis').split(','))
+            }
+        }
+    }
+    buildTypes {
+        debug {
+            // the game is far too slow unoptimized; a debug APK (debug key, debuggable) still carries an optimized library
+            externalNativeBuild {
+                cmake {
+                    arguments "-DCMAKE_BUILD_TYPE=RelWithDebInfo"
+                }
+            }
+        }
+        release {
+            minifyEnabled false
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path "${rootDir}/../CMakeLists.txt"
+            version "4.1.2"
+        }
+    }
+    sourceSets.main {
+        java.srcDirs = ['src/main/java', sdlJava]
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    lint {
+        abortOnError = false
+    }
+}

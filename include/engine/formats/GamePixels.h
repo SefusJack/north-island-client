@@ -17,6 +17,13 @@ namespace formats {
     /// @param colorAdd Tint added to red, green and blue, saturating at 255.
     void applyPictureRules(Image& image, core::Color colorAdd = {0, 0, 0, 0});
 
+    constexpr std::uint8_t kWithoutDither = 0xD1; // a tint with this alpha asks for the picture without its dithered shadow
+
+    /// @brief Takes the dithered shadow out of a picture: the dark pixels set in a checkerboard with see-through ones between.
+    /// @details Some map pictures (trees, rocks) have their shadow painted on that way; the experimental lighting casts its own.
+    /// @param image Bitmap after applyPictureRules, changed in place.
+    void dropDitheredShadow(Image& image);
+
     /// @brief Reduces every pixel to RGB565 precision (JPEG backgrounds drawn onto the 16-bit screen).
     /// @param image Bitmap changed in place.
     void quantizeTo16Bit(Image& image);

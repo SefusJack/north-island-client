@@ -1,5 +1,7 @@
 #include "client/subsystems/battle/EffectLayer.h"
 
+#include "client/rendering/characters/FigureShadow.h"
+
 #include <cmath>
 #include <cstdlib>
 #include <optional>
@@ -437,6 +439,7 @@ namespace client {
             source.width = m_picWidth;
         }
         const core::Point at{m_bounds.x + shake.x, m_bounds.y + shake.y};
+        noteEffectGlow(canvas, *m_picture, m_name, source, at, m_translucent); // the experimental lighting lets it shine on the field
         if (m_translucent) {
             canvas.drawPictureLight(*m_picture, at, kLightStrength, source);
         } else {

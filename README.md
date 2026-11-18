@@ -67,6 +67,45 @@ File names are looked up without regard to case, so the Windows data folder work
 Install Xcode's command line tools (`xcode-select --install`) and CMake. The preset builds one universal program for
 macOS 11 and later.
 
+### Android
+
+The Android app is the Gradle project in `android`: SDL's activity around the same CMake targets, built with the NDK
+(the game is one library, `libmain.so`, with SDL linked into it). It needs a JDK 17 or later and the Android SDK with
+**Android SDK Platform 35**, **Build-Tools 36**, **Platform-Tools**, **NDK 30.0.16248370** and **CMake 4.1.2**
+(Android Studio's SDK Manager installs all of them). Point Gradle at the SDK with `ANDROID_HOME` or a line
+`sdk.dir=...` in `android/local.properties`, then:
+
+```bash
+cd android
+./gradlew assembleDebug
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+Another installed NDK is chosen with `-PndkVersion=<version>`, and other ABIs than `arm64-v8a` with
+`-Pabis=arm64-v8a,x86_64`.
+
+The game's files are not in the APK. Start the app once (it says where the files go and makes that folder), then copy
+the contents of the Wonderland Online folder into it, from the computer:
+
+```bash
+adb push "C:\Program Files (x86)\Wonderland Online\." /sdcard/Android/data/org.northisland.client/files/
+```
+
+Settings, accounts and the log are in that folder's `user` folder, as elsewhere; the log lines also go to the system
+log (`adb logcat -s SDL/APP`). For a server running on the computer the phone is plugged into,
+`adb reverse tcp:<port> tcp:<port>` lets the phone reach it as `127.0.0.1`.
+
+On a phone the app is called North Island, and the game is always landscape and full screen, its 600 lines filling the
+screen's height. A tap is a left click, a finger that moves drags, a finger held still is a right click, and two fingers
+moved apart or together zoom the view. The on-screen keyboard comes up when a text field is touched, and the Back button
+is Escape. Unless the settings say otherwise it renders with Vulkan and runs the recommended speedups.
+
+The command line options can be given for a test run:
+
+```bash
+adb shell "am start -n org.northisland.client/.GameActivity --es args '--perf'"
+```
+
 ## Run
 
 Copy the program into the Wonderland Online folder (the one with the `data`, `pic` and `font` folders) and start it.

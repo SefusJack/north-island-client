@@ -12,9 +12,11 @@
 #include "gfx/SdlDeleter.h"
 
 #include <array>
+#include <memory>
 #include <optional>
 #include <string>
 #include <utility>
+#include <cstdint>
 #include <vector>
 
 namespace gfx {
@@ -26,6 +28,16 @@ namespace gfx {
     /// @details The logical resolution (the game's pixels) is the window's size divided by the pixel scale, at least
     /// minWidth x minHeight; a window too small for that shows it shrunk. At a pixel scale above 1 the frame is drawn at the
     /// window's detail, which the HD pictures of the mod packs (Texture's detail) show.
+    /// @brief A part of a texture as it was drawn (noted for the experimental lighting, which draws a figure again as its shadow).
+    struct SpriteEcho {
+        SDL_Texture* texture = nullptr;
+        SDL_FRect from{}; // in the texture's pixels
+        SDL_FRect to{}; // where it was drawn
+        bool flipX = false;
+        bool flipY = false;
+        std::uint8_t alpha = 255;
+    };
+
     class RenderDevice {
         public:
             /// @brief What the window and renderer are created with.
@@ -42,6 +54,7 @@ namespace gfx {
                 RenderMode mode = RenderMode::Accelerated;
                 bool vsync = false;
                 int pixelScale = 1;
+                bool fitScreen = false; // a screen that is the whole window (a phone): the game's screen fills its height, whatever pixelScale says
                 std::string driver;
             };
 
@@ -198,6 +211,14 @@ namespace gfx {
             /// @param shift How far the scene moved on the screen since the frame before, in pixels.
             void sceneMovedBy(core::Point shift) const { m_sceneShift = shift; }
 
+            /// @brief Notes the textures drawn from now on in a list, or stops noting.
+            /// @param list The list, nullptr to stop.
+            void setSpriteEcho(std::vector<SpriteEcho>* list) const { m_spriteEcho = list; }
+
+            /// @brief The list the textures drawn are noted in.
+            /// @return The list, nullptr when none are noted.
+            std::vector<SpriteEcho>* spriteEcho() const { return m_spriteEcho; }
+
             /// @brief Starts drawing off screen over an area of this many logical pixels from the buffer's top left.
             /// @details The area is the part of the canvas a zoom shows (bigger than the window when zoomed out).
             /// @param area Size of the area in logical pixels.
@@ -237,6 +258,7 @@ namespace gfx {
             SdlHandle<SDL_Window> m_window;
             SdlHandle<SDL_Renderer> m_renderer;
             mutable SdlHandle<SDL_Texture> m_zoomTarget;
+            mutable std::vector<SpriteEcho>* m_spriteEcho = nullptr;
             // software renderer: the frame last copied to the screen, to copy only the parts that changed
             std::vector<std::uint8_t> m_shownFrame;
             int m_shownWidth = 0;
@@ -254,6 +276,7 @@ namespace gfx {
             int m_minWidth = 0;
             int m_minHeight = 0;
             int m_pixelScale = 1;
+            bool m_fitScreen = false;
             float m_drawScale = 1;
             formats::PixelArtFilter m_pixelArtFilter = formats::PixelArtFilter::None;
             std::array<bool, 3> m_pixelArtParts{true, true, true}; // one flag per PixelArtPart (Pictures, Sprites, Text)
