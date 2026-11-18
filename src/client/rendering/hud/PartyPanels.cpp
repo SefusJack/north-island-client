@@ -5,7 +5,9 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <functional>
 #include <string>
+#include <vector>
 
 namespace client {
 
@@ -89,9 +91,22 @@ namespace client {
                        return !block.intersected(ring).isEmpty();
                    });
         };
-        // the largest scale from most down to least, in kScaleStep steps, at which the rows fit with their first row at top
+        // the largest scale from most down to least at which the rows fit with their first row at top: most less whole kScaleStep
+        // steps, and 1 and least themselves (most need not be a step multiple away from them, a HUD scale of 110% say)
         const auto fit = [&](int top, float most, float least) -> std::optional<Placement> {
-            for (float scale = most; scale >= least; scale -= kScaleStep) {
+            if (most < least) {
+                return std::nullopt;
+            }
+            std::vector<float> scales{least};
+            if (least <= 1.0f && 1.0f <= most) {
+                scales.push_back(1.0f);
+            }
+            const int steps = static_cast<int>(std::floor((most - least) / kScaleStep));
+            for (int step = 0; step <= steps; ++step) {
+                scales.push_back(most - static_cast<float>(step) * kScaleStep);
+            }
+            std::sort(scales.begin(), scales.end(), std::greater<>());
+            for (const float scale : scales) {
                 if (clear(at(top, scale))) {
                     return at(top, scale);
                 }

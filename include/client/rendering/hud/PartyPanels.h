@@ -60,7 +60,7 @@ namespace client {
             static constexpr int kMostRows = PartyMembers::kMostMembers + 1; // rows at most: kMostMembers members' rows, or fewer and the "+" row
             static constexpr int kBlockHeight = kMostRows * kRowHeight - 2; // px from the first row's box top to the last's bottom (2 px gap after the last)
             static constexpr float kLeastScale = 0.5f; // the rows are never drawn smaller, factor
-            static constexpr float kScaleStep = 0.0625f; // the rows' scale shrinks by 1/16 at a time until they fit
+            static constexpr float kScaleStep = 0.0625f; // the rows' scale shrinks by 1/16 at a time until they fit (1 and kLeastScale are tried as well)
             static constexpr std::uint64_t kBlinkMs = 500; // ms the attention outline is on, then off
 
             /// @brief Creates the party rows painter.
