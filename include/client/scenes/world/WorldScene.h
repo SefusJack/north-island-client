@@ -424,10 +424,6 @@ namespace client {
             /// @return The look.
             const CharacterLook& ownLook() const { return m_player.look; }
 
-            /// @brief The players the battle's panels show at the top, in their places (none out of a battle).
-            /// @return The player ids.
-            std::vector<std::int32_t> battlePanelIds() const;
-
             /// @brief The own player's status.
             /// @return The status.
             const PlayerStatus& ownStatus() const { return m_status; }
@@ -447,10 +443,6 @@ namespace client {
             /// @brief The own player's id.
             /// @return The id.
             std::int32_t ownId() const { return m_player.id; }
-
-            /// @brief Offers the lead to a teammate at once (the group window's checks, without its question).
-            /// @param memberId The teammate's player id.
-            void appointLeader(std::int32_t memberId) { m_groupWindow.appointLeader(memberId); }
 
             /// @brief Opens the window that logs another account in with this one (qol multi-login), when multi-login is on.
             void openPartyLogin();

@@ -2684,18 +2684,6 @@ namespace client {
         return user;
     }
 
-    std::vector<std::int32_t> WorldScene::battlePanelIds() const {
-        std::vector<std::int32_t> ids;
-        if (!m_battle.isOn()) {
-            return ids;
-        }
-        for (const int slot : m_battle.members()) {
-            const auto fighter = m_battle.field().fighter(slot);
-            ids.push_back(fighter ? fighter->get().id : 0);
-        }
-        return ids;
-    }
-
     void WorldScene::saveExpBeforeFight() {
         m_expBefore[0] = m_status.exp;
         for (int place = 1; place <= PetTeam::kPlaces; ++place) {
