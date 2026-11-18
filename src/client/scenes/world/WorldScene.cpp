@@ -6027,6 +6027,8 @@ namespace client {
         );
     }
 
+    void WorldScene::offerLeadTo(std::int32_t memberId) { m_groupWindow.appointLeader(memberId); }
+
     void WorldScene::closePartyForms() {
         m_partyLogin.close();
         if (!m_partyLogOutAsked.expired()) {

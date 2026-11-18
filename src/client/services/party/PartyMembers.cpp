@@ -711,6 +711,8 @@ namespace client {
         }
         if (left && (SDL_GetModState() & SDL_KMOD_CTRL) != 0) {
             moveLastWindowTo(pressed);
+        } else if (left && (SDL_GetModState() & SDL_KMOD_ALT) != 0) {
+            leadAndSelect(pressed);
         } else if (left) {
             select(pressed);
         } else if (member.world && !member.leavingSinceMs && member.world->get().inWorld()) {
@@ -752,6 +754,24 @@ namespace client {
         }
         owner->closeMovableWindow(last->key);
         core::logInfo("party: the ", last->key, " window of ", owner->ownName(), " moved to ", targetWorld.ownName());
+    }
+
+    void PartyMembers::leadAndSelect(int index) {
+        const Member& target = *m_members[static_cast<std::size_t>(index)];
+        if (target.world && !target.leavingSinceMs && target.world->get().inWorld()) {
+            const WorldScene& targetWorld = target.world->get();
+            const std::int32_t targetId = targetWorld.ownId();
+            const auto leaderId = targetWorld.teams().leaderOf(targetId);
+            if (leaderId && *leaderId != targetId) {
+                if (WorldScene* leader = ownWorld(*leaderId)) {
+                    core::logInfo("party: ", leader->ownName(), " offers the lead to ", targetWorld.ownName());
+                    leader->offerLeadTo(targetId);
+                } else {
+                    core::logInfo("party: ", targetWorld.ownName(), " is led by another player's character: only selected");
+                }
+            }
+        }
+        select(index);
     }
 
     bool PartyMembers::handleEvent(const SDL_Event& event, core::Point origin, float hudScale, bool memberShown) {

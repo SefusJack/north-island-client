@@ -87,7 +87,8 @@ namespace client {
     /// from its login: while it is not in a team it is invited into the selected character's team (13/7, by that team's leader when it
     /// is an own character) when on its map, until it has been in a team and left it. Own characters accept each other's team
     /// invitations and lead. A ground click of a character in a team led by another own character walks that leader (walkToLeader); a
-    /// Ctrl+click on a row moves the last used window to that member (moveLastWindowTo). Also covers manual battle turns shown in the
+    /// Ctrl+click on a row moves the last used window to that member (moveLastWindowTo); an Alt+click makes it its team's leader and
+    /// selects it (leadAndSelect). Also covers manual battle turns shown in the
     /// played account's place (a member due in another battle asks for attention on its row), the members' windows over the screen,
     /// the whisper and team chat relay, the NPC mirror and the services' log in/out hooks (WorldScene::openPartyLogin, askPartyLogOut).
     class PartyMembers {
@@ -171,7 +172,7 @@ namespace client {
             void drawPanels(gfx::Canvas& canvas, float hudScale, const WorldScene& playedWorld, const ui::Screen& shown, std::uint64_t nowMs);
 
             /// @brief Handles an input event for the members: a click on a member's row (select; with Ctrl, the last used window moves to
-            /// it: moveLastWindowTo), on the "+" row (WorldScene::openPartyLogin),
+            /// it: moveLastWindowTo; with Alt, it leads its team and is selected: leadAndSelect), on the "+" row (WorldScene::openPartyLogin),
             /// a right click on a member's row (WorldScene::askPartyLogOut; a gone member's row goes), the mouse over a member's window,
             /// typing into a member's text box.
             /// @details Both buttons' presses and releases on the rows are taken, so nothing under the rows (a right-click menu) sees them.
@@ -281,7 +282,8 @@ namespace client {
             bool loginRowShown() const;
 
             /// @brief Takes a press or release of the mouse button on the rows: on a press, acts on the row under it (the left
-            /// button selects or opens the login form, with Ctrl held moves the last used window to it; the right one asks to log out);
+            /// button selects or opens the login form, with Ctrl held moves the last used window to it, with Alt held makes it lead and
+            /// selects it; the right one asks to log out);
             /// the release of the button whose press was taken is taken too.
             /// @param event The SDL mouse button event.
             /// @param origin The game screen's place in the window.
@@ -293,6 +295,12 @@ namespace client {
             /// happens when the member owns it already, or when it can't open for the member (the owner keeps it). The selected character stays.
             /// @param index The member's row.
             void moveLastWindowTo(int index);
+
+            /// @brief Makes a member its team's leader and selects it: the team's leader, when it is an own character, offers it the lead
+            /// (WorldScene::offerLeadTo), which own characters take unasked. A member that leads already, is in no team or is led by
+            /// another player's character is only selected.
+            /// @param index The member's row.
+            void leadAndSelect(int index);
 
             /// @brief Finds the world scene of a character's services: the played account's or a member's.
             /// @param services The character's services.

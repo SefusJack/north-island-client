@@ -456,6 +456,11 @@ namespace client {
             /// @param name The character's name, shown in the question.
             void askPartyLogOut(std::int32_t playerId, const std::string& name);
 
+            /// @brief Offers the team lead to a member of this character's team (13/10), as the group window's appoint does: refused
+            /// with its message when this character does not lead the team or may not hand the lead on now.
+            /// @param memberId The member's id.
+            void offerLeadTo(std::int32_t memberId);
+
             /// @brief Closes the party login window and a pending party log-out question (askPartyLogOut), leaving any other talk
             /// up: called when this character stops being the selected one, whose party hooks they answer through.
             void closePartyForms();
