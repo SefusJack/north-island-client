@@ -346,7 +346,7 @@ namespace client {
         if (taken) {
             return "That account is logged in already.";
         }
-        if (size() >= kMostMembers) {
+        if (activeMembers() >= kMostMembers) {
             return "At most " + std::to_string(kMostMembers + 1) + " characters can be logged in.";
         }
         m_members.push_back(std::make_unique<Member>(GameTables::of(played()), m_silent, std::move(account)));
@@ -573,8 +573,63 @@ namespace client {
         }
     }
 
-    void PartyMembers::drawPanels(gfx::Canvas& canvas, float hudScale, const WorldScene& playedWorld) {
-        m_panels->draw(canvas, views(), playedWorld.battlePanelIds(), m_played->scene->screen().view(), hudScale, m_mouse);
+    int PartyMembers::activeMembers() const {
+        return static_cast<int>(std::count_if(m_members.begin(), m_members.end(), [](const auto& member) {
+            return !member->goneReason && !member->leavingSinceMs;
+        }));
+    }
+
+    bool PartyMembers::loginRowShown() const {
+        if (!played().videoSettings().partyLogin || m_played->kind != SceneKind::World || !m_played->scene) {
+            return false;
+        }
+        return static_cast<const WorldScene&>(*m_played->scene).inWorld() && activeMembers() < kMostMembers;
+    }
+
+    void PartyMembers::drawPanels(gfx::Canvas& canvas, float hudScale, const WorldScene& playedWorld, std::uint64_t nowMs) {
+        const bool loginRow = loginRowShown();
+        if (m_members.empty() && !loginRow) {
+            return;
+        }
+        m_panels->draw(canvas, views(), loginRow, playedWorld.inBattle(), m_played->scene->screen().view(), hudScale, m_mouse, nowMs);
+    }
+
+    bool PartyMembers::handleRowButton(const SDL_Event& event, core::Point origin) {
+        if (event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
+            return std::exchange(m_panelPressed, false);
+        }
+        // the rows are drawn in the world only: elsewhere (the login screen after a lost server) their last places catch nothing
+        if (m_played->kind != SceneKind::World || !m_played->scene) {
+            return false;
+        }
+        const core::Point point{static_cast<int>(event.button.x) - origin.x, static_cast<int>(event.button.y) - origin.y};
+        const bool left = event.button.button == SDL_BUTTON_LEFT;
+        WorldScene& playedWorld = static_cast<WorldScene&>(*m_played->scene);
+        if (m_panels->loginRowAt(point) && loginRowShown()) {
+            m_panelPressed = true;
+            if (left) {
+                playedWorld.openPartyLogin();
+            }
+            return true;
+        }
+        const int pressed = m_panels->memberAt(point);
+        if (pressed < 0 || pressed >= size()) {
+            return false;
+        }
+        m_panelPressed = true;
+        const Member& member = *m_members[static_cast<std::size_t>(pressed)];
+        if (member.goneReason && !member.leavingSinceMs) {
+            // a gone member's row has nothing to select or log out: a click clears it away
+            core::logInfo("party member ", member.account.account, ": row cleared");
+            remove(pressed);
+            return true;
+        }
+        if (left) {
+            select(pressed);
+        } else if (member.world && !member.leavingSinceMs && member.world->get().inWorld()) {
+            playedWorld.askPartyLogOut(member.world->get().ownId(), member.world->get().ownName());
+        }
+        return true;
     }
 
     bool PartyMembers::handleEvent(const SDL_Event& event, core::Point origin, float hudScale, bool memberShown) {
@@ -584,45 +639,9 @@ namespace client {
         if (event.type == SDL_EVENT_MOUSE_MOTION) {
             m_mouse = core::Point{static_cast<int>(event.motion.x) - origin.x, static_cast<int>(event.motion.y) - origin.y};
         }
-        // the rows are drawn in the world only: elsewhere (the login screen after a lost server) their last places catch nothing
-        const bool rowsShown = m_played->kind == SceneKind::World;
-        if ((event.type == SDL_EVENT_MOUSE_BUTTON_DOWN || event.type == SDL_EVENT_MOUSE_BUTTON_UP) && event.button.button == SDL_BUTTON_LEFT) {
-            const core::Point point{static_cast<int>(event.button.x) - origin.x, static_cast<int>(event.button.y) - origin.y};
-            const int pressed = event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && rowsShown ? m_panels->memberAt(point) : -1;
-            const int row = pressed < size() ? pressed : -1;
-            if (row >= 0) {
-                m_panelPressed = true;
-                const Member& member = *m_members[static_cast<std::size_t>(row)];
-                if (member.goneReason && !member.leavingSinceMs) {
-                    // a gone member's row has nothing to select: the click clears it away
-                    core::logInfo("party member ", member.account.account, ": row cleared");
-                    remove(row);
-                    return true;
-                }
-                select(row);
-                return true;
-            }
-            if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && std::exchange(m_panelPressed, false)) {
-                return true;
-            }
-        }
-        if ((event.type == SDL_EVENT_MOUSE_BUTTON_DOWN || event.type == SDL_EVENT_MOUSE_BUTTON_UP) && event.button.button == SDL_BUTTON_RIGHT) {
-            // right click on a member's status row: make that member the team leader (the group window's appoint, unasked)
-            const core::Point point{static_cast<int>(event.button.x) - origin.x, static_cast<int>(event.button.y) - origin.y};
-            const int pressed = event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && rowsShown ? m_panels->memberAt(point) : -1;
-            const int row = pressed < size() ? pressed : -1;
-            if (row >= 0) {
-                m_panelPressed = true;
-                const Member& member = *m_members[static_cast<std::size_t>(row)];
-                if (member.world && !member.leavingSinceMs && member.world->get().inWorld() && m_played->kind == SceneKind::World) {
-                    core::logInfo("party: ", member.account.account, " is offered the lead");
-                    static_cast<WorldScene&>(*m_played->scene).appointLeader(member.world->get().ownId());
-                }
-                return true;
-            }
-            if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && std::exchange(m_panelPressed, false)) {
-                return true;
-            }
+        if ((event.type == SDL_EVENT_MOUSE_BUTTON_DOWN || event.type == SDL_EVENT_MOUSE_BUTTON_UP) &&
+            (event.button.button == SDL_BUTTON_LEFT || event.button.button == SDL_BUTTON_RIGHT) && handleRowButton(event, origin)) {
+            return true;
         }
         if (memberShown) {
             return false;

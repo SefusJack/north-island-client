@@ -57,7 +57,8 @@ namespace client {
         std::optional<CharacterLook> look;
         std::string reason;
         bool inTeam = false; // in the selected character's team
-        bool commanding = false;
+        bool commanding = false; // its battle commands are given now, in the played account's place
+        bool attention = false; // the character needs the player: e.g. its battle commands are due in another battle (a blinking outline)
     };
 
     /// @brief A whisper or team line another own character heard, for the selected character's chat window.
@@ -81,7 +82,8 @@ namespace client {
     /// @brief The qol client's several own characters at once (up to kMostMembers + 1): the selected one is the played account (drawn, steered,
     /// with the sound and its HUD), the others ("members") run their login and world scenes unseen and show as the party rows.
     /// @details There is no leader on the client side: team leadership is only the server's (WorldScene::teams()). The first account of
-    /// --accounts is only the one shown at start; a click on a member's row swaps it with the played account (select). A member follows
+    /// --accounts is only the one shown at start; a click on a member's row swaps it with the played account (select), in the world
+    /// or in battle; a right click asks to log it out, and the "+" row after the rows logs another account in. A member follows
     /// from its login: while it is not in a team it is invited into the selected character's team (13/7, by that team's leader when it
     /// is an own character) when on its map, until it has been in a team and left it. Own characters accept each other's team
     /// invitations and lead. Also covers manual battle turns shown in the played account's place, the members' windows over the screen,
@@ -121,7 +123,8 @@ namespace client {
             std::optional<std::reference_wrapper<Scene>> commandingScene(bool playedDone);
 
             /// @brief Asks to make a member the played account (the selected character); the swap waits for applySelection.
-            /// @details Only a member in the world (not logging out) while the played account is in the world can be selected.
+            /// @details Only a member in the world (not logging out) while the played account is in the world can be selected; either
+            /// may be in a battle (a battle keeps a character in the world: WorldScene::inWorld).
             /// @param index The member's row.
             void select(int index);
 
@@ -152,13 +155,17 @@ namespace client {
             /// @param hudScale The HUD scale.
             void drawWindows(gfx::Canvas& canvas, std::uint64_t nowMs, float hudScale);
 
-            /// @brief Draws the members' rows under the own status (PartyPanels).
+            /// @brief Draws the members' rows under the own status, and the "+" row while another account can log in (PartyPanels).
             /// @param canvas The canvas, at the game screen's origin.
             /// @param hudScale The HUD scale.
-            /// @param playedWorld The played account's world scene, whose battle's own panels show the members fighting in it.
-            void drawPanels(gfx::Canvas& canvas, float hudScale, const WorldScene& playedWorld);
+            /// @param playedWorld The played account's world scene (in a battle the rows go higher).
+            /// @param nowMs The current time in milliseconds.
+            void drawPanels(gfx::Canvas& canvas, float hudScale, const WorldScene& playedWorld, std::uint64_t nowMs);
 
-            /// @brief Handles an input event for the members: a click on a member's row (select), a right click (offer it the lead), the mouse over a member's window, typing into a member's text box.
+            /// @brief Handles an input event for the members: a click on a member's row (select), on the "+" row (WorldScene::openPartyLogin),
+            /// a right click on a member's row (WorldScene::askPartyLogOut; a gone member's row goes), the mouse over a member's window,
+            /// typing into a member's text box.
+            /// @details Both buttons' presses and releases on the rows are taken, so nothing under the rows (a right-click menu) sees them.
             /// @details The played account's popups, drawn over the members' windows, catch the mouse before them (the event is left to the played screen).
             /// @param event The SDL event.
             /// @param origin The game screen's place in the window.
@@ -182,7 +189,8 @@ namespace client {
             /// without team data, so its following's team watch starts over.
             void playedSceneChanged() { m_playedFollowing.wasInTeam = false; }
 
-            /// @brief Adds another member (the login form of WorldScene::openPartyLogin), refused once kMostMembers are logged in; rows of members that could not log in go.
+            /// @brief Adds another member (the login form of WorldScene::openPartyLogin), refused once kMostMembers are logged in (members
+            /// logging out not counted); rows of members that could not log in go.
             /// @param account The account to log in.
             /// @return Empty, or why the account cannot be added.
             std::string add(PartyAccount account);
@@ -252,6 +260,22 @@ namespace client {
             /// @brief Makes that member the played account and the played account that member, in its row (the sound, the hooks and the following change hands).
             /// @param index The member's row.
             void swapPlayed(int index);
+
+            /// @brief Counts the members logged in or logging in (not gone, not logging out).
+            /// @return The number of members.
+            int activeMembers() const;
+
+            /// @brief Tells whether the "+" row shows: multi-login on, the played account in the world and fewer than kMostMembers + 1
+            /// characters logged in or logging in.
+            /// @return True when it shows.
+            bool loginRowShown() const;
+
+            /// @brief Takes a press or release of the mouse button on the rows: on a press, acts on the row under it (the left
+            /// button selects or opens the login form, the right one asks to log out); the release of a press taken is taken too.
+            /// @param event The SDL mouse button event.
+            /// @param origin The game screen's place in the window.
+            /// @return True when the event was taken.
+            bool handleRowButton(const SDL_Event& event, core::Point origin);
 
             /// @brief Tells whether a character is one of this client's own (the played account or a member in the world, not logging out).
             /// @param playerId The character's id.

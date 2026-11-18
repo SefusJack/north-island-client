@@ -883,11 +883,12 @@ namespace client {
                 if (playedShown) {
                     party.drawWindows(canvas, frameStart, static_cast<float>(live.hudScale) / 100.0f); // percent to factor
                 }
-                if (party.started() && !party.empty() && played->kind == SceneKind::World) {
+                if (party.started() && played->kind == SceneKind::World) {
                     party.drawPanels(
                         canvas,
                         static_cast<float>(live.hudScale) / 100.0f,
-                        static_cast<const WorldScene&>(*played->scene)
+                        static_cast<const WorldScene&>(*played->scene),
+                        frameStart
                     ); // hudScale 100 = 1.0 (percent to factor)
                 }
                 if (script) {

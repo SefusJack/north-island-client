@@ -23,10 +23,19 @@ namespace client {
         constexpr int kDigitStep = 5; // px: x advance per level digit
         constexpr int kDigitPitch = 6; // px: height of one digit row in the digit picture
         const core::Color kCommanding{255, 230, 90, 255}; // yellow outline of the commanding member
+        const core::Color kAttention{255, 70, 70, 255}; // red blinking outline of a member that needs the player
         const core::Color kWindowTag{120, 200, 255, 255}; // light blue outline of another character's window
+        const core::Color kLoginBack{0, 0, 0, 110}; // the "+" row's backing: black at 110/255 strength
+        const core::Color kLoginEdge{170, 170, 170, 255}; // grey outline of the "+" row
+        const core::Color kLoginEdgeHovered{255, 255, 255, 255}; // white outline of the "+" row under the mouse
+        constexpr core::Point kPlus{6, 6}; // px: the large "+" within the row (over the chat head's place)
+        constexpr core::Point kLoginWord{26, 9}; // px: the "Log in" word within the row (at the parts' place)
+        constexpr int kLargeLine = 20; // px: line height of the large text
         // the member's name and state lines in the chat's and the hints' look: shadowed text
         const gfx::TextStyle kState{{255, 255, 255, 255}, gfx::TextEffect::Shadow, std::nullopt}; // white text with shadow
         const gfx::TextStyle kGone{{255, 120, 120, 255}, gfx::TextEffect::Shadow, std::nullopt}; // red text with shadow
+        const gfx::TextStyle kPlusText{{255, 255, 255, 255}, gfx::TextEffect::Shadow, std::nullopt}; // white text with shadow
+        const std::string kLoginHint = "Log in another account"; // the "+" row's hint
 
         /// @brief Fill ratio of a pet-style bar: Ceil(value / most * 100) %, at most 100.
         /// @param value Current value.
@@ -48,29 +57,34 @@ namespace client {
 
     }
 
-    std::vector<int> PartyPanels::rows(const std::vector<PartyMemberView>& members, const std::vector<std::int32_t>& battleIds) {
-        std::vector<int> rows;
-        int next = 0;
-        for (const PartyMemberView& member : members) {
-            const bool fights = member.id != 0 && std::find(battleIds.begin(), battleIds.end(), member.id) != battleIds.end();
-            rows.push_back(fights ? -1 : next++);
-        }
-        return rows;
-    }
-
     core::Point PartyPanels::toRows(core::Point point) const {
         return {static_cast<int>(std::floor((point.x - m_pivot.x) / m_scale)), static_cast<int>(std::floor((point.y - m_pivot.y) / m_scale))};
     }
 
-    int PartyPanels::memberAt(core::Point point) const {
+    int PartyPanels::rowAt(core::Point point) const {
         const core::Point at = toRows(point);
-        for (std::size_t index = 0; index < m_rows.size(); ++index) {
-            if (m_rows[index] >= 0 &&
-                core::Rect{kLeft, kTop + m_rows[index] * kRowHeight, kRowWidth, kRowHeight - 2}.contains(at)) { // 2 pixel gap between rows
-                return static_cast<int>(index);
+        const int count = m_memberRows + (m_loginRow ? 1 : 0);
+        for (int row = 0; row < count; ++row) {
+            if (core::Rect{kLeft, m_top + row * kRowHeight, kRowWidth, kRowHeight - 2}.contains(at)) { // 2 pixel gap between rows
+                return row;
             }
         }
         return -1;
+    }
+
+    int PartyPanels::memberAt(core::Point point) const {
+        const int row = rowAt(point);
+        return row < m_memberRows ? row : -1;
+    }
+
+    bool PartyPanels::loginRowAt(core::Point point) const { return m_loginRow && rowAt(point) == m_memberRows; }
+
+    void PartyPanels::drawLoginRow(gfx::Canvas& canvas, core::Point at, bool hovered) {
+        const core::Rect area{at.x - 2, at.y - 1, kRowWidth, kRowHeight - 2}; // the members' row box (see draw)
+        canvas.fillRectAlpha(area, kLoginBack);
+        canvas.drawRectOutline(area, hovered ? kLoginEdgeHovered : kLoginEdge, 1);
+        canvas.drawLargeText(at + kPlus, "+", kPlusText, kRowWidth, kLargeLine);
+        canvas.drawText(at + kLoginWord, "Log in", kPlusText);
     }
 
     void PartyPanels::drawRow(gfx::Canvas& canvas, const PartyMemberView& member, core::Point at) {
@@ -122,32 +136,43 @@ namespace client {
     void PartyPanels::draw(
         gfx::Canvas& canvas,
         const std::vector<PartyMemberView>& members,
-        const std::vector<std::int32_t>& battleIds,
+        bool loginRow,
+        bool battle,
         const core::Rect& view,
         float hudScale,
-        std::optional<core::Point> mouse
+        std::optional<core::Point> mouse,
+        std::uint64_t nowMs
     ) {
         m_pivot = {view.x, view.y};
         m_scale = hudScale > 0 ? hudScale : 1.0f;
-        m_rows = rows(members, battleIds);
+        m_top = battle ? kBattleTop : kWorldTop;
+        m_memberRows = static_cast<int>(members.size());
+        m_loginRow = loginRow;
+        const bool blinkOn = nowMs / kBlinkMs % 2 == 0; // on for kBlinkMs, then off as long
         canvas.beginScale(m_pivot, m_scale);
         for (std::size_t index = 0; index < members.size(); ++index) {
-            if (m_rows[index] < 0) {
-                continue;
-            }
             const PartyMemberView& member = members[index];
-            const core::Point at = m_pivot + core::Point{kLeft, kTop + m_rows[index] * kRowHeight};
+            const core::Point at = m_pivot + core::Point{kLeft, m_top + static_cast<int>(index) * kRowHeight};
             const core::Rect
                 area{at.x - 2, at.y - 1, kRowWidth, kRowHeight - 2}; // row box: 2 left and 1 up of the row origin, 2 pixel shorter than the row pitch
             drawRow(canvas, member, at);
+            if (member.attention && blinkOn) {
+                canvas.drawRectOutline({area.x - 1, area.y - 1, area.width + 2, area.height + 2}, kAttention, 2); // around the yellow one, 2 px thick
+            }
             if (member.commanding) {
                 canvas.drawRectOutline(area, kCommanding, 1);
             }
+        }
+        const bool onLoginRow = mouse && loginRowAt(*mouse);
+        if (loginRow) {
+            drawLoginRow(canvas, m_pivot + core::Point{kLeft, m_top + m_memberRows * kRowHeight}, onLoginRow);
         }
         canvas.endScale();
         const int hovered = mouse ? memberAt(*mouse) : -1;
         if (hovered >= 0 && inWorld(members[static_cast<std::size_t>(hovered)])) {
             ui::drawHintBox(canvas, *mouse, members[static_cast<std::size_t>(hovered)].name);
+        } else if (onLoginRow) {
+            ui::drawHintBox(canvas, *mouse, kLoginHint);
         }
     }
 
