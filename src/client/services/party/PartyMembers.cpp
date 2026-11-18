@@ -147,7 +147,6 @@ namespace client {
 
     PartyMembers::~PartyMembers() {
         GameServices& services = played();
-        services.partyChat = nullptr;
         services.partyLogIn = nullptr;
         services.partyLogOut = nullptr;
         services.partyMirrorsNpcs = nullptr;
@@ -163,7 +162,6 @@ namespace client {
         services.partyMessage = nullptr;
         services.joinsTeamOf = [this](std::int32_t inviterId) { return isOwnCharacter(inviterId); };
         services.takesLeadFrom = [this](std::int32_t leaderId) { return isOwnCharacter(leaderId); };
-        services.partyChat = nullptr;
         services.partyLogIn = [this](const std::string& account, const std::string& password, int slot) {
             return add({account, password, slot});
         };
@@ -213,7 +211,6 @@ namespace client {
         services.partyMessage = [this](bool centre, const std::string& text, int durationMs) { m_messages.push_back({centre, text, durationMs}); };
         services.joinsTeamOf = [this](std::int32_t inviterId) { return isOwnCharacter(inviterId); };
         services.takesLeadFrom = [this](std::int32_t leaderId) { return isOwnCharacter(leaderId); };
-        services.partyChat = nullptr;
         services.partyLogIn = nullptr;
         services.partyLogOut = nullptr;
         services.partyMirrorsNpcs = nullptr;

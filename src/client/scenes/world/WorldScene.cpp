@@ -4790,9 +4790,6 @@ namespace client {
 
     InputBar::Sent WorldScene::sendChat(int typedChannel, const std::string& text) {
         using Sent = InputBar::Sent;
-        if (m_services.partyChat && m_services.partyChat(typedChannel, text)) {
-            return Sent::Sent;
-        }
         if (m_chat.isHidden()) {
             m_messages.show("Chat window is closed.", 2000); // message display time in ms
             return Sent::Kept;

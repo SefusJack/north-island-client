@@ -489,11 +489,6 @@ namespace client {
                 (centre ? m_centreMessages : m_messages).showGrouped(text, durationMs);
             }
 
-            /// @brief Says what the leader typed as this member (its own checks; a refusal is a line of its chat).
-            /// @param typedChannel The channel typed.
-            /// @param text The text.
-            void sayAsPartyMember(int typedChannel, const std::string& text) { sendChat(typedChannel, text); }
-
             /// @brief Starts the event of the NPC or door the party leader started (qol NPC mirror), even as a team follower, who
             /// is never near it nor checks doors and NPC proximity.
             /// @param trigger How the leader started it.

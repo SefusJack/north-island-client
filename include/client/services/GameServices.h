@@ -71,9 +71,7 @@ namespace client {
         std::function<bool(std::int32_t inviterId)> joinsTeamOf = [](std::int32_t) { return false; }; // the invite is from another own character of the qol client: accepted unasked
         std::function<bool(std::int32_t leaderId)> takesLeadFrom = [](std::int32_t) { return false; }; // the lead is offered by another own character: accepted unasked
         std::function<void(int channel, const std::string& line, std::int32_t senderId)> chatHeard; // a member heard a chat line (its whispers and team lines go to the selected character's chat)
-        std::function<bool(int typedChannel, const std::string& text)> partyChat; // no longer set (the selected character is played and says its own lines); kept while WorldScene::sendChat asks it
         std::function<std::string(const std::string& account, const std::string& password, int slot)> partyLogIn;
-        std::function<bool(std::int32_t playerId)> isPartyMember; // no longer set by PartyMembers; goes once the group window stops asking it
         std::function<void(std::int32_t playerId)> partyLogOut;
         std::function<void(bool centre, const std::string& text, int durationMs)> partyMessage;
         std::function<bool()> partyMirrorsNpcs; // the own characters in the selected character's team on its map follow its NPC talk and doors (qol)
