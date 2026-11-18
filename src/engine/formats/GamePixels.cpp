@@ -124,6 +124,76 @@ namespace formats {
         });
     }
 
+    void dropDitheredShadow(Image& image) {
+        const int width = image.width();
+        const int height = image.height();
+        std::vector<core::Color>& pixels = image.pixels();
+        if (width < 3 || height < 3 || pixels.size() < static_cast<std::size_t>(width) * static_cast<std::size_t>(height)) {
+            return;
+        }
+        constexpr int kDark = 64; // a shadow pixel has red and green under this
+        constexpr int kDarkBlue = 96; // and blue under this: the shadows are a dark blue
+        const auto at = [&](int x, int y) -> const core::Color& { return pixels[static_cast<std::size_t>(y) * static_cast<std::size_t>(width) + static_cast<std::size_t>(x)]; };
+        const auto open = [&](int x, int y) { return x < 0 || y < 0 || x >= width || y >= height || at(x, y).a == 0; };
+        // a dark pixel with a see-through one on each side may be one of the checkerboard
+        std::vector<std::uint8_t> alone(pixels.size(), 0);
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                const core::Color& pixel = at(x, y);
+                if (pixel.a != 0 && pixel.r < kDark && pixel.g < kDark && pixel.b < kDarkBlue && open(x - 1, y) && open(x + 1, y) && open(x, y - 1) && open(x, y + 1)) {
+                    alone[static_cast<std::size_t>(y) * static_cast<std::size_t>(width) + static_cast<std::size_t>(x)] = 1;
+                }
+            }
+        }
+        // it is one when another such pixel lies at a corner of it: a single dark speck stays
+        const auto marked = [&](int x, int y) {
+            return x >= 0 && y >= 0 && x < width && y < height && alone[static_cast<std::size_t>(y) * static_cast<std::size_t>(width) + static_cast<std::size_t>(x)] != 0;
+        };
+        const auto index = [&](int x, int y) { return static_cast<std::size_t>(y) * static_cast<std::size_t>(width) + static_cast<std::size_t>(x); };
+        const auto same = [](const core::Color& a, const core::Color& b) { return a.r == b.r && a.g == b.g && a.b == b.b; };
+        std::vector<std::size_t> gone;
+        core::Color shade{0, 0, 0, 0}; // the colour most of them have
+        int votes = 0;
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                if (marked(x, y) && (marked(x - 1, y - 1) || marked(x + 1, y - 1) || marked(x - 1, y + 1) || marked(x + 1, y + 1))) {
+                    gone.push_back(index(x, y));
+                    const core::Color& pixel = at(x, y);
+                    if (votes == 0) {
+                        shade = pixel;
+                    }
+                    votes += same(pixel, shade) ? 1 : -1;
+                }
+            }
+        }
+        if (gone.empty()) {
+            return;
+        }
+        for (const std::size_t i : gone) {
+            pixels[i] = core::Color{0, 0, 0, 0};
+            alone[i] = 2;
+        }
+        // where the checkerboard runs up against the thing itself its pixels have a neighbour: those of the shadow's colour
+        // go too when one taken out lies at a corner and two sides are see-through (a dark outline has its line beside it)
+        const auto taken = [&](int x, int y) { return x >= 0 && y >= 0 && x < width && y < height && alone[index(x, y)] == 2; };
+        for (int round = 0; round < 2; ++round) {
+            gone.clear();
+            for (int y = 0; y < height; ++y) {
+                for (int x = 0; x < width; ++x) {
+                    const core::Color& pixel = at(x, y);
+                    if (pixel.a != 0 && same(pixel, shade) && (taken(x - 1, y - 1) || taken(x + 1, y - 1) || taken(x - 1, y + 1) || taken(x + 1, y + 1)) &&
+                        static_cast<int>(open(x - 1, y)) + static_cast<int>(open(x + 1, y)) + static_cast<int>(open(x, y - 1)) + static_cast<int>(open(x, y + 1)) >= 2) {
+                        gone.push_back(index(x, y));
+                    }
+                }
+            }
+            for (const std::size_t i : gone) {
+                pixels[i] = core::Color{0, 0, 0, 0};
+                alone[i] = 2;
+            }
+        }
+    }
+
     void quantizeTo16Bit(Image& image) {
         quantizeTo16Bit(image.pixels().data(), image.pixels().size());
     }

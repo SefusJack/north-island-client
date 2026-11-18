@@ -132,10 +132,11 @@ namespace client {
             /// @brief Draws one ground object when the movie's draw list reaches it.
             /// @details Original: DrawMovieGroundObj.
             /// @param canvas Target canvas.
+            /// @param map The movie's map.
             /// @param object The ground object.
             /// @param camera Camera of the movie.
             /// @param nowMs Current time in milliseconds.
-            void paintMovieObject(gfx::Canvas& canvas, GroundObject& object, const Camera& camera, std::uint64_t nowMs);
+            void paintMovieObject(gfx::Canvas& canvas, WorldMap& map, GroundObject& object, const Camera& camera, std::uint64_t nowMs);
 
             /// @brief Screen area of the plate of a stall kept by someone standing at these feet (the TVenderItem that takes the mouse).
             /// @param feet Screen position of the keeper's feet.
@@ -154,14 +155,25 @@ namespace client {
             /// @param canvas Target canvas.
             /// @param map The map.
             /// @param camera Camera of the view.
-            void drawTiles(gfx::Canvas& canvas, const WorldMap& map, const Camera& camera);
+            /// @param plain The map to take the pictures without their dithered shadows from, or nullptr to draw them as they are.
+            void drawTiles(gfx::Canvas& canvas, const WorldMap& map, const Camera& camera, WorldMap* plain = nullptr);
+
+            /// @brief Draws an object that stands among the figures, and notes it for the lighting (its edge on the ground, and
+            /// the shadow it casts when its painted one is left out).
+            /// @param canvas Target canvas.
+            /// @param object The ground object (its frame advances).
+            /// @param camera Camera of the view.
+            /// @param nowMs Current time in milliseconds.
+            /// @param plain The map to take its picture without the dithered shadow from, or nullptr to draw it as it is.
+            void drawStandingObject(gfx::Canvas& canvas, GroundObject& object, const Camera& camera, std::uint64_t nowMs, WorldMap* plain);
 
             /// @brief Draws a ground object's current frame; translucent and marked objects are drawn as lights.
             /// @param canvas Target canvas.
             /// @param object The ground object (its frame advances).
             /// @param camera Camera of the view.
             /// @param nowMs Current time in milliseconds.
-            void drawObject(gfx::Canvas& canvas, GroundObject& object, const Camera& camera, std::uint64_t nowMs);
+            /// @param plain The map to take its picture without the dithered shadow from, or nullptr to draw it as it is.
+            void drawObject(gfx::Canvas& canvas, GroundObject& object, const Camera& camera, std::uint64_t nowMs, WorldMap* plain = nullptr);
 
             /// @brief Draws a door's glow, a quarter of its height sunk into the ground, and advances its frame.
             /// @details Original: DrawDoorLight.

@@ -68,8 +68,16 @@ namespace client {
         }
         gfx::PictureLibrary& pictures = m_services.pictures;
         const auto ground = frame->groundShown && !frame->mapGround ? pictures.find(frame->groundName) : std::nullopt;
-        if (frame->groundShown && frame->mapGround) {
+        const bool lit = frame->groundShown && frame->mapGround;
+        std::vector<core::Point> people; // where the roles stand: the lighting may give them a light
+        if (lit) {
+            for (const MovieFrame::Role& role : frame->roles) {
+                if (!role.face && role.slot >= 0) {
+                    people.push_back(role.foot);
+                }
+            }
             m_director.paintMapGround(canvas, frame->groundOrigin);
+            m_director.lightMapGround(canvas, frame->groundOrigin, people, nowMs);
         } else if (ground) {
             canvas.drawPicture(*ground, {-frame->groundOrigin.x, -frame->groundOrigin.y});
             if (frame->groundDarkening) {
@@ -87,6 +95,9 @@ namespace client {
             } else {
                 paintPicture(canvas, frame->pictures[entry.index], frame->groundOrigin);
             }
+        }
+        if (lit) {
+            m_director.lightMapOver(canvas, frame->groundOrigin, people, nowMs);
         }
         if (frame->fill && !canvas.exactAlphaFills()) {
             canvas.fillRect(canvas.window(), *frame->fill);

@@ -12,6 +12,8 @@
 
 #include <optional>
 #include <set>
+#include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -64,6 +66,12 @@ namespace client {
             /// @param backgroundId New background picture id.
             /// @param pictures Picture library.
             void changeBackground(int backgroundId, gfx::PictureLibrary& pictures);
+
+            /// @brief A picture of the map without the dithered shadow painted on it (the experimental lighting casts its own).
+            /// @param pictures Picture library.
+            /// @param picture A picture of one of the objects or tiles.
+            /// @return The picture without the shadow, or the same one when it has none.
+            gfx::PictureId plain(gfx::PictureLibrary& pictures, gfx::PictureId picture);
 
             /// @brief The ground objects.
             /// @return Mutable list.
@@ -131,6 +139,8 @@ namespace client {
             gfx::PictureId m_largeTile;
             std::vector<core::Point> m_largeTilePositions;
             std::set<std::pair<int, int>> m_occupied;
+            std::unordered_map<int, std::string> m_pictureNames; // what the objects' and tiles' pictures are called, by id
+            std::unordered_map<int, gfx::PictureId> m_plain; // their pictures without the dithered shadow, as far as asked for
     };
 
 }
