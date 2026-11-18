@@ -272,6 +272,7 @@
 #include <cstdint>
 #include <functional>
 #include <map>
+#include <memory>
 #include <optional>
 #include <random>
 #include <string>
@@ -457,6 +458,14 @@ namespace client {
             /// @param playerId The character's id.
             /// @param name The character's name, shown in the question.
             void askPartyLogOut(std::int32_t playerId, const std::string& name);
+
+            /// @brief Closes the party login window and a pending party log-out question (askPartyLogOut), leaving any other talk
+            /// up: called when this character stops being the selected one, whose party hooks they answer through.
+            void closePartyForms();
+
+            /// @brief Shows the group window's party buttons (the NPC mirror) as the services' party hooks now are: called when this
+            /// character becomes or stops being the selected one.
+            void partyHooksChanged() { m_groupWindow.refresh(); }
 
             /// @brief The map the player is on.
             /// @return The map id (0 before one is loaded).
@@ -4289,6 +4298,7 @@ namespace client {
             SettingsWindow m_systemWindow;
             GroupWindow m_groupWindow;
             PartyLoginWindow m_partyLogin;
+            std::weak_ptr<void> m_partyLogOutAsked; // alive while the talk box holds the party log-out question's answers
             NoticeBoard m_publicBoard;
             NoticeBoard m_guildBoard;
             NoticeReadForm m_noticeRead;

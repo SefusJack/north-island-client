@@ -5970,16 +5970,27 @@ namespace client {
         if (const auto mate = teamMate(playerId)) {
             who = TalkDialog::Speaker{mate->sceneLook, mate->name};
         }
+        // the token lives in the answers the talk box holds: it goes once the question is answered, closed or replaced
+        const auto asked = std::make_shared<int>(0);
+        m_partyLogOutAsked = asked;
         m_talk.ask(
             "Log " + name + " out?",
             who,
-            [this, playerId] {
+            [this, playerId, asked] {
                 if (m_services.partyLogOut) {
                     m_services.partyLogOut(playerId);
                 }
             },
-            nullptr
+            [asked] {}
         );
+    }
+
+    void WorldScene::closePartyForms() {
+        m_partyLogin.close();
+        if (!m_partyLogOutAsked.expired()) {
+            m_talk.close();
+        }
+        m_partyLogOutAsked.reset();
     }
 
     std::optional<TeamMate> WorldScene::teamMate(std::int32_t playerId) const {

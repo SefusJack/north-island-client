@@ -431,6 +431,12 @@ namespace client {
         member.heard.clear();
         setUpPlayed(played());
         setUpMember(member);
+        // the old played character's party forms answer through hooks it no longer has
+        if (member.world) {
+            member.world->get().closePartyForms();
+            member.world->get().partyHooksChanged();
+        }
+        static_cast<WorldScene&>(*m_played->scene).partyHooksChanged();
         m_played->scene->screen().setLayoutFilter({});
         if (member.bundle->scene) {
             member.bundle->scene->screen().setLayoutFilter({});
