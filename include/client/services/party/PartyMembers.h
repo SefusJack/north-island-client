@@ -171,7 +171,7 @@ namespace client {
             /// a right click on a member's row (WorldScene::askPartyLogOut; a gone member's row goes), the mouse over a member's window,
             /// typing into a member's text box.
             /// @details Both buttons' presses and releases on the rows are taken, so nothing under the rows (a right-click menu) sees them.
-            /// @details The played account's popups, drawn over the members' windows, catch the mouse before them (the event is left to the played screen).
+            /// The played account's popups, drawn over the members' windows, catch the mouse before them (the event is left to the played screen).
             /// @param event The SDL event.
             /// @param origin The game screen's place in the window.
             /// @param hudScale The HUD scale.
