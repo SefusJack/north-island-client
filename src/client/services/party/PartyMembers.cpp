@@ -642,7 +642,12 @@ namespace client {
 
     bool PartyMembers::handleRowButton(const SDL_Event& event, core::Point origin) {
         if (event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
-            return std::exchange(m_panelPressed, false);
+            // only the release of the button pressed on a row is taken: the other button's goes on to the screen
+            if (m_panelButton == 0 || event.button.button != m_panelButton) {
+                return false;
+            }
+            m_panelButton = 0;
+            return true;
         }
         // the rows are drawn in the world only: elsewhere (the login screen after a lost server) their last places catch nothing
         if (m_played->kind != SceneKind::World || !m_played->scene) {
@@ -652,7 +657,7 @@ namespace client {
         const bool left = event.button.button == SDL_BUTTON_LEFT;
         WorldScene& playedWorld = static_cast<WorldScene&>(*m_played->scene);
         if (m_panels->loginRowAt(point) && loginRowShown()) {
-            m_panelPressed = true;
+            m_panelButton = event.button.button;
             if (left) {
                 playedWorld.openPartyLogin();
             }
@@ -662,7 +667,7 @@ namespace client {
         if (pressed < 0 || pressed >= size()) {
             return false;
         }
-        m_panelPressed = true;
+        m_panelButton = event.button.button;
         const Member& member = *m_members[static_cast<std::size_t>(pressed)];
         if (member.goneReason && !member.leavingSinceMs) {
             // a gone member's row has nothing to select or log out: a click clears it away

@@ -277,7 +277,7 @@ namespace client {
 
             /// @brief Takes a press or release of the mouse button on the rows: on a press, acts on the row under it (the left
             /// button selects or opens the login form, with Ctrl held moves the last used window to it; the right one asks to log out);
-            /// the release of a press taken is taken too.
+            /// the release of the button whose press was taken is taken too.
             /// @param event The SDL mouse button event.
             /// @param origin The game screen's place in the window.
             /// @return True when the event was taken.
@@ -392,7 +392,7 @@ namespace client {
             int m_pendingSelect = -1; // row asked for by select, swapped in by applySelection
             std::unique_ptr<PartyPanels> m_panels;
             std::vector<PartyMessage> m_messages;
-            bool m_panelPressed = false;
+            std::uint8_t m_panelButton = 0; // the SDL mouse button pressed on a row, whose release is taken too; 0 for none
             std::optional<core::Point> m_mouse;
             int m_mouseOwner = -1;
             int m_keyboardOwner = -1;
