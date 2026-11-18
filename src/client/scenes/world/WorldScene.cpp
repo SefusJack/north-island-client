@@ -6517,7 +6517,8 @@ namespace client {
         if (m_others.count(inviteeId) == 0) {
             return;
         }
-        const std::string name = playerName(m_teamTarget);
+        // the invitee the server names: an invitation sent without the menu (the qol party's own logins) leaves m_teamTarget unset
+        const std::string name = playerName(inviteeId);
         if (answer == 1) {
             m_messages.show(name + " accepted your invitation", 1000); // message display time in ms
         } else if (answer == 2) { // answer 2: refused
