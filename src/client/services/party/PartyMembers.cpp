@@ -39,6 +39,11 @@ namespace client {
         const std::set<std::string>
             kPopupLayouts{"TalkLayer", "PlayerMessages", "CentreMessages", "ItemInfoLayer", "PetInfoLayer", "RightClickMenuLayer", "MaidLayer"};
 
+        /// @brief Tells whether a layout is one of the popups (kPopupLayouts).
+        /// @param layout The layout root.
+        /// @return True for a popup.
+        bool isPopupLayout(const ui::Element& layout) { return kPopupLayouts.count(layout.name()) != 0; }
+
         constexpr std::uint8_t kLayoutPopup = 1; // a layout in kPopupLayouts
         constexpr std::uint8_t kLayoutWindow = 2; // a layout holding a window
 
@@ -497,13 +502,24 @@ namespace client {
             auto known = member.windowLayouts.find(&layout);
             if (known == member.windowLayouts.end()) {
                 // popups are always kept, so they skip the window test
-                const std::uint8_t kind = kPopupLayouts.count(layout.name()) != 0 ? kLayoutPopup : holdsWindow(layout) ? kLayoutWindow : 0;
+                const std::uint8_t kind = isPopupLayout(layout) ? kLayoutPopup : holdsWindow(layout) ? kLayoutWindow : 0;
                 known = member.windowLayouts.emplace(&layout, kind).first;
             }
             return known->second != 0;
         });
         call(screen);
         screen.setLayoutFilter({});
+    }
+
+    bool PartyMembers::playedPopupAt(core::Point point) {
+        if (!m_played->scene) {
+            return false;
+        }
+        ui::Screen& screen = m_played->scene->screen();
+        screen.setLayoutFilter(isPopupLayout);
+        const bool caught = screen.catchesAt(point);
+        screen.setLayoutFilter({});
+        return caught;
     }
 
     int PartyMembers::memberAt(core::Point point, float hudScale) {
@@ -521,7 +537,19 @@ namespace client {
         return -1;
     }
 
+    void PartyMembers::holdPlayedPopups() {
+        const bool memberShown = std::any_of(m_members.begin(), m_members.end(), [](const auto& member) { return member->world.has_value(); });
+        if (!memberShown || !m_played->scene) {
+            return;
+        }
+        m_popupsHeld = true;
+        m_played->scene->screen().setLayoutFilter([](const ui::Element& layout) { return !isPopupLayout(layout); });
+    }
+
     void PartyMembers::drawWindows(gfx::Canvas& canvas, std::uint64_t nowMs, float hudScale) {
+        if (m_popupsHeld && m_played->scene) {
+            m_played->scene->screen().setLayoutFilter({});
+        }
         for (int index = 0; index < size(); ++index) {
             const Member& member = *m_members[static_cast<std::size_t>(index)];
             if (!member.world) {
@@ -534,6 +562,14 @@ namespace client {
                     PartyPanels::drawWindowTag(canvas, window, name);
                 }
             });
+        }
+        if (std::exchange(m_popupsHeld, false) && m_played->scene) {
+            // the selected character's popups stay over the other characters' windows; only these layouts are drawn again (a drag
+            // picture or game pad frame of the screen is drawn by both passes, at the same place)
+            ui::Screen& screen = m_played->scene->screen();
+            screen.setLayoutFilter(isPopupLayout);
+            screen.draw(canvas, nowMs);
+            screen.setLayoutFilter({});
         }
     }
 
@@ -615,7 +651,9 @@ namespace client {
                 x = event.button.x;
                 y = event.button.y;
             }
-            const int index = memberAt({static_cast<int>(x) - origin.x, static_cast<int>(y) - origin.y}, hudScale);
+            const core::Point point{static_cast<int>(x) - origin.x, static_cast<int>(y) - origin.y};
+            // the played account's popups are drawn over the members' windows and take the mouse first
+            const int index = playedPopupAt(point) ? -1 : memberAt(point, hudScale);
             if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
                 m_keyboardOwner = index;
                 m_mouseOwner = index;

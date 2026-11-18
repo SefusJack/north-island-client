@@ -139,7 +139,14 @@ namespace client {
             /// @return The messages.
             std::vector<PartyMessage> takeMessages() { return std::exchange(m_messages, {}); }
 
-            /// @brief Draws the members' windows and popups over the played account's screen, each tagged with the member's name.
+            /// @brief Keeps the played account's popups (talk box, messages, menus, item and pet info) out of its screen's coming draw
+            /// while a member is in the world, so that drawWindows draws them over the members' windows; call it just before the played
+            /// scene is drawn, and drawWindows after it.
+            /// @details Each pass refinds the screen's hover among the layouts it keeps: take the cursor before the played scene is drawn.
+            void holdPlayedPopups();
+
+            /// @brief Draws the members' windows and popups over the played account's screen, each tagged with the member's name, then
+            /// the played account's popups held by holdPlayedPopups over them.
             /// @param canvas The canvas, at the game screen's origin.
             /// @param nowMs The current time in milliseconds.
             /// @param hudScale The HUD scale.
@@ -152,6 +159,7 @@ namespace client {
             void drawPanels(gfx::Canvas& canvas, float hudScale, const WorldScene& playedWorld);
 
             /// @brief Handles an input event for the members: a click on a member's row (select), a right click (offer it the lead), the mouse over a member's window, typing into a member's text box.
+            /// @details The played account's popups, drawn over the members' windows, catch the mouse before them (the event is left to the played screen).
             /// @param event The SDL event.
             /// @param origin The game screen's place in the window.
             /// @param hudScale The HUD scale.
@@ -289,6 +297,11 @@ namespace client {
             template <typename Call>
             void withWindows(int index, float hudScale, const Call& call);
 
+            /// @brief Tells whether the played account's popups catch the mouse at a point of the game screen.
+            /// @param point The point, in the game screen's coordinates.
+            /// @return True when one does.
+            bool playedPopupAt(core::Point point);
+
             /// @brief Finds the member whose kept layouts catch the mouse at a point of the game screen.
             /// @param point The point, in the game screen's coordinates.
             /// @param hudScale The HUD scale.
@@ -316,6 +329,7 @@ namespace client {
             Following m_playedFollowing;
             int m_commanding = -1;
             bool m_mirrorNpcs = false;
+            bool m_popupsHeld = false; // holdPlayedPopups kept the played account's popups for drawWindows
             int m_pendingSelect = -1; // row asked for by select, swapped in by applySelection
             std::unique_ptr<PartyPanels> m_panels;
             std::vector<PartyMessage> m_messages;
