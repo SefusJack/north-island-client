@@ -649,7 +649,7 @@ namespace ui {
         refreshHover();
         if (m_context.drag) {
             const auto source = locate(m_context.drag->sourceId);
-            const bool modern = source && !m_modernDragGrid.empty() && source->element.get().name() == m_modernDragGrid;
+            const bool modern = source && std::find(m_modernDragGrids.begin(), m_modernDragGrids.end(), source->element.get().name()) != m_modernDragGrids.end();
             if (button == MouseButton::Right && modern) {
                 // one of what is carried is put down where the mouse is; the rest stays carried
                 const DragItem drag = *m_context.drag;

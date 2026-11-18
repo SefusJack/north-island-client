@@ -1763,7 +1763,10 @@ namespace client {
         m_screen.on("onMainGroup", [this](const ui::EventArgs&) { toggleWindow('g'); });
         m_screen.on("onMainSocial", [this](const ui::EventArgs&) { toggleWindow('e'); });
         m_screen.on("onMainCompound", [this](const ui::EventArgs&) { toggleWindow('c'); });
-        m_talk.setExclusiveHook([this](bool exclusive) { showGameWindows(!exclusive); });
+        m_talk.setExclusiveHook([this](bool exclusive) {
+            showGameWindows(!exclusive);
+            m_miniMap.setTalkHidden(exclusive);
+        });
         m_talk.setTagSource([this] { return m_player.name; }, [this] { return m_castleOwner; });
         m_chat.setSpeakerLooks([this](std::int32_t playerId) -> std::optional<CharacterLook> {
             if (playerId == m_player.id) {
@@ -1985,7 +1988,8 @@ namespace client {
                 }
                 break;
             default: // any other move kind: the NPC stands where it is placed
-                if (npc.visible) {
+                // as the original's BlockNpcCells: not an NPC with a walk-in area (FArea1Size / FArea2Size) or of NPC type 9 / 10
+                if (npc.visible && placed.triggerHalfSize.x == 0 && placed.triggerHalfSize.y == 0 && npc.info.type != 9 && npc.info.type != 10) {
                     m_map->occupy(placed.position);
                 }
                 if (const int frames = m_services.characters.npcFrameCount(
@@ -2098,14 +2102,25 @@ namespace client {
     }
 
     void WorldScene::checkDoors() {
-        const auto door = std::find_if(m_doors.begin(), m_doors.end(), [this](const formats::SceneDoor& candidate) {
-            return candidate.area.contains(m_player.position) && !candidate.eventIds.empty();
-        });
-        if (door == m_doors.end()) {
+        // the original's loop: the first door holding the player that is not the one it last entered (two doors on one
+        // spot take turns); off every door, the last door is forgotten
+        bool onDoor = false;
+        auto door = m_doors.end();
+        for (auto it = m_doors.begin(); it != m_doors.end(); ++it) {
+            if (!it->area.contains(m_player.position) || it->eventIds.empty()) {
+                continue;
+            }
+            onDoor = true;
+            if (it->index != m_currentDoor) {
+                door = it;
+                break;
+            }
+        }
+        if (!onDoor) {
             m_currentDoor = 0;
             return;
         }
-        if (door->index == m_currentDoor || m_eventRunner.isRunning()) {
+        if (door == m_doors.end() || m_eventRunner.isRunning()) {
             return;
         }
         m_currentDoor = door->index;
@@ -3318,17 +3333,25 @@ namespace client {
     }
 
     std::optional<int> WorldScene::npcAt(core::Point screenPoint) {
+        // the last NPC drawn under the point wins, as in the original: scene objects (NPC type 10) are drawn first, in
+        // their own pass, then the others by draw order (a keyhole over a stone door)
         std::optional<int> found;
-        int foundY = 0;
+        std::pair<bool, int> foundKey{false, 0};
         for (const MapNpc& npc : m_npcs) {
             if (!npc.visible) {
                 continue;
             }
             const int slot = m_services.characters.npcSlot(npc.info.spriteId, npc.info.directionKind, npc.body.actionSlot());
-            if (m_services.characters.npcContains(npc.info, m_camera.toScreen(npc.body.position), slot, 0, screenPoint) &&
-                (!found || npc.body.position.y > foundY)) {
+            const std::pair<bool, int> key{npc.info.type != 10, npc.drawOrderY()};
+            SpriteHighlight size;
+            if (npc.info.heightMode == 1) { // a tall kind is drawn, and hit, at twice the size
+                size.scale = 20;
+                size.scaleDivisor = 10;
+            }
+            if (m_services.characters.npcContains(npc.info, m_camera.toScreen(npc.body.position), slot, 0, screenPoint, size) &&
+                (!found || key >= foundKey)) {
                 found = npc.index;
-                foundY = npc.body.position.y;
+                foundKey = key;
             }
         }
         return found;
@@ -5646,6 +5669,13 @@ namespace client {
         constexpr int kFightMessageTop = 40; // top of the message stack during a battle, px
         constexpr int kWorldMessageTop = 10; // top of the message stack in the world, px
         m_messages.keepBelow(m_fightState != 0 ? kFightMessageTop : kWorldMessageTop);
+        constexpr int kBelowTalkGap = 10; // gap between the main talk box and the message box under it, px
+        if (m_talk.isMainOpen()) {
+            const core::Rect talk = m_talk.frameBounds();
+            m_messages.placeAt(talk.y + talk.height + kBelowTalkGap);
+        } else {
+            m_messages.placeAt(std::nullopt);
+        }
         m_screen.update(nowMs);
     }
 

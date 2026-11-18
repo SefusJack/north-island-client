@@ -507,6 +507,26 @@ namespace client {
         }
     }
 
+    void CharacterRenderer::drawNpcLook(
+        gfx::Canvas& canvas,
+        const formats::NpcInfo& npc,
+        core::Point feet,
+        int slot,
+        int frame,
+        SpriteHighlight highlight
+    ) {
+        const bool human = npc.bodyType >= 1 && npc.bodyType <= 4 && (npc.directionKind == 0 || npc.directionKind == 2);
+        if (npc.hasLookSprite != 1 || !human || npc.lookSpriteId <= idBase(npc.bodyType)) {
+            return;
+        }
+        CharacterLook look;
+        look.bodyType = npc.bodyType;
+        look.equipmentLooks[3] = npc.lookSpriteId; // equipment slot 3 is the weapon
+        if (const auto weapon = equipmentLayer(look, 3)) {
+            drawLayer(canvas, *weapon, formats::ColorPattern{}, Tint::Figure, feet, slot, frame, highlight);
+        }
+    }
+
     void CharacterRenderer::drawArmedNpc(
         gfx::Canvas& canvas,
         const formats::NpcInfo& npc,

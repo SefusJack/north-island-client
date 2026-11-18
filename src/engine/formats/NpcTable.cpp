@@ -72,6 +72,7 @@ namespace formats {
             npc.shadow = decodeByte(reader.u8());
             reader.seek(at + 93); // record offset of the direction kind
             npc.directionKind = decodeByte(reader.u8());
+            npc.lookSpriteId = decodeWord(reader.u16());
             reader.seek(at + 96); // record offset of the weapon flag
             npc.weapon = decodeByte(reader.u8());
             npc.spriteSize = decodeByte(reader.u8());
@@ -80,6 +81,7 @@ namespace formats {
             npc.stateSoundNo = decodeWord(reader.u16());
             reader.seek(at + 106); // record offset of the fixed skill
             npc.fixedSkill = decodeWord(reader.u16());
+            npc.hasLookSprite = decodeByte(reader.u8());
             reader.seek(at + 109); // record offset of the grow key
             npc.growKey = decodeByte(reader.u8());
             npc.noPk = decodeByte(reader.u8());

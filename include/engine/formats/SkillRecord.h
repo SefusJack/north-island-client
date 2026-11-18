@@ -25,6 +25,8 @@ namespace formats {
         int motionId = 0;
         int statusKind = 0;
         int tintKind = 0;
+        int rank = 0; // byte 30: the skill's rank (Rock Attack 1, Rock Hit 2, Rock Beating 3, Earth Attack 2 ...)
+        int tier = 1; // place in its Attack / Hit / Beating chain (1, 2, 3), worked out from the prerequisites; 1 for a skill outside a chain
     };
 
 }

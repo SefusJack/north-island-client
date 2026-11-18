@@ -121,8 +121,9 @@ namespace client {
     void TileMiniMap::showMap(const WorldMap& map, int sceneType) {
         m_built = false;
         m_panel.setVisible(false);
-        // only maps of tile mode 1 (built from tiles) get this mini map; scene types 6, 9-12 below pick a backdrop
-        if (map.file().tileMode() != 1 || m_hidden) {
+        // only maps of tile mode 1 (built from tiles) get this mini map; scene types 6, 9-12 below pick a backdrop. It is
+        // built even while hidden (a warp during a movie), as the original builds it at map load (CY_Map)
+        if (map.file().tileMode() != 1) {
             return;
         }
         build(map, sceneType);
@@ -130,7 +131,16 @@ namespace client {
 
     void TileMiniMap::setHidden(bool hidden) {
         m_hidden = hidden;
-        m_panel.setVisible(m_built && !m_hidden);
+        applyVisible();
+    }
+
+    void TileMiniMap::setTalkHidden(bool hidden) {
+        m_talkHidden = hidden;
+        applyVisible();
+    }
+
+    void TileMiniMap::applyVisible() {
+        m_panel.setVisible(m_built && !m_noMiniMap && !m_hidden && !m_talkHidden);
     }
 
     void TileMiniMap::build(const WorldMap& map, int sceneType) {
@@ -178,8 +188,9 @@ namespace client {
         m_backdrop = backdrop ? m_services.pictures.find(backdrop).value_or(gfx::PictureId{}) : gfx::PictureId{};
         m_arrowMs = 0;
         m_built = true;
+        m_noMiniMap = map.id() == kNoMiniMap;
         applyBounds();
-        m_panel.setVisible(map.id() != kNoMiniMap && !m_hidden);
+        applyVisible();
     }
 
     void TileMiniMap::toggleSize() {
@@ -266,7 +277,7 @@ namespace client {
     }
 
     void TileMiniMap::paint(gfx::Canvas& canvas, std::uint64_t nowMs) {
-        if (!m_built || m_minimized || m_hidden || !m_map) {
+        if (!m_built || m_minimized || m_hidden || m_talkHidden || !m_map) {
             return;
         }
         const WorldMap& map = m_map->get();

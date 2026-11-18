@@ -23,7 +23,7 @@
   <Image Name="InputChannelMark" Bounds="6,577,21,19"/>
   <Image Name="InputMail" Picture="Anim_GotMailS_1" Bounds="4,577,23,21" SourceRect="0,0,23,21"/>
   <DrawingArea Name="InputMailArea" Bounds="8,576,22,22" HitTest="true" MouseUp="onInputMail"/>
-  <TextBox Name="InputText" Bounds="162,577,328,20" FontColor="#FFFFFF" MaxLength="60" HitTest="true"
+  <TextBox Name="InputText" Bounds="162,577,328,20" FontColor="#FFFFFF" MaxLength="60" HitTest="true" AllowPaste="true"
            Hint="Press Ctrl + V to paste conversation information"
            Enter="onInputSend" Up="onInputPrevious" Down="onInputNext" WheelUp="onInputPrevious"
            WheelDown="onInputNext" Click="onInputTextClick"/>

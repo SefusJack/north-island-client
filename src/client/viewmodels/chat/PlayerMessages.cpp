@@ -47,4 +47,6 @@ namespace client {
 
     void PlayerMessages::keepBelow(int minTop) { m_panel.keepBelow(minTop); }
 
+    void PlayerMessages::placeAt(std::optional<int> top) { m_panel.placeAt(top); }
+
 }

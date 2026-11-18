@@ -72,6 +72,10 @@ namespace client {
             /// @return True while the frame is visible.
             bool isOpen() const { return m_frame.isVisible(); }
 
+            /// @brief The box's frame as it is now (it grows while opening).
+            /// @return The frame rectangle.
+            core::Rect frameBounds() const { return m_frame.bounds(); }
+
             /// @brief Whether the main box (MainTalkMsgForm, an exclusive question or words) is up.
             /// @return True when open and exclusive.
             bool isMainOpen() const { return isOpen() && m_timing.exclusive; }

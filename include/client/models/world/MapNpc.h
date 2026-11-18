@@ -47,9 +47,12 @@ namespace client {
         /// @return The sort y.
         int drawOrderY() const { return info.type == 10 ? body.position.y : body.position.y + drawOffsetY; } // NPC type 10: scene object sorted on its own
 
-        /// @brief Tells whether the NPC shows a name (types 6, 8 and 9, things to pick up and the like, show none).
+        /// @brief Tells whether the NPC shows a name (types 6, 8 and 9, things to pick up and the like, show none; nor do type 10 scene objects
+        /// such as doors, entrances and magic traps).
+        /// @details Original: THuman.DrawHumInfo leaves out types 6, 8 and 9; DrawAllHumInfo draws map NPC names only for the draw list
+        /// BuildDrawOrder makes, and BuildDrawOrder leaves type 10 out of it (DrawSceneObjects draws those, without a name).
         /// @return True when the name shows.
-        bool showsName() const { return info.type != 6 && info.type != 8 && info.type != 9; } // NPC types 6, 8, 9: pick-up things without a name
+        bool showsName() const { return info.type != 6 && info.type != 8 && info.type != 9 && info.type != 10; } // NPC types 6, 8, 9, 10: no name
 
         /// @brief Tells whether the NPC is a thing rather than a person.
         /// @details Original: IsSceneObjectNpc (types 6, 9 and 10).

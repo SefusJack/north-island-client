@@ -78,6 +78,8 @@ namespace client {
     void Camera::centerOn(core::Point mapPoint, int mapWidth, int mapHeight) {
         m_origin.x = centeredOrigin(mapPoint.x, m_view.width / 2, mapWidth, m_view.width, kRightShortfall, kScreenWidth) - m_view.x;
         m_origin.y = centeredOrigin(mapPoint.y, m_view.height / 2, mapHeight, m_view.height, 0, kScreenHeight) - m_view.y;
+        m_bgScroll = {m_origin.x + m_view.x, m_origin.y + m_view.y};
+        m_bgCentre = mapPoint;
     }
 
     Camera::Scrolled Camera::follow(core::Point step, core::Point screenPosition, int mapWidth, int mapHeight) {
@@ -86,6 +88,16 @@ namespace client {
             scrolledOrigin(m_origin.x + m_view.x, step.x, screenPosition.x - m_view.x, m_view.width / 2, mapWidth, m_view.width, kScreenWidth) - m_view.x;
         m_origin.y =
             scrolledOrigin(m_origin.y + m_view.y, step.y, screenPosition.y - m_view.y, m_view.height / 2, mapHeight, m_view.height, kScreenHeight) - m_view.y;
+        // the half-speed background moves only when the view moved a whole step (ScrollMapView), clamped to the map
+        const auto halfStep = [](int& scroll, int moved, int stepped, int mapSize, int screenSize) {
+            if (stepped == 0 || moved != stepped) {
+                return;
+            }
+            scroll += stepped / 2;
+            scroll = stepped < 0 ? std::max(scroll, 0) : std::min(scroll, mapSize - screenSize);
+        };
+        halfStep(m_bgScroll.x, m_origin.x - before.x, step.x, mapWidth, m_view.width);
+        halfStep(m_bgScroll.y, m_origin.y - before.y, step.y, mapHeight, m_view.height);
         return {m_origin.x != before.x, m_origin.y != before.y};
     }
 

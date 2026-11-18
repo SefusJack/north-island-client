@@ -174,7 +174,15 @@ namespace client {
         if (person) {
             m_services.characters.drawFigure(canvas, std::get<CharacterLook>(*look), feet, role.slot, role.frame, highlight);
         } else {
-            m_services.characters.drawNpc(canvas, std::get<formats::NpcInfo>(*look), feet, role.slot, role.frame, highlight);
+            // drawNpc adds the map's large-sprite drop (68, +32 when tall) itself; a movie role already has its own drop above and
+            // the original's sprite routine adds none for it (the movie role's FHuman.FHumId is 0), so take that drop back off
+            const formats::NpcInfo& npc = std::get<formats::NpcInfo>(*look);
+            core::Point bodyFeet = feet;
+            if (npc.spriteSize == 1) {
+                bodyFeet.y -= kLargeDrop + (npc.heightMode == 1 ? kTallDrop : 0);
+            }
+            m_services.characters.drawNpc(canvas, npc, bodyFeet, role.slot, role.frame, highlight);
+            m_services.characters.drawNpcLook(canvas, std::get<formats::NpcInfo>(*look), feet, role.slot, role.frame, highlight);
         }
     }
 

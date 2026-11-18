@@ -323,7 +323,8 @@ namespace client {
     }
 
     void ItemWindow::update() {
-        m_screen.setModernDrag(m_services.videoSettings().modernBag ? "ItemBag" : "");
+        // the bag and the Storeroom, whose things go to and fro between them, both carry things the modern way
+        m_screen.setModernDrag(m_services.videoSettings().modernBag ? std::vector<std::string>{"ItemBag", "StoreroomCells"} : std::vector<std::string>{});
         if (const auto hovered = m_screen.isDragging() ? std::nullopt : hoveredItem()) { // nothing is told of what lies under a carried thing
             std::optional<protocol::ItemInstance> worn;
             const auto record = m_services.items.find(hovered->item.itemId);
@@ -843,8 +844,8 @@ namespace client {
         const bool fromBag = args.source == "ItemBag";
         const bool toBag = args.target == "ItemBag" || args.target == "BankItemBag";
         const bool modern = m_services.videoSettings().modernBag;
-        if ((args.partial || args.carried > 0) && !(modern && fromBag && args.target == "ItemBag")) {
-            return; // one of a stack, or a part taken up, goes only from place to place in the bag
+        if ((args.partial || args.carried > 0) && !(modern && fromBag && (args.target == "ItemBag" || args.target == "StoreroomCells"))) {
+            return; // one of a stack, or a part taken up, goes only from place to place in the bag, or into the Storeroom
         }
         const bool toWorn = args.target == "ItemHead" || args.target == "ItemBody" || args.target == "ItemWeapon" || args.target == "ItemWrist" ||
                             args.target == "ItemFeet" || args.target == "ItemSpecial";

@@ -65,6 +65,12 @@ namespace client {
             /// @param hidden Whether the map is hidden.
             void setHidden(bool hidden);
 
+            /// @brief Hides or shows the tile mini map while the main NPC talk box is up; the world map stays.
+            /// @details Original: the talk box's exclusive draw skips CH_TMiniMapForm, but CH_TMiniMapForm_World sets
+            /// FDrawWhenExclusive 1 (CH_Menu.pas) and is drawn over the talk.
+            /// @param hidden Whether the maps are hidden.
+            void setTalkHidden(bool hidden);
+
         private:
             /// @brief The window in the panel's coordinates (a bigger window lets the form go to its edges).
             /// @return Window rectangle relative to the panel.
