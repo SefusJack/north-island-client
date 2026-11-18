@@ -407,21 +407,13 @@ namespace client {
     void PartyMembers::swapPlayed(int index) {
         Member& member = *m_members[static_cast<std::size_t>(index)];
         AccountBundle& old = *m_played;
-        // each character keeps its own track (it may be on another map): the newly played one's is heard, the other's goes on silently
-        const std::filesystem::path oldTrack = old.music.file();
-        const std::uint64_t oldAt = old.music.positionMs();
-        const std::filesystem::path newTrack = member.bundle->music.file();
-        const std::uint64_t newAt = member.bundle->music.positionMs();
+        // each character keeps its own track (it may be on another map) and setDevice carries it over: the newly played one's is
+        // heard from where its silent player had it, the other's goes on remembered on the silent device; the old one leaves the
+        // shared music track first
         old.sounds.setDevice(m_silent);
         old.music.setDevice(m_silent);
         member.bundle->sounds.setDevice(m_device);
         member.bundle->music.setDevice(m_device);
-        if (!oldTrack.empty()) {
-            old.music.playLooped(oldTrack, oldAt);
-        }
-        if (!newTrack.empty()) {
-            member.bundle->music.playLooped(newTrack, newAt);
-        }
         const PartyAccount oldAccount{old.session.loginName, old.session.password, old.session.playingSlot == 2 ? 2 : 1};
         core::logInfo("party: ", member.account.account, " is selected, ", oldAccount.account, " takes its row");
         std::swap(m_played, member.bundle);

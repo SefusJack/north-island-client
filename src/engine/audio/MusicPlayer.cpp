@@ -27,10 +27,20 @@ namespace audio {
     }
 
     void MusicPlayer::playLooped(const std::filesystem::path& file, std::uint64_t startMs) {
-        if (!m_device.get().isOpen() || (startMs == 0 && isPlaying(file))) {
+        if (startMs == 0 && isPlaying(file)) {
             return;
         }
+        request(file, startMs, 0);
+    }
+
+    void MusicPlayer::request(const std::filesystem::path& file, std::uint64_t startMs, std::uint64_t durationMs) {
         stop();
+        if (!m_device.get().isOpen()) {
+            m_file = file;
+            m_durationMs = durationMs;
+            m_clock.start(SDL_GetTicks(), startMs, durationMs);
+            return;
+        }
         m_loadingFile = file;
         m_loadingStartMs = startMs;
         const std::string name = file.string();
@@ -43,7 +53,24 @@ namespace audio {
         });
     }
 
-    std::uint64_t MusicPlayer::positionMs() const { return m_track ? m_clock.positionMs(SDL_GetTicks()) : 0; }
+    std::uint64_t MusicPlayer::positionMs() const {
+        if (!m_loadingFile.empty()) {
+            return m_loadingStartMs;
+        }
+        return m_file.empty() ? 0 : m_clock.positionMs(SDL_GetTicks());
+    }
+
+    void MusicPlayer::setDevice(const AudioDevice& device) {
+        const std::filesystem::path track = file();
+        const std::uint64_t atMs = positionMs();
+        // a track still decoding has no known length yet
+        const std::uint64_t durationMs = m_loadingFile.empty() ? m_durationMs : 0;
+        stop();
+        m_device = std::cref(device);
+        if (!track.empty()) {
+            request(track, atMs, durationMs);
+        }
+    }
 
     void MusicPlayer::update() {
         m_dropped.erase(
@@ -63,6 +90,7 @@ namespace audio {
         }
         m_track = std::move(track);
         m_file = file;
+        m_durationMs = loaded.durationMs;
         m_clock.start(SDL_GetTicks(), m_loadingStartMs, loaded.durationMs);
         MIX_Track* music = m_device.get().musicTrack();
         MIX_SetTrackAudio(music, m_track.get());
@@ -87,9 +115,10 @@ namespace audio {
             m_track.reset();
         }
         m_file.clear();
+        m_durationMs = 0;
     }
 
-    bool MusicPlayer::isPlaying(const std::filesystem::path& file) const { return (m_track && m_file == file) || m_loadingFile == file; }
+    bool MusicPlayer::isPlaying(const std::filesystem::path& file) const { return (!m_file.empty() && m_file == file) || m_loadingFile == file; }
 
     void MusicPlayer::setVolume(int percent) {
         if (m_device.get().isOpen()) {
