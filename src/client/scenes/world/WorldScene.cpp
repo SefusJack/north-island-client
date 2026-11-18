@@ -4433,10 +4433,25 @@ namespace client {
         return true;
     }
 
-    void WorldScene::walkTo(core::Point mapPoint) {
-        if (canWalk() && !m_player.stall) {
-            m_walkMark.start(walkOwnPlayer(mapPoint));
+    bool WorldScene::walkTo(core::Point mapPoint) {
+        if (!canWalk() || m_player.stall) {
+            return false;
         }
+        m_walkMark.start(walkOwnPlayer(mapPoint));
+        return true;
+    }
+
+    bool WorldScene::fightsWith(std::int32_t playerId) const {
+        if (!m_battle.isOn()) {
+            return false;
+        }
+        constexpr int kPlayerFighter = 2; // Fighter::kind 2: a player
+        for (int slot = 1; slot <= BattleField::kSlots; ++slot) {
+            if (const auto fighter = m_battle.field().fighter(slot); fighter && fighter->get().kind == kPlayerFighter && fighter->get().id == playerId) {
+                return true;
+            }
+        }
+        return false;
     }
 
     bool WorldScene::walkElsewhere(core::Point mapPoint) {
@@ -4444,12 +4459,26 @@ namespace client {
             return false;
         }
         m_lastWalkMs = m_nowMs;
+        m_walkHandedOff = true;
         m_walkMark.start(mapPoint);
         return true;
     }
 
+    bool WorldScene::handedWalkGoesOn() {
+        if (!m_walkHandedOff) {
+            return false;
+        }
+        const auto leaderId = m_teams.leaderOf(m_player.id);
+        if (!leaderId || *leaderId == m_player.id) {
+            return false;
+        }
+        const auto leader = characterOf(*leaderId);
+        return leader && leader->get().walking;
+    }
+
     core::Point WorldScene::walkOwnPlayer(core::Point mapPoint, bool byKeyboard) {
         m_lastWalkMs = m_nowMs;
+        m_walkHandedOff = false;
         m_ownTile = {m_player.position.x / formats::MapFile::kCellSize, m_player.position.y / formats::MapFile::kCellSize};
         std::vector<core::Point> path;
         core::Point lastCorner = m_player.position;
@@ -4556,7 +4585,7 @@ namespace client {
     }
 
     void WorldScene::moveCharacters(std::uint64_t nowMs) {
-        if (m_mouseHeld && m_player.walking && canWalkUnlessFollowing() && !m_player.stall && nowMs - m_lastWalkMs >= kHeldWalkMs) {
+        if (m_mouseHeld && (m_player.walking || handedWalkGoesOn()) && canWalkUnlessFollowing() && !m_player.stall && nowMs - m_lastWalkMs >= kHeldWalkMs) {
             const core::Point point = m_camera.toMap(m_mouse);
             if (!walkElsewhere(point) && canWalk()) {
                 m_walkMark.start(walkOwnPlayer(point));

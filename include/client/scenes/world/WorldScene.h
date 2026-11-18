@@ -472,6 +472,11 @@ namespace client {
             /// @return The fighter (0: none, between the rounds, or every own fighter has its command).
             int battleActor() const { return m_battle.isOn() ? m_battle.actor() : 0; }
 
+            /// @brief Tells whether a player fights in the own player's battle, on either side (qol multi-login: the same battle as another own character).
+            /// @param playerId The player's id.
+            /// @return True while a battle is on and the player is one of its fighters.
+            bool fightsWith(std::int32_t playerId) const;
+
             /// @brief Adds a party member's chat line to the selected (played) character's chat window, unless it heard it already.
             /// @param channel Chat channel.
             /// @param line The line.
@@ -509,7 +514,8 @@ namespace client {
             /// @brief Walks the own player to a map point the way a click on the ground there does (path finding, the walk sent to the server).
             /// @details Nothing happens when the player can't walk now (a battle, an event, a team follower, a stall, ...).
             /// @param mapPoint The map point.
-            void walkTo(core::Point mapPoint);
+            /// @return True when the player walks there; false when it can't walk now.
+            bool walkTo(core::Point mapPoint);
 
             /// @brief A window the player opens themselves, as the party's Ctrl+click moves it (qol multi-login).
             struct MovableWindow {
@@ -737,6 +743,12 @@ namespace client {
             /// @param mapPoint The map point walked to.
             /// @return True when another own character walks there instead; the walk mark shows at the point.
             bool walkElsewhere(core::Point mapPoint);
+
+            /// @brief Whether a ground walk handed to the team's leader (walkElsewhere) goes on: the leader, as seen here, still walks.
+            /// @details A held mouse walks again only while the walk goes on (moveCharacters); the own player, a follower, stops on its
+            /// trail point long before the leader does.
+            /// @return True when the last ground walk was handed off and the leader walks now.
+            bool handedWalkGoesOn();
 
             /// @brief The path through a floor room from one map point to another. Original: FindHouseMovePath and CellPathToScreen.
             /// @param from Start map point.
@@ -4624,6 +4636,7 @@ namespace client {
             bool m_mouseHeld = false;
             core::Point m_mouse;
             std::uint64_t m_lastWalkMs = 0;
+            bool m_walkHandedOff = false; // the last ground walk went to the team's leader (walkElsewhere), not the own player
             std::vector<MovableKind> m_movableWindows; // the windows the player opens themselves (qol multi-login)
             std::uint64_t m_keyWalkMs = 0;
             bool m_padInUse = false; // a game pad is the input in use
