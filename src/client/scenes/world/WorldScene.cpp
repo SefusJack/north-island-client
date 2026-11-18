@@ -309,6 +309,7 @@ namespace client {
                [this](core::Point at) { m_instanceWindow.open(at); },
                [this] { m_instanceWindow.close(); }}
           ),
+          m_partyLogin(services, m_screen),
           m_publicBoard(false, noticeBoardHooks()),
           m_guildBoard(true, noticeBoardHooks()),
           m_noticeRead(
@@ -5959,6 +5960,29 @@ namespace client {
     void WorldScene::teamNotice(std::int32_t playerId, const std::string& text, int durationMs) {
         m_messages.show(text, durationMs);
         m_chat.add(10, text, playerId); // chat channel 10: notice line
+    }
+
+    void WorldScene::openPartyLogin() {
+        if (m_services.partyLogIn && m_services.videoSettings().partyLogin) {
+            m_partyLogin.open();
+        }
+    }
+
+    void WorldScene::askPartyLogOut(std::int32_t playerId, const std::string& name) {
+        std::optional<TalkDialog::Speaker> who;
+        if (const auto mate = teamMate(playerId)) {
+            who = TalkDialog::Speaker{mate->sceneLook, mate->name};
+        }
+        m_talk.ask(
+            "Log " + name + " out?",
+            who,
+            [this, playerId] {
+                if (m_services.partyLogOut) {
+                    m_services.partyLogOut(playerId);
+                }
+            },
+            nullptr
+        );
     }
 
     std::optional<TeamMate> WorldScene::teamMate(std::int32_t playerId) const {

@@ -8,7 +8,6 @@
 #include "client/models/social/Teams.h"
 #include "client/viewmodels/chat/PlayerMessages.h"
 #include "client/viewmodels/chat/TalkDialog.h"
-#include "client/viewmodels/social/PartyLoginWindow.h"
 #include "ui/DrawingArea.h"
 #include "ui/ImageButton.h"
 #include "ui/Screen.h"
@@ -26,7 +25,7 @@
 namespace client {
 
     /// @brief The group window (original GroupWindow.xml, TSe_TeamForm) with its party tab.
-    /// @details Shows the pets in the order they joined (figure, level, HP and SP, name, element, what each does, Exile) and the pet command form that sets what one does (CH_PetStatusForm: rest, fight, ride). A pet with tradable 1 is renamed by clicking its name; Enter or a click elsewhere sends the new name. Under them are the teammates (DrawTeamPage) with Leave / Disband and, for the leader, sending a member away or making it the leader. The qol client's multi-login adds Log in (PartyLoginWindow) and, on a party member's row, Log out in Drive away's place.
+    /// @details Shows the pets in the order they joined (figure, level, HP and SP, name, element, what each does, Exile) and the pet command form that sets what one does (CH_PetStatusForm: rest, fight, ride). A pet with tradable 1 is renamed by clicking its name; Enter or a click elsewhere sends the new name. Under them are the teammates (DrawTeamPage) with Leave / Disband and, for the leader, sending a member away or making it the leader. With the qol client's multi-login on, it also has the NPC mirror toggle (GroupPartyMirror).
     class GroupWindow {
         public:
             /// @brief A refusal of the leader's offer to lead and how long it shows.
@@ -155,7 +154,6 @@ namespace client {
                 std::reference_wrapper<ui::ImageButton> lead;
                 std::reference_wrapper<ui::DrawingArea> job;
                 std::reference_wrapper<ui::DrawingArea> element;
-                std::reference_wrapper<ui::ImageButton> logout;
             };
 
             /// @brief Switches to the guild tab: this window gives way to the guild window.
@@ -217,10 +215,6 @@ namespace client {
             /// @param slot Teammate slot (1 to 3 of FMemberIds).
             void askLead(int slot);
 
-            /// @brief Asks whether that party member leaves the team and logs out (qol multi-login).
-            /// @param slot Teammate slot (1 to 3).
-            void askLogout(int slot);
-
             /// @brief Gives the id of a shown teammate.
             /// @details Original GetTeamMemberId.
             /// @param index Position among the shown teammates (1 to 3).
@@ -263,9 +257,7 @@ namespace client {
             ui::ImageButton& m_leave;
             ui::ImageButton& m_guildButton;
             ui::ImageButton& m_instancesButton;
-            ui::ImageButton& m_partyLoginButton;
             ui::ImageButton& m_partyMirrorButton;
-            PartyLoginWindow m_partyLogin;
             const ui::Spot& m_instancesAloneSpot;
             const ui::Spot& m_instancesWithGuildSpot;
             const ui::Spot& m_petPartsSpot;

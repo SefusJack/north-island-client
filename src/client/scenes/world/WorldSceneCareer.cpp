@@ -49,6 +49,7 @@ namespace client {
         m_compoundWindow.close();
         m_skillWindow.close();
         m_groupWindow.close();
+        m_partyLogin.close();
         m_moneyMenu.close();
         m_socialWindow.close();
         m_systemWindow.close();

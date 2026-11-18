@@ -42,6 +42,7 @@
 #include "client/viewmodels/hud/FunctionButtons.h"
 #include "client/viewmodels/mail/FurMailWindow.h"
 #include "client/viewmodels/social/GroupWindow.h"
+#include "client/viewmodels/social/PartyLoginWindow.h"
 #include "client/viewmodels/guild/GuildAuthorityForm.h"
 #include "client/viewmodels/guild/GuildCreateForm.h"
 #include "client/viewmodels/guild/GuildMyAuthorityForm.h"
@@ -448,6 +449,14 @@ namespace client {
             /// @brief Offers the lead to a teammate at once (the group window's checks, without its question).
             /// @param memberId The teammate's player id.
             void appointLeader(std::int32_t memberId) { m_groupWindow.appointLeader(memberId); }
+
+            /// @brief Opens the window that logs another account in with this one (qol multi-login), when multi-login is on.
+            void openPartyLogin();
+
+            /// @brief Asks whether that own character (qol multi-login) leaves its team and logs out; on yes calls services.partyLogOut.
+            /// @param playerId The character's id.
+            /// @param name The character's name, shown in the question.
+            void askPartyLogOut(std::int32_t playerId, const std::string& name);
 
             /// @brief The map the player is on.
             /// @return The map id (0 before one is loaded).
@@ -4284,6 +4293,7 @@ namespace client {
             SkillWindow m_skillWindow;
             SettingsWindow m_systemWindow;
             GroupWindow m_groupWindow;
+            PartyLoginWindow m_partyLogin;
             NoticeBoard m_publicBoard;
             NoticeBoard m_guildBoard;
             NoticeReadForm m_noticeRead;
