@@ -3,6 +3,7 @@
 #include "ui/Tooltip.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <string>
 
@@ -36,6 +37,16 @@ namespace client {
         const gfx::TextStyle kGone{{255, 120, 120, 255}, gfx::TextEffect::Shadow, std::nullopt}; // red text with shadow
         const gfx::TextStyle kPlusText{{255, 255, 255, 255}, gfx::TextEffect::Shadow, std::nullopt}; // white text with shadow
         const std::string kLoginHint = "Log in another account"; // the "+" row's hint
+        // the left side's back line (BattleField, row 1): the fighters' feet, px of the game screen
+        constexpr std::array<core::Point, 4> kBackLineFeet{{{210, 266}, {185, 329}, {160, 392}, {135, 455}}};
+        constexpr core::Point kRingReach{68, 96}; // px the command ring reaches left of and above a fighter's feet (BattleMainForm kHomes)
+        constexpr int kRingBelow = 39; // px the ring reaches below a fighter's feet: its lowest buttons 11 px down, 28 px high
+
+        /// @brief Scales a length in the rows' coordinates to the screen.
+        /// @param length The length, px at scale 1.
+        /// @param scale The rows' scale.
+        /// @return The length on the screen, px.
+        int scaled(int length, float scale) { return static_cast<int>(std::lround(length * scale)); }
 
         /// @brief Fill ratio of a pet-style bar: Ceil(value / most * 100) %, at most 100.
         /// @param value Current value.
@@ -57,15 +68,64 @@ namespace client {
 
     }
 
+    PartyPanels::Placement PartyPanels::place(const core::Rect& view, float hudScale, bool battle) {
+        const float hud = hudScale > 0 ? hudScale : 1.0f;
+        const int chatTop = view.bottom() - scaled(kChatUp, hud);
+        const int statusBottom = view.y + scaled(kStatusBottom, hud);
+        const auto at = [&view](int top, float scale) { return Placement{{view.x + scaled(kLeft, scale), top}, scale}; };
+        const auto clear = [&](const Placement& placement) {
+            // the box of kMostRows rows on the screen
+            const core::Rect block{
+                placement.origin.x + scaled(rowBox(0).x, placement.scale),
+                placement.origin.y + scaled(rowBox(0).y, placement.scale),
+                scaled(kRowWidth, placement.scale),
+                scaled(kBlockHeight, placement.scale)
+            };
+            if (block.bottom() > chatTop) {
+                return false;
+            }
+            return !battle || std::none_of(kBackLineFeet.begin(), kBackLineFeet.end(), [&block](core::Point feet) {
+                       const core::Rect ring{feet.x - kRingReach.x, feet.y - kRingReach.y, 2 * kRingReach.x, kRingReach.y + kRingBelow};
+                       return !block.intersected(ring).isEmpty();
+                   });
+        };
+        // the largest scale from most down to least, in kScaleStep steps, at which the rows fit with their first row at top
+        const auto fit = [&](int top, float most, float least) -> std::optional<Placement> {
+            for (float scale = most; scale >= least; scale -= kScaleStep) {
+                if (clear(at(top, scale))) {
+                    return at(top, scale);
+                }
+            }
+            return std::nullopt;
+        };
+        if (battle) {
+            // the battle form's own status lies at the game screen's fixed coordinates, not HUD-scaled
+            return fit(kBattleTop, 1.0f, kLeastScale).value_or(at(kBattleTop, kLeastScale));
+        }
+        if (const auto underGauge = fit(view.y + scaled(kWorldTop, hud), hud, 1.0f)) {
+            return *underGauge;
+        }
+        // at scale 1 the rows' box reaches kBlockHeight - 1 px below the first row's origin (its box starts 1 px above it)
+        if (const int top = chatTop - (kBlockHeight + rowBox(0).y); top >= statusBottom) {
+            return at(top, 1.0f);
+        }
+        return fit(statusBottom, 1.0f, kLeastScale).value_or(at(statusBottom, kLeastScale));
+    }
+
+    core::Rect PartyPanels::rowBox(int row) { return {-2, row * kRowHeight - 1, kRowWidth, kRowHeight - 2}; }
+
     core::Point PartyPanels::toRows(core::Point point) const {
-        return {static_cast<int>(std::floor((point.x - m_pivot.x) / m_scale)), static_cast<int>(std::floor((point.y - m_pivot.y) / m_scale))};
+        return {
+            static_cast<int>(std::floor((point.x - m_place.origin.x) / m_place.scale)),
+            static_cast<int>(std::floor((point.y - m_place.origin.y) / m_place.scale))
+        };
     }
 
     int PartyPanels::rowAt(core::Point point) const {
         const core::Point at = toRows(point);
         const int count = m_memberRows + (m_loginRow ? 1 : 0);
         for (int row = 0; row < count; ++row) {
-            if (core::Rect{kLeft, m_top + row * kRowHeight, kRowWidth, kRowHeight - 2}.contains(at)) { // 2 pixel gap between rows
+            if (rowBox(row).contains(at)) {
                 return row;
             }
         }
@@ -80,7 +140,7 @@ namespace client {
     bool PartyPanels::loginRowAt(core::Point point) const { return m_loginRow && rowAt(point) == m_memberRows; }
 
     void PartyPanels::drawLoginRow(gfx::Canvas& canvas, core::Point at, bool hovered) {
-        const core::Rect area{at.x - 2, at.y - 1, kRowWidth, kRowHeight - 2}; // the members' row box (see draw)
+        const core::Rect area = rowBox(0).translated(at);
         canvas.fillRectAlpha(area, kLoginBack);
         canvas.drawRectOutline(area, hovered ? kLoginEdgeHovered : kLoginEdge, 1);
         canvas.drawLargeText(at + kPlus, "+", kPlusText, kRowWidth, kLargeLine);
@@ -143,18 +203,15 @@ namespace client {
         std::optional<core::Point> mouse,
         std::uint64_t nowMs
     ) {
-        m_pivot = {view.x, view.y};
-        m_scale = hudScale > 0 ? hudScale : 1.0f;
-        m_top = battle ? kBattleTop : kWorldTop;
+        m_place = place(view, hudScale, battle);
         m_memberRows = static_cast<int>(members.size());
         m_loginRow = loginRow;
         const bool blinkOn = nowMs / kBlinkMs % 2 == 0; // on for kBlinkMs, then off as long
-        canvas.beginScale(m_pivot, m_scale);
+        canvas.beginScale(m_place.origin, m_place.scale);
         for (std::size_t index = 0; index < members.size(); ++index) {
             const PartyMemberView& member = members[index];
-            const core::Point at = m_pivot + core::Point{kLeft, m_top + static_cast<int>(index) * kRowHeight};
-            const core::Rect
-                area{at.x - 2, at.y - 1, kRowWidth, kRowHeight - 2}; // row box: 2 left and 1 up of the row origin, 2 pixel shorter than the row pitch
+            const core::Point at = m_place.origin + core::Point{0, static_cast<int>(index) * kRowHeight};
+            const core::Rect area = rowBox(0).translated(at);
             drawRow(canvas, member, at);
             if (member.attention && blinkOn) {
                 canvas.drawRectOutline({area.x - 1, area.y - 1, area.width + 2, area.height + 2}, kAttention, 2); // around the yellow one, 2 px thick
@@ -165,7 +222,7 @@ namespace client {
         }
         const bool onLoginRow = mouse && loginRowAt(*mouse);
         if (loginRow) {
-            drawLoginRow(canvas, m_pivot + core::Point{kLeft, m_top + m_memberRows * kRowHeight}, onLoginRow);
+            drawLoginRow(canvas, m_place.origin + core::Point{0, m_memberRows * kRowHeight}, onLoginRow);
         }
         canvas.endScale();
         const int hovered = mouse ? memberAt(*mouse) : -1;
