@@ -916,13 +916,21 @@ namespace ui {
     }
 
     bool Screen::placeAt(Element& element, core::Point position) {
-        const auto located = locate(element.id());
-        if (!located) {
+        // searched whether shown or not (locate finds shown elements only): a window opened in a hidden layer goes to its place too
+        std::function<bool(const Element&, core::Point, LayoutRef)> search = [&](const Element& parent, core::Point origin, LayoutRef layout) {
+            for (const auto& child : parent.children()) {
+                const LayoutRef childLayout = layout ? layout : LayoutRef(std::cref(*child));
+                if (child.get() == &element) {
+                    element.setPosition(toLayout(position, childLayout) - origin);
+                    return true;
+                }
+                if (search(*child, origin + child->bounds().position(), childLayout)) {
+                    return true;
+                }
+            }
             return false;
-        }
-        const core::Point parentOrigin = located->screenPosition - element.bounds().position();
-        element.setPosition(toLayout(position, located->layout) - parentOrigin);
-        return true;
+        };
+        return search(*m_root, m_root->bounds().position(), std::nullopt);
     }
 
     void Screen::raiseOpenedWindows() {

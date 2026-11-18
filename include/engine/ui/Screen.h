@@ -209,10 +209,11 @@ namespace ui {
             /// @return The point in screen coordinates, nothing when it is not shown.
             std::optional<core::Point> screenPositionOf(const Element& element) const;
 
-            /// @brief Moves a shown element so that its top left lies at a point of the screen.
+            /// @brief Moves an element so that its top left lies at a point of the screen (HUD bars at the HUD size), shown or not: a
+            /// hidden element is placed where it will show.
             /// @param element The element.
             /// @param position The point in screen coordinates.
-            /// @return False when the element is not shown.
+            /// @return False when the element is not on this screen.
             bool placeAt(Element& element, core::Point position);
 
             /// @brief Slides a layout off its place (Element::setSlide), by the layout's name.

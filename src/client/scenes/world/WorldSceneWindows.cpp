@@ -92,9 +92,7 @@ namespace client {
         if (shown == nullptr) {
             return false; // a precondition failed (no quest notebook, not in a floor room, ...)
         }
-        if (!m_screen.placeAt(*shown, position)) {
-            shown->setPosition(position); // its layer is hidden (an exclusive talk): the layers lie at the screen's top left
-        }
+        m_screen.placeAt(*shown, position); // also while its layer is hidden (an exclusive talk)
         if (m_screen.context().bringToFront) {
             m_screen.context().bringToFront(shown->id());
         }
