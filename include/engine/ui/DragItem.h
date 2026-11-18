@@ -17,6 +17,7 @@ namespace ui {
         core::Point grab;
         bool sticky = false; // it follows the mouse with no button held, until the next left click puts it down
         int count = 0; // how many of the source's things it carries (0: as the source decides)
+        bool fromClick = false; // a click took it up (the modern way): a double click there gives it back and goes on as a double click
     };
 
 }

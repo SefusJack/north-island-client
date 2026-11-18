@@ -154,6 +154,15 @@ namespace client {
             /// @param bagSlot Bag slot.
             void withdrawBankItemTo(int bankSlot, int bagSlot);
 
+            /// @brief Stores one bag stack at once, the modern way's Shift click: the server tops up the bank's stacks of it, then
+            /// takes a free place (30/2 with one slot).
+            /// @param bagSlot The bag place.
+            void quickStore(int bagSlot);
+
+            /// @brief Takes one bank stack to the bag at once, the modern way's Shift click (30/1 with one slot).
+            /// @param bankSlot The bank place.
+            void quickWithdraw(int bankSlot);
+
             GameServices& m_services;
             ui::Screen& m_screen;
             const Inventory& m_bag;
@@ -170,6 +179,8 @@ namespace client {
             bool m_dropHandled = false;
             bool m_withdrawPending = false;
             bool m_storePending = false;
+            int m_quickStores = 0; // Shift click stores the server has not finished: their end leaves the marks as they are
+            int m_quickWithdraws = 0; // the same for Shift click withdrawals
             std::function<void()> m_onClosed;
             InventorySorter m_sorter;
     };

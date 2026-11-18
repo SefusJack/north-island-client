@@ -5,6 +5,7 @@
 #include "gfx/Canvas.h"
 #include "gfx/PictureLibrary.h"
 #include "ui/CursorKind.h"
+#include "ui/DrawContext.h"
 #include "ui/Element.h"
 #include "ui/KeyEvent.h"
 #include "ui/LayoutError.h"
@@ -17,11 +18,13 @@
 #include <cstdint>
 #include <filesystem>
 #include <functional>
+#include <map>
 #include <memory>
 #include <optional>
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace xml {
@@ -29,6 +32,8 @@ namespace xml {
 }
 
 namespace ui {
+
+    class IconGrid;
 
     class ListBox;
     class TextBox;
@@ -120,7 +125,8 @@ namespace ui {
             /// @param button Button pressed.
             /// @param clicks Click count of the press (SDL counts on; folded to 1/2 like WM_LBUTTONDBLCLK).
             /// @param ctrl Whether Ctrl is held (handed on with the events raised).
-            void mouseDown(core::Point position, MouseButton button, int clicks, bool ctrl = false);
+            /// @param shift Whether Shift is held (a Shift click on a modern grid's thing quick-moves it).
+            void mouseDown(core::Point position, MouseButton button, int clicks, bool ctrl = false, bool shift = false);
 
             /// @brief Releases a mouse button: finishes drags and tells the element under the mouse.
             /// @param position Mouse position in screen coordinates.
@@ -247,10 +253,29 @@ namespace ui {
             /// @return True when the window was dealt with here; false when Escape is to be tried (it closes the window, or there is none).
             bool pressPadCancel();
 
-            /// @brief Names the grids whose drags work the modern way: while one of their things is dragged a right click puts one
-            /// down and the drag goes on (a Drop with EventArgs::partial).
+            /// @brief Names the grids whose things move the modern way (as in Minecraft): a click takes a stack up and the next click
+            /// puts it down; a right click puts one down (a Drop with EventArgs::partial), and held over more cells one in each; the
+            /// left button held over more cells shares what is carried out evenly; a Shift click raises the grid's QuickMove.
             /// @param gridNames The grids' element names; empty for none.
-            void setModernDrag(std::vector<std::string> gridNames) { m_modernDragGrids = std::move(gridNames); }
+            /// @param stackLimit Most things in one cell: a full cell takes nothing more.
+            void setModernDrag(std::vector<std::string> gridNames, int stackLimit = 0) {
+                m_modernDragGrids = std::move(gridNames);
+                m_modernStackLimit = stackLimit;
+            }
+
+            /// @brief Names more grids a Shift click quick-moves things from (their QuickMove), without the modern way's other moves
+            /// (the bank's grids, whose clicks mark things).
+            /// @param gridNames The grids' element names; empty for none.
+            void setQuickMoveGrids(std::vector<std::string> gridNames) { m_quickMoveGrids = std::move(gridNames); }
+
+            /// @brief Keeps carrying after the Drop being handled, the modern way: what did not fit stays on the mouse.
+            /// @param count How many of the source cell's things stay carried (0: all of them).
+            void keepCarrying(int count) { m_keepCarry = count; }
+
+            /// @brief Tells the screen how many things the Drop being handled sent on, the modern way: they show in the target cell at
+            /// once, before the server answers. A Drop that tells nothing moved nothing.
+            /// @param count How many were sent.
+            void placed(int count) { m_placed += count; }
 
             /// @brief Starts a drag of a grid's cell that follows the mouse with no button held, until a left click puts it down.
             /// @param gridName The grid's element name.
@@ -356,6 +381,78 @@ namespace ui {
             /// @brief Draws the hovered element's hint box.
             /// @param canvas Target canvas.
             void drawHint(gfx::Canvas& canvas);
+
+            /// @brief Tells whether an element is a grid whose things move the modern way.
+            /// @param id The element's id.
+            /// @return The grid; null when it is none.
+            const IconGrid* modernGrid(int id);
+
+            /// @brief Gives how many things the drag carries the modern way.
+            /// @return The count; 0 without a modern drag.
+            int carried();
+
+            /// @brief Gives the modern grid cell under the mouse that what is carried may go to (an empty cell, or one of the same
+            /// thing that is not full).
+            /// @param position Mouse position in screen coordinates.
+            /// @return The grid's element id and the cell; none when there is no such cell.
+            std::optional<std::pair<int, int>> spreadCellAt(core::Point position);
+
+            /// @brief Puts one thing of what is carried down in the cell under the mouse, the modern way's right click.
+            /// @param position Mouse position in screen coordinates.
+            void putOneDown(core::Point position);
+
+            /// @brief Ends a left button spread: one cell is an ordinary drop; more share what is carried out evenly, the rest stays
+            /// carried.
+            /// @param position Mouse position in screen coordinates.
+            void finishSpread(core::Point position);
+
+            /// @brief A modern move sent to the server and shown before it answers.
+            struct PendingMove {
+                int gridId = 0; // the target grid
+                int index = 0; // the target cell
+                gfx::PictureId picture; // what goes there
+                core::Rect source;
+                int before = 0; // what the target held (with the moves before this one) when it was sent
+                int amount = 0; // how many were sent
+                int fromGridId = 0; // the source grid
+                int fromIndex = 0; // the source cell
+                std::uint64_t atMs = 0; // when it was first drawn (0: not yet)
+            };
+
+            /// @brief Gives how many things a modern grid's cell holds.
+            /// @param gridId The grid's element id.
+            /// @param index The cell.
+            /// @return The count; 0 for none.
+            int actualCount(int gridId, int index);
+
+            /// @brief Gives how many of a move's things the server has not put in the target yet.
+            /// @param move The move.
+            /// @return The count.
+            int unanswered(const PendingMove& move);
+
+            /// @brief Gives how many things moves on their way are bringing into a cell.
+            int pendingInto(int gridId, int index);
+
+            /// @brief Gives how many things moves on their way are taking out of a cell.
+            int pendingOutOf(int gridId, int index);
+
+            /// @brief Keeps what the Drop just handled sent (placed), to show it before the server answers.
+            /// @param drag The drag dropped.
+            /// @param gridId The target's element id.
+            /// @param index The target cell.
+            void notePlaced(const DragItem& drag, int gridId, int index);
+
+            /// @brief Works out what each modern cell shows this frame: carried parts gone, spread shares and moves on their way.
+            /// @param nowMs Time, ms.
+            void buildPreviews(std::uint64_t nowMs);
+
+            /// @brief Gives the count shown on the mouse: what is carried, less the shares of a spread being made.
+            /// @return The count.
+            int cursorCount();
+
+            /// @brief Gives a modern drag the source cell's present picture, and ends it when the cell is empty (it was used up, or
+            /// a swap put another thing there).
+            void refreshDrag();
 
             /// @brief Ends a drag: the source element learns what is under the mouse.
             /// @param position Mouse position in screen coordinates.
@@ -465,6 +562,16 @@ namespace ui {
             int m_textClickId = 0; // the text field last pressed on (takeTextClick)
             std::vector<std::string> m_modernDragGrids; // the grids whose drags a right click puts one thing down of
             bool m_rightUpConsumed = false; // the right button's release belongs to a press that put a dragged thing down
+            std::vector<std::string> m_quickMoveGrids; // more grids whose things a Shift click quick-moves
+            int m_modernStackLimit = 0; // most things in one cell of a modern grid (0: no limit known)
+            std::optional<int> m_keepCarry; // a Drop handler kept carrying this many (0: the whole cell)
+            int m_placed = 0; // how many the Drop being handled sent on
+            std::vector<PendingMove> m_pending; // modern moves shown before the server answers them
+            std::map<std::pair<int, int>, CellPreview> m_previews; // (grid id, cell): what it shows this frame
+            bool m_spreading = false; // the left button is held while carrying the modern way: the cells it passes share it out
+            std::vector<std::pair<int, int>> m_spreadCells; // the cells (grid element id, cell) passed while spreading
+            bool m_rightHeld = false; // the right button is held after putting one down: each new cell passed gets one
+            std::vector<std::pair<int, int>> m_rightCells; // the cells that got one while the right button was held
             std::set<int> m_openWindows; // the windows shown at the last update: one that opens comes to the front
             bool m_openWindowsKnown = false; // m_openWindows was filled once
             int m_padFocusId = 0; // the element a game pad highlights (0: none); it counts as the one under the mouse

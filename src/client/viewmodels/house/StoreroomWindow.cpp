@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <utility>
+#include <vector>
 
 namespace client {
 
@@ -30,6 +31,34 @@ namespace client {
         ui::Window& loadWindow(GameServices& services, ui::Screen& screen) {
             screen.load(services.game.layout("StoreroomWindow.xml"), services.loadContext());
             return screen.get<ui::Window>("StoreroomWindow");
+        }
+
+        /// @brief Gives where a count of a thing goes in a grid the modern way's Shift click: stacks of the same thing that have
+        /// room first, then a free place.
+        /// @param into The grid.
+        /// @param places How many places the grid has.
+        /// @param itemId The thing.
+        /// @param count How many.
+        /// @return The places and how many go to each; less than the count in all when not all fit.
+        std::vector<std::pair<int, int>> quickPlaces(const Inventory& into, int places, int itemId, int count) {
+            std::vector<std::pair<int, int>> found;
+            for (int place = 1; place <= places && count > 0; ++place) {
+                const protocol::ItemInstance& there = into.bagItem(place);
+                if (!there.empty() && there.itemId == itemId) {
+                    if (const int fits = into.fitCount(place, itemId, count, 0); fits > 0) {
+                        found.emplace_back(place, fits);
+                        count -= fits;
+                    }
+                }
+            }
+            if (count > 0) {
+                if (const int free = into.freeSlotFor(itemId); free > 0 && free <= places) {
+                    if (const int fits = into.fitCount(free, itemId, count, 0); fits > 0) {
+                        found.emplace_back(free, fits);
+                    }
+                }
+            }
+            return found;
         }
 
     }
@@ -71,6 +100,7 @@ namespace client {
         });
         screen.on("onStoreroomDrop", [this](const ui::EventArgs& args) { gridItemDropped(args); });
         screen.on("onStoreroomRightClick", [this](const ui::EventArgs& args) { rightClickCell(args.index); });
+        screen.on("onStoreroomQuickMove", [this](const ui::EventArgs& args) { quickTake(args.index); });
     }
 
     void StoreroomWindow::open(int piece) {
@@ -259,10 +289,13 @@ namespace client {
                 // the modern way: what is carried goes to the bag, topping up a stack there
                 const int bagSlot = target - grabCells;
                 const int want = carriedCount(args, m_grid.bagItem(source).count);
-                if (const int fits = m_bag.fitCount(bagSlot, itemId, want, 0); fits > 0) {
+                const int fits = m_bag.fitCount(bagSlot, itemId, want, 0);
+                if (fits > 0) {
                     m_services.connection.send(protocol::storeroomTakeRequest(source, bagSlot, fits, m_piece));
-                } else {
-                    requestTake(source, bagSlot, want, true);
+                    m_screen.placed(fits); // shown at once, before the server answers
+                }
+                if (!args.partial && fits < want) {
+                    m_screen.keepCarrying(want - fits); // what does not fit stays carried
                 }
             } else if (target > grabCells) {
                 requestTake(source, target - grabCells, 1, true);
@@ -299,10 +332,13 @@ namespace client {
             if (modern()) {
                 // the modern way: what is carried moves, topping up a stack there or splitting off into a free cell
                 const int want = carriedCount(args, m_grid.bagItem(source).count);
-                if (const int fits = m_grid.fitCount(destination, itemId, want, source); fits > 0) {
+                const int fits = m_grid.fitCount(destination, itemId, want, source);
+                if (fits > 0) {
                     m_services.connection.send(protocol::storeroomMoveRequest(source, destination, fits, m_piece));
-                } else {
-                    requestMove(source, destination, want, true);
+                    m_screen.placed(fits); // shown at once, before the server answers
+                }
+                if (!args.partial && fits < want) {
+                    m_screen.keepCarrying(want - fits); // what does not fit stays carried
                 }
                 return;
             }
@@ -323,23 +359,10 @@ namespace client {
         if (source < 1 || source > Inventory::kBagSlots || m_bag.bagItem(source).empty() || target < 1 || target > kCells) {
             return;
         }
-        if (pieceGone()) {
-            return;
-        }
-        if (m_marks.isPriced(source) || m_marks.isInFurnitureStall(source) || m_marks.useMark(source) != 0 || m_marks.busyKind(source) != 0 ||
-            m_marks.vehicleState(source) != 0) {
+        if (pieceGone() || !storable(source)) {
             return;
         }
         const int itemId = m_bag.bagItem(source).itemId;
-        const auto record = m_services.items.find(itemId);
-        if (record && record->subType == kTentSubType) {
-            m_messages.show("The tent cannot be placed in warehouse", kNoticeMs);
-            return;
-        }
-        if (itemId == BoxItems::kSuperHandbag || itemId == kUnstorable) {
-            m_messages.show((record ? record->name : std::string()) + " Cannot put it into warehouse", kNoticeMs);
-            return;
-        }
         const int grabCells = args.grab.y / m_cells.pitch().y * kColumns + args.grab.x / m_cells.pitch().x;
         if (target <= grabCells) {
             return;
@@ -359,14 +382,62 @@ namespace client {
         if (modern()) {
             // the modern way: what is carried (the whole stack, the half taken up, or one put down) goes in, topping up a stack there
             const int want = carriedCount(args, m_bag.bagItem(source).count);
-            if (const int fits = m_grid.fitCount(destination, itemId, want, 0); fits > 0) {
+            const int fits = m_grid.fitCount(destination, itemId, want, 0);
+            if (fits > 0) {
                 m_services.connection.send(protocol::storeroomPutRequest(source, destination, fits, m_piece));
-            } else {
-                requestPut(source, destination, want, true);
+                m_screen.placed(fits); // shown at once, before the server answers
+            }
+            if (!args.partial && fits < want) {
+                m_screen.keepCarrying(want - fits); // what does not fit stays carried
             }
             return;
         }
         requestPut(source, destination, 1, true);
+    }
+
+    bool StoreroomWindow::storable(int bagSlot) {
+        if (m_marks.isPriced(bagSlot) || m_marks.isInFurnitureStall(bagSlot) || m_marks.useMark(bagSlot) != 0 || m_marks.busyKind(bagSlot) != 0 ||
+            m_marks.vehicleState(bagSlot) != 0) {
+            return false;
+        }
+        const int itemId = m_bag.bagItem(bagSlot).itemId;
+        const auto record = m_services.items.find(itemId);
+        if (record && record->subType == kTentSubType) {
+            m_messages.show("The tent cannot be placed in warehouse", kNoticeMs);
+            return false;
+        }
+        if (itemId == BoxItems::kSuperHandbag || itemId == kUnstorable) {
+            m_messages.show((record ? record->name : std::string()) + " Cannot put it into warehouse", kNoticeMs);
+            return false;
+        }
+        return true;
+    }
+
+    bool StoreroomWindow::quickPut(int bagSlot) {
+        if (!isOpen() || !modern()) {
+            return false;
+        }
+        const protocol::ItemInstance& item = m_bag.bagItem(bagSlot);
+        if (bagSlot < 1 || bagSlot > Inventory::kBagSlots || item.empty() || pieceGone() || !storable(bagSlot)) {
+            return true;
+        }
+        for (const auto& [cell, count] : quickPlaces(m_grid, kCells, item.itemId, item.count)) {
+            m_services.connection.send(protocol::storeroomPutRequest(bagSlot, cell, count, m_piece));
+        }
+        return true;
+    }
+
+    void StoreroomWindow::quickTake(int cell) {
+        if (!modern() || cell < 1 || cell > kCells || pieceGone()) {
+            return;
+        }
+        const protocol::ItemInstance& item = m_grid.bagItem(cell);
+        if (item.empty()) {
+            return;
+        }
+        for (const auto& [bagSlot, count] : quickPlaces(m_bag, Inventory::kBagSlots, item.itemId, item.count)) {
+            m_services.connection.send(protocol::storeroomTakeRequest(cell, bagSlot, count, m_piece));
+        }
     }
 
     bool StoreroomWindow::modern() const { return m_services.videoSettings().modernBag; }
@@ -383,9 +454,9 @@ namespace client {
             return;
         }
         const protocol::ItemInstance& item = m_grid.bagItem(cell);
-        if (item.count > 1) {
-            // the modern way: half of the stack is taken up and follows the mouse until a click puts it down
-            m_screen.startStickyDrag("StoreroomCells", cell, item.count / 2);
+        if (!item.empty()) {
+            // the modern way: the bigger half of the stack (or a lone thing) is taken up and follows the mouse until a click puts it down
+            m_screen.startStickyDrag("StoreroomCells", cell, (item.count + 1) / 2);
         }
     }
 

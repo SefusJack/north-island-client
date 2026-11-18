@@ -27,6 +27,7 @@ namespace ui {
         declareEvent("RightClick");
         declareEvent("Press");
         declareEvent("MouseWheel");
+        declareEvent("QuickMove");
     }
 
     void IconGrid::applyAttribute(const std::string& name, const std::string& value, const LoadContext& context) {
@@ -216,6 +217,18 @@ namespace ui {
             if (!cell.picture.isValid()) {
                 continue;
             }
+            std::optional<int> count = cell.count;
+            if (context.previews != nullptr) {
+                if (const auto preview = context.previews->find({id(), index}); preview != context.previews->end()) {
+                    // a modern move shows at once: what is carried has left the cell, or a move on its way tops it up
+                    if (preview->second.count <= 0) {
+                        continue;
+                    }
+                    if (count) {
+                        count = preview->second.count;
+                    }
+                }
+            }
             const core::Point at = screenPosition + cellPosition(index);
             if (index == hovered) {
                 const core::Size hoverSize = cell.size ? core::Size{m_cellSize, m_cellSize} : core::Size{cell.source.width, cell.source.height};
@@ -228,17 +241,34 @@ namespace ui {
             } else {
                 context.canvas.drawPicture(cell.picture, at, cell.source);
             }
-            if (cell.count) {
+            if (count) {
                 const int rowsDown = (cell.source.height - m_cellSize) / m_pitchY;
                 context.canvas.drawText(
                     {at.x + kCountOffset.x, at.y + rowsDown * m_pitchY + kCountOffset.y},
-                    std::to_string(*cell.count),
+                    std::to_string(*count),
                     {m_countColor, gfx::TextEffect::Plain, std::nullopt},
                     kCountWidth
                 );
             }
             for (const IconOverlay& overlay : cell.overlays) {
                 context.canvas.drawPicture(overlay.picture, at + overlay.offset, overlay.source);
+            }
+        }
+        if (context.previews != nullptr) {
+            // empty cells a modern move is filling show what goes there before the server answers
+            for (const auto& [key, preview] : *context.previews) {
+                if (key.first != id() || preview.count <= 0 || holdsIcon(key.second) || !preview.picture.isValid()) {
+                    continue;
+                }
+                const core::Point at = screenPosition + cellPosition(key.second);
+                context.canvas.drawPicture(preview.picture, at, preview.source);
+                const int rowsDown = (preview.source.height - m_cellSize) / m_pitchY;
+                context.canvas.drawText(
+                    {at.x + kCountOffset.x, at.y + rowsDown * m_pitchY + kCountOffset.y},
+                    std::to_string(preview.count),
+                    {m_countColor, gfx::TextEffect::Plain, std::nullopt},
+                    kCountWidth
+                );
             }
         }
     }

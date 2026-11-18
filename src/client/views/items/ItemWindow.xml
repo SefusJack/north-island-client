@@ -28,7 +28,7 @@
     <IconGrid Name="ItemSpecial" Position="24,185" FirstIndex="6" DoubleClick="onUnequip" Draggable="true" Drop="onItemDrop"/>
     <ImageButton Name="ItemPreviousCharacter" Picture="Btn_ArrowL_9" Position="40,245" Click="onItemPreviousCharacter"/>
     <ImageButton Name="ItemNextCharacter" Picture="Btn_ArrowR_9" Position="139,245" Click="onItemNextCharacter"/>
-    <IconGrid Name="ItemBag" Position="193,74" Columns="5" Rows="10" Pitch="34" DoubleClick="onUseItem" RightClick="onItemRightClick" Draggable="true" Drop="onItemDrop"/>
+    <IconGrid Name="ItemBag" Position="193,74" Columns="5" Rows="10" Pitch="34" DoubleClick="onUseItem" RightClick="onItemRightClick" QuickMove="onItemQuickMove" Draggable="true" Drop="onItemDrop"/>
     <ImageButton Name="ItemStatusOnly" Picture="Btn_ArrowL_5" Position="149,30" Hint="Only display status column" Click="onItemStatusOnly"/>
     <ImageButton Name="ItemItemsOnly" Picture="Btn_ArrowR_5" Position="222,30" Hint="Only display item column" Click="onItemItemsOnly"/>
     <ImageButton Name="ItemPotential" Picture="Btn_Potential_1" Position="126,88" Click="onItemPotential"/>

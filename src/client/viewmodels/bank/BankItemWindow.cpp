@@ -54,6 +54,8 @@ namespace client {
         screen.on("onBankItemBankUnmark", [this](const ui::EventArgs& args) { unmarkBank(args.index); });
         screen.on("onBankItemBankDrop", [this](const ui::EventArgs& args) { bankItemDropped(args); });
         screen.on("onBankItemBagDrop", [this](const ui::EventArgs& args) { bagItemDropped(args); });
+        screen.on("onBankItemBagQuickMove", [this](const ui::EventArgs& args) { quickStore(args.index); });
+        screen.on("onBankItemBankQuickMove", [this](const ui::EventArgs& args) { quickWithdraw(args.index); });
         screen.on("onBankItemStore", [this](const ui::EventArgs&) { store(); });
         screen.on("onBankItemWithdraw", [this](const ui::EventArgs&) { withdraw(); });
         screen.on("onBankItemClose", [this](const ui::EventArgs&) { close(); });
@@ -69,6 +71,8 @@ namespace client {
 
     void BankItemWindow::show(std::function<void()> onClosed) {
         m_onClosed = std::move(onClosed);
+        m_quickStores = 0;
+        m_quickWithdraws = 0;
         m_bankMarked.fill(false);
         clearBagMarks();
         refresh();
@@ -449,7 +453,37 @@ namespace client {
         m_services.connection.send(protocol::bankTakeRequest(bagSlot, bankSlot));
     }
 
+    void BankItemWindow::quickStore(int bagSlot) {
+        if (!m_services.videoSettings().modernBag || m_storePending || m_withdrawPending || bagSlot < 1 || bagSlot > Inventory::kBagSlots ||
+            m_bag.bagItem(bagSlot).empty()) {
+            return;
+        }
+        if (m_marks.isPriced(bagSlot) || m_marks.useMark(bagSlot) != 0 || m_marks.busyKind(bagSlot) != 0 || m_marks.vehicleState(bagSlot) != 0) {
+            return;
+        }
+        ++m_quickStores;
+        m_services.connection.send(protocol::bankStoreRequest({bagSlot}));
+    }
+
+    void BankItemWindow::quickWithdraw(int bankSlot) {
+        if (!m_services.videoSettings().modernBag || m_storePending || m_withdrawPending || bankSlot < 1 || bankSlot > Inventory::kBagSlots ||
+            m_bank.bagItem(bankSlot).empty() || m_bankMarked[static_cast<std::size_t>(bankSlot)]) {
+            return;
+        }
+        ++m_quickWithdraws;
+        m_services.connection.send(protocol::bankWithdrawRequest({bankSlot}));
+    }
+
     void BankItemWindow::done(bool deposit) {
+        int& quick = deposit ? m_quickStores : m_quickWithdraws;
+        if (quick > 0 && !(deposit ? m_storePending : m_withdrawPending)) {
+            // the end of a Shift click move: the items marked for the arrow buttons stay marked
+            --quick;
+            if (!deposit) {
+                refresh();
+            }
+            return;
+        }
         if (deposit) {
             m_storePending = false;
             clearBagMarks();
