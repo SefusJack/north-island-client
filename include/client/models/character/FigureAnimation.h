@@ -26,6 +26,13 @@ namespace client {
             /// @brief Restarts from frame 0.
             void restart() { m_frame = 0; }
 
+            /// @brief Starts again at frame 0, which is then shown for a whole frame time from now.
+            /// @param nowMs Current time in milliseconds.
+            void restart(std::uint64_t nowMs) {
+                m_frame = 0;
+                m_frameMs = nowMs;
+            }
+
             /// @brief Starts from a given frame.
             /// @param frame Frame index to show.
             void startAt(int frame) { m_frame = frame; }

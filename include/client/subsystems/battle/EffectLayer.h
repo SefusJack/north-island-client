@@ -3,6 +3,7 @@
 
 #include "core/Point.h"
 #include "core/Rect.h"
+#include "formats/GamePixels.h"
 #include "formats/MotionLayer.h"
 #include "gfx/Canvas.h"
 #include "gfx/PictureLibrary.h"
@@ -20,6 +21,7 @@ namespace client {
     /// a point or travels from point to point, drawn centred there; pictures marked by their top-left pixel add their light.
     class EffectLayer {
         public:
+            static constexpr core::Color kPictureTint{0, 0, 0, formats::kLightPicture}; // effect pictures load as light pictures
             /// @brief Resets the layer's timers and point index.
             /// @details Original: ResetEffectLayer.
             /// @param nowMs Current time in milliseconds.

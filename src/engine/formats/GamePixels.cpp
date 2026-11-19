@@ -124,6 +124,17 @@ namespace formats {
         });
     }
 
+    void clearLightBackground(Image& image) {
+        if (image.isEmpty() || image.at(0, 0).toRgb565() != 1) { // RGB565 1: the light picture's near-black marker
+            return;
+        }
+        for (core::Color& pixel : image.pixels()) {
+            if (pixel.a != 0 && pixel.toRgb565() == 1) {
+                pixel.a = 0;
+            }
+        }
+    }
+
     void dropDitheredShadow(Image& image) {
         const int width = image.width();
         const int height = image.height();

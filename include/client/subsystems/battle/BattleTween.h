@@ -64,6 +64,7 @@ namespace client {
                 core::Point position;
                 int jumpHeight = 0;
                 int flyRise = 0;
+                bool placed = false; // snapped this tick: not blended from the tick before
                 std::array<std::optional<core::Point>, kLayerCount> layers{};
             };
 

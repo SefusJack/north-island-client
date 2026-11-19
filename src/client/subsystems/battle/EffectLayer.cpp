@@ -87,7 +87,7 @@ namespace client {
     }
 
     void EffectLayer::loadPicture(gfx::PictureLibrary& pictures) {
-        m_picture = pictures.find(m_name);
+        m_picture = pictures.find(m_name, kPictureTint);
         if (!m_picture) {
             return;
         }

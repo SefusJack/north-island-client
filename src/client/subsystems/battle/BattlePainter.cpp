@@ -136,7 +136,13 @@ namespace client {
 
     int BattlePainter::spriteSlot(const Fighter& fighter) const {
         if (fighter.npc) {
-            return m_characters.npcSlot(fighter.npc->spriteId, fighter.npc->directionKind, fighter.action);
+            const int slot = m_characters.npcSlot(fighter.npc->spriteId, fighter.npc->directionKind, fighter.action);
+            if (m_characters.npcFrameCount(fighter.npc->spriteId, slot) > 0) {
+                return slot;
+            }
+            // a pose the sprite lacks (38 / 39 end the normal attacks 10001 / 10002; troll sprite 1112 has neither) would draw
+            // nothing for that step: the stance is drawn instead
+            return m_characters.npcSlot(fighter.npc->spriteId, fighter.npc->directionKind, fighter.side() == 1 ? 16 : 17); // stance 16 / 17
         }
         return fighter.action;
     }
@@ -155,11 +161,40 @@ namespace client {
     }
 
     int BattlePainter::nextFrame(Fighter& fighter, int count, std::uint64_t nowMs) {
-        const bool dead = fighter.hp <= 0 && (fighter.action == 26 || fighter.action == 27); // death actions 26 / 27
+        const auto lying = [](int action) { return action == 26 || action == 27; }; // death actions 26 / 27
+        const bool down = lying(fighter.action);
+        if (fighter.action != fighter.animatedAction) {
+            // Original SetHumanAction 26: the fall starts on frame 0, once; a fall already shown stays on its last frame
+            if (down && !lying(fighter.animatedAction)) {
+                if (fighter.fallShown && count > 0) {
+                    fighter.animation.startAt(count - 1);
+                } else {
+                    fighter.animation.restart(nowMs); // the fall's first frame gets its whole 230 ms
+                }
+            }
+            fighter.animatedAction = fighter.action;
+        }
+        if (count > 0 && fighter.animation.current() >= count) { // Original NextAnimFrame wraps (the fall holds) on every draw
+            fighter.animation.startAt(down ? count - 1 : 0);
+        }
+        // Original NextAnimFrame: the 26 group holds its last frame whatever the HP
         const int turning =
-            dead ? fighter.animation.frame(nowMs, count, 230, true) : fighter.animation.frame(nowMs, count); // 230: frame time of the death action in ms
+            down ? fighter.animation.frame(nowMs, count, 230, true) : fighter.animation.frame(nowMs, count); // 230: frame time of the death action in ms
+        if (down) {
+            fighter.fallShown = fighter.fallShown || (count > 0 && turning == count - 1);
+        } else if (fighter.hp > 0) {
+            fighter.fallShown = false; // up again (revived): the next fall plays from its start
+        }
+        if (down && fighter.hp <= 0 && fighter.fallShown && count > 0) {
+            // a dead fighter whose fall has played stays on its last frame: a hit motion's held fall frames (the bounce of a
+            // knock-down, 0 1 0 1) do not stand it half up again
+            fighter.animation.startAt(count - 1);
+            return count - 1;
+        }
         if (fighter.holdFrame != 255 && count > 0) { // 255: no frame held
-            return std::min(fighter.holdFrame, count - 1);
+            const int held = std::min(fighter.holdFrame, count - 1);
+            fighter.animation.startAt(held); // Original NextAnimFrame: AFrame := AFixedFrame
+            return held;
         }
         return turning;
     }

@@ -1261,6 +1261,7 @@ namespace client {
             fighter.numbers = HitNumbers{};
             fighter.pending.clear();
             fighter.position = cell;
+            fighter.placed = true;
             fighter.entering = 0;
             fighter.dashing = false;
             fighter.action = fighter.side() == 1 ? 16 : 17; // standing action: 16 side 1, 17 side 2

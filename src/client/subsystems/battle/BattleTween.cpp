@@ -58,6 +58,7 @@ namespace client {
             pose.position = fighter.position;
             pose.jumpHeight = fighter.jumpHeight;
             pose.flyRise = fighter.flyRise;
+            pose.placed = fighter.placed;
             forEachLayer(fighter, [&](int index, EffectLayer& layer) {
                 if (layer.placed()) {
                     pose.layers[static_cast<std::size_t>(index)] = layer.position();
@@ -91,6 +92,11 @@ namespace client {
     void BattleTween::record(const BattleCamera& camera, BattleField& field, std::uint64_t atMs) {
         m_previous = std::move(m_current);
         m_current = take(camera, field, atMs);
+        for (int slot = 1; slot <= BattleField::kSlots; ++slot) {
+            if (const auto found = field.fighter(slot)) {
+                found->get().placed = false;
+            }
+        }
     }
 
     void BattleTween::apply(BattleCamera& camera, BattleField& field, std::uint64_t nowMs, std::uint64_t nextBeatMs) {
@@ -110,7 +116,7 @@ namespace client {
             auto& pose = shown.fighters[slot];
             const auto& before = m_previous->fighters[slot];
             const auto& after = m_current->fighters[slot];
-            if (!pose || !before || !after || before->id != pose->id || after->id != pose->id) {
+            if (!pose || !before || !after || before->id != pose->id || after->id != pose->id || after->placed) {
                 continue;
             }
             pose->position = between(before->position, after->position, amount);

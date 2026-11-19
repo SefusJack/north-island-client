@@ -336,6 +336,7 @@ namespace gfx {
         const bool tinted = tint.r != 0 || tint.g != 0 || tint.b != 0;
         const std::string sourceKey = source == Source::Any ? std::string() : source == Source::Bitmap ? "#bmg" : "#jmg";
         return core::toLower(name) + sourceKey + (tint.a == formats::kWithoutDither ? "#plain" : "") +
+               (tint.a == formats::kLightPicture ? "#light" : "") +
                (tinted ? "#" + std::to_string(tint.r) + ',' + std::to_string(tint.g) + ',' + std::to_string(tint.b) : std::string());
     }
 
@@ -347,6 +348,9 @@ namespace gfx {
             formats::applyPictureRules(image, tint);
             if (tint.a == formats::kWithoutDither) {
                 formats::dropDitheredShadow(image);
+            }
+            if (tint.a == formats::kLightPicture) {
+                formats::clearLightBackground(image);
             }
         }
     }

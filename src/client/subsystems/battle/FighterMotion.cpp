@@ -692,6 +692,14 @@ namespace client {
         if (!updateFighter) {
             return;
         }
+        if (fighter.hp <= 0) {
+            // a fighter the hit killed goes back to its cell lying down (the original runs it home on its feet: a dead body
+            // walking back looked wrong)
+            fighter.holdFrame = 255; // 255: no frame held
+            fighter.mover.setSpeed(m_moveKind2 == 0 ? 0.6 : 0.8); // the run / jump speeds below, px/ms
+            fighter.action = fighter.side() == 1 ? 26 : 27; // down (dead) 26 side 1 / 27 side 2
+            return;
+        }
         if (m_moveKind2 == 0) { // move kind 0: run
             fighter.holdFrame = 255; // 255: no frame held
             fighter.mover.setSpeed(0.6); // 0.6: running speed in px/ms

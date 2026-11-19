@@ -60,6 +60,7 @@ namespace client {
         // default sprite height in pixels
         int spriteHeight = 90;
         core::Point position;
+        bool placed = false; // the position was set outright this tick (a snap home, not a move): drawn there, not blended
         FigureAnimation animation;
 
         int entering = 0;
@@ -70,6 +71,8 @@ namespace client {
         int action = 16; // 16: battle stance
         int holdFrame = 255; // 255: no frame held
         int drawnFrame = 0;
+        int animatedAction = -1; // the action the animation counter last ran for (-1: none yet)
+        bool fallShown = false; // the fall (26 / 27) reached its last frame: a later fall starts there
         bool jumping = false;
         int jumpHeight = 0;
 
@@ -131,8 +134,7 @@ namespace client {
         /// @brief Starts the fall (action 26), unless the fighter already holds it.
         void fall() {
             if (!holdsDownAction()) {
-                animation.restart();
-                onDownAction = true;
+                onDownAction = true; // the fall's frame 0 is set when action 26 / 27 is first drawn (BattlePainter::nextFrame)
             }
         }
 

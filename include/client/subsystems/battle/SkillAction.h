@@ -289,6 +289,7 @@ namespace client {
             int m_stage = 0;
             int m_returnStage = 0;
             std::array<bool, 17> m_reacts{}; // per battle slot 1..16 (BattleField::kSlots + 1): whether the fighter reacts to the hit
+            std::array<bool, 17> m_downBeforeHit{}; // per battle slot 1..16: already fallen when this action's hit landed
             std::uint64_t m_hitMs = 0;
             std::uint64_t m_effectMs = 0;
             static constexpr int kScreenEffects = 10; // most screen effects (shake, fade, ghosts...) a motion has, 1-based

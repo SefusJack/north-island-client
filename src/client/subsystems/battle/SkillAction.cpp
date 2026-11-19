@@ -64,6 +64,7 @@ namespace client {
             }
             const core::Point cell = BattleField::cellPosition(hit.row, hit.col);
             hit.position = {cell.x + BattleCamera::kRest.x - camera.x, cell.y + BattleCamera::kRest.y - camera.y};
+            hit.placed = true;
             hit.jumping = false;
             hit.jumpHeight = 0;
             hit.action = facing(hit, 26); // action 26: down (dead)
@@ -273,7 +274,7 @@ namespace client {
                 direction = 3 - direction;
             }
             caster.skillLayers[i + 1].load(layer, std::move(points), direction, camera);
-            context.pictures.prefetch(caster.skillLayers[i + 1].effectPicture()); // decoded on a worker before the layer starts
+            context.pictures.prefetch(caster.skillLayers[i + 1].effectPicture(), EffectLayer::kPictureTint); // decoded on a worker before the layer starts
             if (caster.skillLayers[i + 1].isCutIn()) {
                 caster.cutIn = SkillCutIn{true, std::nullopt, 0, 0};
             }
@@ -658,7 +659,12 @@ namespace client {
                 direction = 3 - direction;
             }
             layers[i + 1].load(layer, std::move(points), direction, camera);
-            context.pictures.prefetch(layers[i + 1].effectPicture()); // decoded on a worker before the layer starts
+            context.pictures.prefetch(layers[i + 1].effectPicture(), EffectLayer::kPictureTint); // decoded on a worker before the layer starts
+        }
+        // layers this motion does not have are cleared: one left from an earlier action (a held crack, a status motion with fewer
+        // layers than the skill's hit motion) would otherwise be drawn again by this action at the screen place it had then
+        for (std::size_t i = motion.layers.size() + 1; i <= Fighter::kLayers; ++i) {
+            layers[i] = EffectLayer{};
         }
         constexpr int kSoundNumbers = 10000; // sound numbers are taken modulo this; the sound file number is the remainder
         for (const auto& bytes : motion.sounds) {
@@ -790,6 +796,7 @@ namespace client {
                         finishSkill(context);
                     }
                     a.position = {motion.start().x - camera.position().x, motion.start().y - camera.position().y};
+                    a.placed = true; // home: drawn there at once, not slid in by the tween
                     if (a.cameraFollow) {
                         camera.restartTicks(context.nowMs);
                     }
@@ -982,6 +989,9 @@ namespace client {
                     continue;
                 }
                 Fighter& hit = *found;
+                // a fighter this hit kills still flies back and comes home (original EndFighterHitMotion); only one that was down
+                // before the hit is kept lying on its cell
+                m_downBeforeHit[static_cast<std::size_t>(slot)] = hit.hp <= 0;
                 hit.hitMotion.reset(context.nowMs);
                 if (m_hitMotion) {
                     for (std::size_t i = 1; i <= m_hitMotion->get().layers.size() && i <= Fighter::kLayers; ++i) {
@@ -1108,6 +1118,7 @@ namespace client {
         if (slot != m_attacker) {
             hit.action = stance(hit);
             hit.position = motion.screen();
+            hit.placed = true;
             hit.holdFrame = 255; // 255: hold the pose (hold-frame sentinel)
         }
         m_stage = 4;
@@ -1177,7 +1188,7 @@ namespace client {
                     continue;
                 }
                 updateHitMotion(context, slot);
-                if (slot != m_attacker) {
+                if (slot != m_attacker && m_downBeforeHit[static_cast<std::size_t>(slot)]) {
                     layFallen(*found, context.camera.position()); // the motion still steps (the stages wait for it), the body does not move
                 }
                 FighterMotion& motion = found->get().hitMotion;
@@ -1201,8 +1212,8 @@ namespace client {
                 }
                 endHitMotion(context, slot);
                 Fighter& hit = *found;
-                if (slot != m_attacker) {
-                    layFallen(hit, context.camera.position()); // no walk home and no stance for a fallen fighter
+                if (slot != m_attacker && m_downBeforeHit[static_cast<std::size_t>(slot)]) {
+                    layFallen(hit, context.camera.position()); // no walk home and no stance for a fighter fallen before the hit
                 }
                 for (int number = 1; number <= HitNumbers::kHits; ++number) {
                     if (hit.numbers.spShown(number) || hit.numbers.hpOf(number) == 0) {
@@ -1316,6 +1327,7 @@ namespace client {
             const core::Point cell = BattleField::cellPosition(fighter.row, fighter.col);
             const core::Point camera = context.camera.position();
             fighter.position = {cell.x + BattleCamera::kRest.x - camera.x, cell.y + BattleCamera::kRest.y - camera.y};
+            fighter.placed = true;
             fighter.action = fighter.hp <= 0 ? facing(fighter, 26) : stance(fighter); // action 26: down (dead)
             if (fighter.hp <= 0) {
                 fighter.fall();

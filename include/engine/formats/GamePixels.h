@@ -18,6 +18,14 @@ namespace formats {
     void applyPictureRules(Image& image, core::Color colorAdd = {0, 0, 0, 0});
 
     constexpr std::uint8_t kWithoutDither = 0xD1; // a tint with this alpha asks for the picture without its dithered shadow
+    constexpr std::uint8_t kLightPicture = 0xD2; // a tint with this alpha asks for a light picture whose black background adds nothing
+
+    /// @brief Lets a light picture's near-black marker pixels (RGB565 1) add nothing when the picture is drawn as added light.
+    /// @details Original: ro_Clipper_LightAlpha_ColorKey_Blt adds src * alpha / 32 per RGB565 field, truncated, so the marker
+    /// (blue 1) adds 0. Only a picture whose top-left pixel is the marker is changed; its marker pixels keep their colour with
+    /// alpha 0 (the top-left still reads as the marker for the light test, which ignores alpha).
+    /// @param image Bitmap after applyPictureRules, changed in place.
+    void clearLightBackground(Image& image);
 
     /// @brief Takes the dithered shadow out of a picture: the dark pixels set in a checkerboard with see-through ones between.
     /// @details Some map pictures (trees, rocks) have their shadow painted on that way; the experimental lighting casts its own.
