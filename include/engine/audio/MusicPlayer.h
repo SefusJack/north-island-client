@@ -19,6 +19,8 @@ namespace audio {
     class AudioDevice;
 
     /// @brief Plays one looping background music track at a time, decoded on another thread.
+    /// @details On a closed (silent) device nothing is decoded or heard, but the track asked for is remembered with a clock of where it
+    /// would be, so file(), positionMs() and setDevice mean the same as on an open one (the qol client's party members, unheard).
     class MusicPlayer {
         public:
             /// @brief Makes a player on a device.
@@ -34,7 +36,7 @@ namespace audio {
             /// @brief Stops the music.
             ~MusicPlayer();
 
-            /// @brief Asks for a track; it replaces the playing one once decoded and then loops.
+            /// @brief Asks for a track; it replaces the playing one once decoded and then loops (on a closed device it is only remembered).
             /// @param file Music file (MS-ADPCM WAV).
             /// @param startMs Offset into the track where it begins (the original saved it as FMusicResumePos around a movie).
             void playLooped(const std::filesystem::path& file, std::uint64_t startMs = 0);
@@ -42,23 +44,25 @@ namespace audio {
             /// @brief Starts the track whose decoding has ended; call once a frame.
             void update();
 
-            /// @brief Stops the track and drops any decoding in progress.
+            /// @brief Stops the track, drops any decoding in progress and forgets a remembered track.
             void stop();
 
             /// @brief Tells whether a given track is on or on its way.
             /// @param file Music file to test.
-            /// @return True when that file plays or is being decoded.
+            /// @return True when that file plays, is being decoded or is remembered (closed device).
             bool isPlaying(const std::filesystem::path& file) const;
 
             /// @brief Tells whether some track is on or on its way.
-            /// @return True when a track plays or is being decoded.
-            bool playing() const { return m_track != nullptr || !m_loadingFile.empty(); }
+            /// @return True when a track plays, is being decoded or is remembered (closed device).
+            bool playing() const { return !m_file.empty() || !m_loadingFile.empty(); }
 
             /// @brief Gives the track that is on or on its way (what a movie saves to put back).
             /// @return The file, empty for none.
-            std::filesystem::path file() const { return m_track ? m_file : m_loadingFile; }
+            std::filesystem::path file() const { return m_loadingFile.empty() ? m_file : m_loadingFile; }
 
             /// @brief Gives where in the track the music is.
+            /// @details While a track is decoding: where it is to begin. On a closed device the track's length is only known when it was
+            /// heard before being moved there (setDevice); otherwise this is 0, so it starts from its beginning when heard again.
             /// @return Position in ms, 0 when none is on.
             std::uint64_t positionMs() const;
 
@@ -72,12 +76,10 @@ namespace audio {
             /// @brief Goes on from where the track was held.
             void resume();
 
-            /// @brief Stops the track and plays on another device from now on (the qol client's party).
+            /// @brief Moves the track to another device (the qol client's party): it goes on from where it is, heard on an open
+            /// device (decoded again) and only remembered on a closed one.
             /// @param device The new audio device.
-            void setDevice(const AudioDevice& device) {
-                stop();
-                m_device = std::cref(device);
-            }
+            void setDevice(const AudioDevice& device);
 
         private:
             /// @brief Deleter that frees a MIX_Audio.
@@ -101,9 +103,16 @@ namespace audio {
             /// @return The decoded track and its length; track is null on failure.
             static Loaded decode(MIX_Mixer* mixer, const std::string& name);
 
+            /// @brief Asks for a track at a place, keeping a length already known of it.
+            /// @param file Music file.
+            /// @param startMs Offset into the track where it begins.
+            /// @param durationMs The track's length in ms, 0 when unknown (closed device: the clock then stays at 0).
+            void request(const std::filesystem::path& file, std::uint64_t startMs, std::uint64_t durationMs);
+
             std::reference_wrapper<const AudioDevice> m_device;
             Track m_track;
-            std::filesystem::path m_file;
+            std::filesystem::path m_file; // the track heard (open device) or remembered (closed device)
+            std::uint64_t m_durationMs = 0; // m_file's length in ms, 0 when unknown
             core::BackgroundLoad<Loaded> m_loading;
             std::filesystem::path m_loadingFile;
             std::uint64_t m_loadingStartMs = 0;

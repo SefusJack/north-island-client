@@ -10,6 +10,7 @@
 #include "client/rendering/world/ViewZoom.h"
 #include "client/rendering/characters/CharacterRenderer.h"
 #include "client/data/EmoteCodes.h"
+#include "core/Point.h"
 #include "core/Size.h"
 #include "formats/CompoundTable.h"
 #include "formats/FormulaData.h"
@@ -32,11 +33,11 @@
 
 namespace client {
 
-    /// @brief What started the party leader's event, for the members that mirror it (qol): the 20/x trigger it sent.
+    /// @brief What started the selected (played) character's event, for the members that mirror it (qol): the 20/x trigger it sent.
     enum class PartyTrigger {
-        NpcClick, // 20/1: the leader clicked an NPC
-        NpcNear, // 20/2: the leader came near an NPC whose events start so
-        Door, // 20/8: the leader walked into a door with events
+        NpcClick, // 20/1: the selected character clicked an NPC
+        NpcNear, // 20/2: the selected character came near an NPC whose events start so
+        Door, // 20/8: the selected character walked into a door with events
     };
 
     /// @brief What the screens of the game share; the Application owns all of it.
@@ -68,20 +69,21 @@ namespace client {
         std::vector<std::string> renderDrivers;
         std::string rendererInUse;
         std::function<core::Size()> desktopSize = [] { return core::Size{}; };
-        std::function<bool(std::int32_t inviterId)> joinsTeamOf = [](std::int32_t) { return false; };
-        std::function<bool(std::int32_t leaderId)> takesLeadFrom = [](std::int32_t) { return false; };
-        std::function<void(int channel, const std::string& line, std::int32_t senderId)> chatHeard;
-        std::function<bool(int typedChannel, const std::string& text)> partyChat;
+        std::function<bool(std::int32_t inviterId)> joinsTeamOf = [](std::int32_t) { return false; }; // the invite is from another own character of the qol client: accepted unasked
+        std::function<bool(std::int32_t leaderId)> takesLeadFrom = [](std::int32_t) { return false; }; // the lead is offered by another own character: accepted unasked
+        std::function<void(int channel, const std::string& line, std::int32_t senderId)> chatHeard; // a member heard a chat line (its whispers and team lines go to the selected character's chat)
         std::function<std::string(const std::string& account, const std::string& password, int slot)> partyLogIn;
-        std::function<bool(std::int32_t playerId)> isPartyMember;
         std::function<void(std::int32_t playerId)> partyLogOut;
         std::function<void(bool centre, const std::string& text, int durationMs)> partyMessage;
-        std::function<bool()> partyMirrorsNpcs; // the members follow the leader's NPC talk and doors (qol)
+        std::function<bool()> partyMirrorsNpcs; // the own characters in the selected character's team on its map follow its NPC talk and doors (qol)
         std::function<void(bool on)> setPartyMirrorsNpcs;
-        std::function<void(PartyTrigger trigger, int index)> partyEventStarted; // the leader started an NPC's or a door's event
-        std::function<void(int dataId, int code)> partyEventAnswered; // the leader answered an event dialog
-        std::function<void()> partyEventEnded; // the leader's event ended
-        bool unseenPartyMember = false; // a party member's account, played without its own screen (qol)
+        std::function<void(PartyTrigger trigger, int index)> partyEventStarted; // the selected character started an NPC's or a door's event
+        std::function<void(int dataId, int code)> partyEventAnswered; // the selected character answered an event dialog
+        std::function<void()> partyEventEnded; // the selected character's event ended
+        /// @brief Asked on a ground click of the own player that would walk it (WorldScene), with the clicked map point.
+        /// @details Unset: the player walks itself.
+        std::function<bool(core::Point mapPoint)> walkElsewhere = {}; // a ground click to walk to mapPoint: true when another own character walks there instead (qol multi-login), and this player stays
+        bool unseenPartyMember = false; // an own character other than the selected one, played without its own screen (qol); flips on a swap
         bool serverSorts = false;
         std::array<bool, 4> gameGroupsOpen = {true, false, false, false}; // which groups of the settings Game tab are open, until the game closes
         std::array<bool, 5> videoGroupsOpen = {true, false, false, false, false}; // which groups of the settings Video tab are open, until the game closes

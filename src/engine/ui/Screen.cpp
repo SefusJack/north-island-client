@@ -919,6 +919,9 @@ namespace ui {
         m_context.ctrlHeld = ctrl;
         m_context.shiftHeld = shift;
         refreshHover();
+        if (m_pressHook && m_hoveredId != 0) {
+            m_pressHook(m_hoveredId);
+        }
         if (m_context.drag) {
             const bool modern = modernGrid(m_context.drag->sourceId) != nullptr;
             if (button == MouseButton::Right && modern) {
@@ -1201,6 +1204,60 @@ namespace ui {
         return windows;
     }
 
+    bool Screen::windowOver(const core::Rect& area, const std::function<bool(const Element& layout)>& popup) const {
+        // the element's own rectangle, in the screen's coordinates
+        const auto onScreen = [this](const Element& element, core::Point position, LayoutRef layout) {
+            const core::Point topLeft = fromLayout(position, layout);
+            const core::Point bottomRight = fromLayout(position + core::Point{element.bounds().width, element.bounds().height}, layout);
+            return core::Rect::fromEdges(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y);
+        };
+        // a popup's element takes the mouse at a point of the area (each pixel of the overlap, until one does)
+        const auto takesMouseIn = [&](const Element& element, core::Point position, LayoutRef layout) {
+            const core::Rect overlap = onScreen(element, position, layout).intersected(area);
+            for (int y = overlap.y; y < overlap.bottom(); ++y) {
+                for (int x = overlap.x; x < overlap.right(); ++x) {
+                    if (element.hitTest(toLayout({x, y}, layout) - position, m_pictures)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+        // an element, its screen origin, its layout and whether that layout is a popup's
+        using Search = std::function<bool(const Element&, core::Point, LayoutRef, bool)>;
+        Search search = [&](const Element& element, core::Point origin, LayoutRef layout, bool inPopup) {
+            if (!element.isVisible()) {
+                return false;
+            }
+            const core::Point position = origin + element.bounds().position();
+            if (element.padWindow() || dynamic_cast<const Window*>(&element) != nullptr) {
+                return !onScreen(element, position, layout).intersected(area).isEmpty();
+            }
+            if (inPopup && takesMouseIn(element, position, layout)) {
+                return true;
+            }
+            return std::any_of(element.children().begin(), element.children().end(), [&](const auto& child) {
+                return search(*child, position, layout, inPopup);
+            });
+        };
+        const core::Point rootOrigin = m_root->bounds().position();
+        return std::any_of(m_root->children().begin(), m_root->children().end(), [&](const auto& layout) {
+            return kept(*layout) && !layout->isSlidAway() && search(*layout, rootOrigin, std::cref(*layout), popup && popup(*layout));
+        });
+    }
+
+    std::vector<const Element*> Screen::layoutsFrom(const std::function<bool(const Element& layout)>& pick) const {
+        const auto& layouts = m_root->children();
+        const auto lowest = std::find_if(layouts.begin(), layouts.end(), [&pick](const auto& layout) {
+            return layout->isVisible() && !layout->isSlidAway() && pick(*layout);
+        });
+        std::vector<const Element*> picked;
+        for (auto layout = lowest; layout != layouts.end(); ++layout) {
+            picked.push_back(layout->get());
+        }
+        return picked;
+    }
+
     std::optional<core::Rect> Screen::screenRectOf(const std::string& name) {
         Element* element = nullptr;
         try {
@@ -1216,6 +1273,44 @@ namespace ui {
         const core::Point topLeft = fromLayout(located->screenPosition, located->layout);
         const core::Point bottomRight = fromLayout(located->screenPosition + core::Point{bounds.width, bounds.height}, located->layout);
         return core::Rect{topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y};
+    }
+
+    std::optional<core::Point> Screen::screenPositionOf(const Element& target) const {
+        std::function<std::optional<core::Point>(const Element&, core::Point, LayoutRef)> search =
+            [&](const Element& element, core::Point origin, LayoutRef layout) -> std::optional<core::Point> {
+            if (!element.isVisible()) {
+                return std::nullopt;
+            }
+            const core::Point position = origin + element.bounds().position();
+            if (&element == &target) {
+                return fromLayout(position, layout);
+            }
+            for (const auto& child : element.children()) {
+                if (auto found = search(*child, position, layout ? layout : LayoutRef(std::cref(*child)))) {
+                    return found;
+                }
+            }
+            return std::nullopt;
+        };
+        return search(*m_root, {0, 0}, std::nullopt);
+    }
+
+    bool Screen::placeAt(Element& element, core::Point position) {
+        // searched whether shown or not (locate finds shown elements only): a window opened in a hidden layer goes to its place too
+        std::function<bool(const Element&, core::Point, LayoutRef)> search = [&](const Element& parent, core::Point origin, LayoutRef layout) {
+            for (const auto& child : parent.children()) {
+                const LayoutRef childLayout = layout ? layout : LayoutRef(std::cref(*child));
+                if (child.get() == &element) {
+                    element.setPosition(toLayout(position, childLayout) - origin);
+                    return true;
+                }
+                if (search(*child, origin + child->bounds().position(), childLayout)) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        return search(*m_root, m_root->bounds().position(), std::nullopt);
     }
 
     void Screen::raiseOpenedWindows() {
@@ -1311,7 +1406,8 @@ namespace ui {
     }
 
     void Screen::draw(gfx::Canvas& canvas, std::uint64_t nowMs) {
-        if (m_hoveredLayout != nullptr && !kept(*m_hoveredLayout)) {
+        const bool hoverHidden = m_hoveredLayout != nullptr && !kept(*m_hoveredLayout);
+        if (hoverHidden && m_refindHover) {
             // update found the hovered element without this filter (party member screens get it only to draw), in a
             // layout the filter hides: find it again among the kept layouts, so hidden layouts give no highlight or
             // hint. A hit in a kept layout is already what the filtered search would find: every layout searched
@@ -1319,7 +1415,9 @@ namespace ui {
             refreshHover();
         }
         refreshDrag();
-        DrawContext context{canvas, m_hoveredId, m_context.focusedId, m_mouse, nowMs};
+        // a screen drawn in passes: the hovered element is another pass's, and nothing under it is highlighted in this one
+        const int hovered = hoverHidden && !m_refindHover ? 0 : m_hoveredId;
+        DrawContext context{canvas, hovered, m_context.focusedId, m_mouse, nowMs};
         buildPreviews(nowMs);
         const int carriedNow = cursorCount();
         if (!m_previews.empty()) {

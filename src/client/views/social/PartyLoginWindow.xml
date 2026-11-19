@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The qol client's form that logs another account in as a party member (the group window's Log in); view model:
+<!-- The qol client's form that logs another account in as a party member (WorldScene::openPartyLogin); view model:
      viewmodels/social/PartyLoginWindow.cpp.  Made of the game's own pictures: the white form frame (form_module), the login
      form's text boxes (Panel26), the switches and OK / Cancel. -->
 <Panel Name="PartyLoginLayer" Bounds="0,0,800,600">

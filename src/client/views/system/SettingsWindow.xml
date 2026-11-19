@@ -51,7 +51,7 @@
             <ImageButton Name="SettingsCamera" Picture="Btn_On_1" Position="298,2" Click="onSettingsCamera"/>
             <Label Name="SettingsSortText" Position="16,34" Text="Sort button in item windows" Effect="Shadow"/>
             <CheckBox Name="SettingsSort" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="326,33" Click="onSettingsSort"/>
-            <Label Name="SettingsPartyLoginText" Position="16,62" Text="Log in more accounts (group window)" Effect="Shadow"/>
+            <Label Name="SettingsPartyLoginText" Position="16,62" Text="Log in more accounts" Effect="Shadow"/>
             <CheckBox Name="SettingsPartyLogin" Picture="btn_UnCheck_1" CheckedPicture="btn_Check_1" Position="326,61" Click="onSettingsPartyLogin"/>
             <!-- the modern way of moving things: the left button carries the whole stack, the right one puts one down or takes half -->
             <Label Name="SettingsModernBagText" Position="16,90" Text="Modern item dragging" Effect="Shadow"/>

@@ -697,10 +697,11 @@ namespace client {
                 }
                 FrameSample sample;
                 SDL_Event event;
-                Scene& steered = shownScene();
-                if (played->kind == SceneKind::World) {
-                    party.coverLeaderHud(played->scene->screen());
+                // a party row clicked last frame swaps the played account here, before any reference to its scene is taken for this frame
+                if (party.applySelection()) {
+                    applyView(*played->scene);
                 }
+                Scene& steered = shownScene();
                 padControls.update(frameStartPrecise, gamepad, device->window(), steered, canvas.origin(), live.controller.hideSeconds);
                 hudReveal.update(
                     frameStartPrecise,
@@ -797,11 +798,11 @@ namespace client {
                     if (!party.started() && played->kind == SceneKind::World) {
                         party.start();
                     }
-                    std::optional<std::reference_wrapper<const WorldScene>> leaderWorld;
+                    std::optional<std::reference_wrapper<const WorldScene>> playedWorld;
                     if (played->kind == SceneKind::World) {
-                        leaderWorld = std::cref(static_cast<const WorldScene&>(*played->scene));
+                        playedWorld = std::cref(static_cast<const WorldScene&>(*played->scene));
                     }
-                    party.update(frameStart, leaderWorld);
+                    party.update(frameStart, playedWorld);
                     if (played->kind == SceneKind::World) {
                         auto& world = static_cast<WorldScene&>(*played->scene);
                         for (const PartyChatLine& line : party.takeChatLines(frameStart)) {
@@ -822,6 +823,7 @@ namespace client {
                         if (!played->scene) {
                             break;
                         }
+                        party.playedSceneChanged();
                         applyView(*played->scene);
                         if (*next == SceneKind::World) {
                             party.logInGone(); // members cut off with the old login follow the new one
@@ -871,15 +873,21 @@ namespace client {
                     canvas.setBetweenBeats(std::nullopt, frameStart);
                 }
                 Scene& shown = shownScene();
+                const bool playedShown = &shown == played->scene.get();
+                if (playedShown) {
+                    party.holdPlayedPopups();
+                }
                 shown.draw(canvas, frameStart);
-                if (&shown == played->scene.get()) {
+                if (playedShown) {
                     party.drawWindows(canvas, frameStart, static_cast<float>(live.hudScale) / 100.0f); // percent to factor
                 }
-                if (party.started() && !party.empty() && played->kind == SceneKind::World) {
+                if (party.started() && played->kind == SceneKind::World) {
                     party.drawPanels(
                         canvas,
                         static_cast<float>(live.hudScale) / 100.0f,
-                        static_cast<const WorldScene&>(*played->scene)
+                        static_cast<const WorldScene&>(*played->scene),
+                        shown.screen(),
+                        frameStart
                     ); // hudScale 100 = 1.0 (percent to factor)
                 }
                 if (script) {

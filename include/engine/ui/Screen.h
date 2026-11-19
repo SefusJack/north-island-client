@@ -139,6 +139,10 @@ namespace ui {
             /// TForm1.DXDraw1MouseUp skips DispatchMouseUp once (DZ_Game.pas:2071-2074).
             void consumeNextRelease() { m_releaseConsumed = true; }
 
+            /// @brief Sets the hook told of every mouse button press on an element, before the press is handled.
+            /// @param hook Called with the id of the element under the mouse (never 0).
+            void setPressHook(std::function<void(int elementId)> hook) { m_pressHook = std::move(hook); }
+
             /// @brief Sends a wheel turn to the element with the keyboard.
             /// @param steps Wheel steps (positive: up).
             void mouseWheel(int steps);
@@ -205,6 +209,18 @@ namespace ui {
             /// @param name Element name.
             /// @return The rectangle in screen coordinates, nothing when there is no such element or it is not shown.
             std::optional<core::Rect> screenRectOf(const std::string& name);
+
+            /// @brief Gives where a shown element's top left lies on the screen (HUD bars at the HUD size), without its layout's slide.
+            /// @param element The element.
+            /// @return The point in screen coordinates, nothing when it is not shown.
+            std::optional<core::Point> screenPositionOf(const Element& element) const;
+
+            /// @brief Moves an element so that its top left lies at a point of the screen (HUD bars at the HUD size), shown or not: a
+            /// hidden element is placed where it will show.
+            /// @param element The element.
+            /// @param position The point in screen coordinates.
+            /// @return False when the element is not on this screen.
+            bool placeAt(Element& element, core::Point position);
 
             /// @brief Slides a layout off its place (Element::setSlide), by the layout's name.
             /// @param layoutName The layout root's name.
@@ -338,9 +354,15 @@ namespace ui {
             float hudScale() const { return m_hudScale; }
 
             /// @brief Restricts drawing and mouse hits to the layouts the filter keeps (none set: all of them).
-            /// @details The qol client's party members show their windows over the leader's screen this way.
+            /// @details The qol client's party members show their windows over the selected character's screen this way.
             /// @param filter Predicate on a layout root.
-            void setLayoutFilter(std::function<bool(const Element& layout)> filter) { m_layoutFilter = std::move(filter); }
+            /// @param refindHover When the hovered element lies in a layout the filter hides, draw finds the hover again among the kept
+            /// layouts (a screen updated without the filter); false draws no hover then (a screen drawn in passes, whose hovered element
+            /// is drawn by another pass).
+            void setLayoutFilter(std::function<bool(const Element& layout)> filter, bool refindHover = true) {
+                m_layoutFilter = std::move(filter);
+                m_refindHover = refindHover;
+            }
 
             /// @brief Tells whether an element of the kept layouts catches the mouse at a point of the screen.
             /// @param position Point in screen coordinates.
@@ -350,6 +372,20 @@ namespace ui {
             /// @brief Lists the windows (ui::Window) shown in the kept layouts.
             /// @return Their rectangles in the screen's coordinates.
             std::vector<core::Rect> shownWindows() const;
+
+            /// @brief Tells whether a shown window (a ui::Window, or a pad window: a pop-up menu, a mini game) of the kept layouts
+            /// lies over any part of an area of the screen, or, in a popup layout, a shown element takes the mouse at a point of
+            /// it (the talk box, the maid's menu, an item or pet info box, a message box); HUD bars are taken at the HUD size.
+            /// @param area The area in screen coordinates.
+            /// @param popup Picks the popup layouts (layout roots), whose elements are not windows; none: no layout is one.
+            /// @return True when one does.
+            bool windowOver(const core::Rect& area, const std::function<bool(const Element& layout)>& popup = {}) const;
+
+            /// @brief Lists the layouts from the lowest shown one a test picks up to the top, in drawing order: it and every layout
+            /// drawn over it, picked or not (a window raised over the popups, say). The layout filter is not asked.
+            /// @param pick Predicate on a layout root.
+            /// @return The layout roots; empty when no shown layout is picked.
+            std::vector<const Element*> layoutsFrom(const std::function<bool(const Element& layout)>& pick) const;
 
             /// @brief Runs one frame of updates and refreshes the hover.
             /// @param nowMs Current time in milliseconds.
@@ -542,6 +578,7 @@ namespace ui {
             std::set<Key> m_heldKeys;
             std::function<bool(const KeyEvent&)> m_keyPreview;
             std::function<void()> m_textFallback;
+            std::function<void(int elementId)> m_pressHook;
             int m_hoveredId = 0;
             /// @brief Finds the topmost shown window.
             /// @return The window, or nothing.
@@ -582,6 +619,7 @@ namespace ui {
             bool m_releaseConsumed = false;
             int m_nextId = 1;
             std::function<bool(const Element& layout)> m_layoutFilter;
+            bool m_refindHover = true; // draw finds the hover again when the filter hides the hovered layout (setLayoutFilter)
 
             /// @brief Tells whether the layout filter keeps a layout.
             /// @param layout The layout root.

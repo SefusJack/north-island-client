@@ -83,9 +83,7 @@ namespace client {
           m_leave(screen.get<ui::ImageButton>("GroupLeaveTeam")),
           m_guildButton(screen.get<ui::ImageButton>("GroupTabGuild")),
           m_instancesButton(screen.get<ui::ImageButton>("GroupTabInstances")),
-          m_partyLoginButton(screen.get<ui::ImageButton>("GroupPartyLogin")),
           m_partyMirrorButton(screen.get<ui::ImageButton>("GroupPartyMirror")),
-          m_partyLogin(services, screen),
           m_instancesAloneSpot(screen.get<ui::Spot>("GroupInstancesAlone")),
           m_instancesWithGuildSpot(screen.get<ui::Spot>("GroupInstancesWithGuild")),
           m_petPartsSpot(screen.get<ui::Spot>("GroupPetParts")),
@@ -101,8 +99,7 @@ namespace client {
                 {screen.get<ui::ImageButton>("GroupMateKick" + n),
                  screen.get<ui::ImageButton>("GroupMateLead" + n),
                  screen.get<ui::DrawingArea>("GroupMateJob" + n),
-                 screen.get<ui::DrawingArea>("GroupMateElement" + n),
-                 screen.get<ui::ImageButton>("GroupMateLogout" + n)}
+                 screen.get<ui::DrawingArea>("GroupMateElement" + n)}
             );
             m_mateRows.back().job.get().setPainter([this, slot](gfx::Canvas& canvas, core::Point at, std::uint64_t) {
                 const auto mate = m_players.mate(shownMate(slot));
@@ -124,8 +121,6 @@ namespace client {
         screen.on("onGroupLeaveTeam", [this](const ui::EventArgs&) { askLeave(); });
         screen.on("onGroupMateKick", [this](const ui::EventArgs& args) { askKick(numberAfter(args.source, "GroupMateKick")); });
         screen.on("onGroupMateLead", [this](const ui::EventArgs& args) { askLead(numberAfter(args.source, "GroupMateLead")); });
-        screen.on("onGroupMateLogout", [this](const ui::EventArgs& args) { askLogout(numberAfter(args.source, "GroupMateLogout")); });
-        screen.on("onGroupPartyLogin", [this](const ui::EventArgs&) { m_partyLogin.open(); });
         screen.on("onGroupPartyMirror", [this](const ui::EventArgs&) {
             if (m_services.partyMirrorsNpcs && m_services.setPartyMirrorsNpcs) {
                 m_services.setPartyMirrorsNpcs(!m_services.partyMirrorsNpcs());
@@ -195,7 +190,6 @@ namespace client {
         commitRename();
         closeCommands();
         m_window.setVisible(false);
-        m_partyLogin.close();
         m_guildTab.close();
         m_instanceTab.close();
     }
@@ -311,7 +305,6 @@ namespace client {
         const auto leader = m_teams.leaderOf(own);
         m_memberIds.fill(0);
         m_leave.setVisible(leader.has_value());
-        m_partyLoginButton.setVisible(m_services.partyLogIn && m_services.videoSettings().partyLogin);
         const bool mirrors = m_services.partyMirrorsNpcs && m_services.partyMirrorsNpcs();
         m_partyMirrorButton.setVisible(m_services.partyMirrorsNpcs && m_services.videoSettings().partyLogin);
         m_partyMirrorButton.setText(mirrors ? "Mirror on" : "Mirror off");
@@ -348,11 +341,6 @@ namespace client {
             row.job.get().setHint(mate && validJob(mate->job) ? kJobNames[static_cast<std::size_t>(mate->job)] : "");
             row.element.get().setVisible(mate.has_value());
             row.element.get().setHint(mate ? elementName(mate->element) : "");
-            const bool partyMember = mate.has_value() && m_services.isPartyMember && m_services.isPartyMember(shownMate(slot));
-            row.logout.get().setVisible(partyMember);
-            if (partyMember) {
-                row.kick.get().setVisible(false);
-            }
         }
     }
 
@@ -397,24 +385,6 @@ namespace client {
             nullptr,
             {40, kTimedQuestionMs, nullptr}
         ); // 40: question line length in characters
-    }
-
-    void GroupWindow::askLogout(int slot) {
-        const std::int32_t memberId = shownMate(slot);
-        const auto mate = m_players.mate(memberId);
-        if (!mate || !m_services.isPartyMember || !m_services.isPartyMember(memberId)) {
-            return;
-        }
-        m_talk.ask(
-            "Log " + mate->name + " out?",
-            TalkDialog::Speaker{mate->sceneLook, mate->name},
-            [this, memberId] {
-                if (m_services.partyLogOut) {
-                    m_services.partyLogOut(memberId);
-                }
-            },
-            nullptr
-        );
     }
 
     bool GroupWindow::mayOfferLead() {

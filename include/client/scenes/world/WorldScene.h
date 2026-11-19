@@ -42,6 +42,7 @@
 #include "client/viewmodels/hud/FunctionButtons.h"
 #include "client/viewmodels/mail/FurMailWindow.h"
 #include "client/viewmodels/social/GroupWindow.h"
+#include "client/viewmodels/social/PartyLoginWindow.h"
 #include "client/viewmodels/guild/GuildAuthorityForm.h"
 #include "client/viewmodels/guild/GuildCreateForm.h"
 #include "client/viewmodels/guild/GuildMyAuthorityForm.h"
@@ -266,11 +267,13 @@
 #include "ui/DrawingArea.h"
 #include "ui/Element.h"
 #include "ui/Screen.h"
+#include "ui/Window.h"
 
 #include <array>
 #include <cstdint>
 #include <functional>
 #include <map>
+#include <memory>
 #include <optional>
 #include <random>
 #include <string>
@@ -421,10 +424,6 @@ namespace client {
             /// @return The look.
             const CharacterLook& ownLook() const { return m_player.look; }
 
-            /// @brief The players the battle's panels show at the top, in their places (none out of a battle).
-            /// @return The player ids.
-            std::vector<std::int32_t> battlePanelIds() const;
-
             /// @brief The own player's status.
             /// @return The status.
             const PlayerStatus& ownStatus() const { return m_status; }
@@ -432,6 +431,10 @@ namespace client {
             /// @brief Whether a battle is on.
             /// @return True in a battle.
             bool inBattle() const { return m_battle.isOn(); }
+
+            /// @brief Whether the own status shows the vehicle gauge (MainStatus::paintVehicle): the player drives a vehicle.
+            /// @return True while the gauge shows.
+            bool vehicleGaugeShown() const { return vehicleGauge().has_value(); }
 
             /// @brief Whether the server has put the own player in the world (5/4).
             /// @return True when in the world.
@@ -445,9 +448,26 @@ namespace client {
             /// @return The id.
             std::int32_t ownId() const { return m_player.id; }
 
-            /// @brief Offers the lead to a teammate at once (the group window's checks, without its question).
-            /// @param memberId The teammate's player id.
-            void appointLeader(std::int32_t memberId) { m_groupWindow.appointLeader(memberId); }
+            /// @brief Opens the window that logs another account in with this one (qol multi-login), when multi-login is on.
+            void openPartyLogin();
+
+            /// @brief Asks whether that own character (qol multi-login) leaves its team and logs out; on yes calls services.partyLogOut.
+            /// @param playerId The character's id.
+            /// @param name The character's name, shown in the question.
+            void askPartyLogOut(std::int32_t playerId, const std::string& name);
+
+            /// @brief Offers the team lead to a member of this character's team (13/10), as the group window's appoint does: refused
+            /// with its message when this character does not lead the team or may not hand the lead on now.
+            /// @param memberId The member's id.
+            void offerLeadTo(std::int32_t memberId);
+
+            /// @brief Closes the party login window and a pending party log-out question (askPartyLogOut), leaving any other talk
+            /// up: called when this character stops being the selected one, whose party hooks they answer through.
+            void closePartyForms();
+
+            /// @brief Shows the group window's party buttons (the NPC mirror) as the services' party hooks now are: called when this
+            /// character becomes or stops being the selected one.
+            void partyHooksChanged() { m_groupWindow.refresh(); }
 
             /// @brief The map the player is on.
             /// @return The map id (0 before one is loaded).
@@ -461,7 +481,12 @@ namespace client {
             /// @return The fighter (0: none, between the rounds, or every own fighter has its command).
             int battleActor() const { return m_battle.isOn() ? m_battle.actor() : 0; }
 
-            /// @brief Adds a party member's chat line to the leader's chat window, unless the leader heard it already.
+            /// @brief Tells whether a player fights in the own player's battle, on either side (qol multi-login: the same battle as another own character).
+            /// @param playerId The player's id.
+            /// @return True while a battle is on and the player is one of its fighters.
+            bool fightsWith(std::int32_t playerId) const;
+
+            /// @brief Adds a party member's chat line to the selected (played) character's chat window, unless it heard it already.
             /// @param channel Chat channel.
             /// @param line The line.
             /// @param memberName Name of the party member who heard it.
@@ -472,7 +497,7 @@ namespace client {
                 }
             }
 
-            /// @brief Shows a party member's message in the leader's top or middle box, grouped with those shown just before.
+            /// @brief Shows a party member's message in the selected (played) character's top or middle box, grouped with those shown just before.
             /// @param centre True for the middle box, false for the top one.
             /// @param text The message.
             /// @param durationMs How long it shows, in milliseconds.
@@ -480,27 +505,76 @@ namespace client {
                 (centre ? m_centreMessages : m_messages).showGrouped(text, durationMs);
             }
 
-            /// @brief Says what the leader typed as this member (its own checks; a refusal is a line of its chat).
-            /// @param typedChannel The channel typed.
-            /// @param text The text.
-            void sayAsPartyMember(int typedChannel, const std::string& text) { sendChat(typedChannel, text); }
-
-            /// @brief Starts the event of the NPC or door the party leader started (qol NPC mirror), even as a team follower, who
-            /// is never near it nor checks doors and NPC proximity.
-            /// @param trigger How the leader started it.
+            /// @brief Starts the event of the NPC or door the selected (played) character started (qol NPC mirror), even as a team
+            /// follower, who is never near it nor checks doors and NPC proximity.
+            /// @param trigger How the selected character started it.
             /// @param index Index of the NPC or the door.
             /// @return True when the event was asked for.
             bool mirrorEvent(PartyTrigger trigger, int index);
 
-            /// @brief Passes the party leader's dialog answer to the mirrored event.
-            /// @param dataId The leader's dialog surface.
-            /// @param code The leader's answer code.
+            /// @brief Passes the selected (played) character's dialog answer to the mirrored event.
+            /// @param dataId The selected character's dialog surface.
+            /// @param code The selected character's answer code.
             void mirrorEventAnswer(int dataId, int code) { m_eventRunner.leaderAnswered(dataId, code); }
 
-            /// @brief Tells the mirrored event that the party leader's event ended.
+            /// @brief Tells the mirrored event that the selected (played) character's event ended.
             void mirrorLeaderEventEnded() { m_eventRunner.leaderEnded(); }
 
+            /// @brief Walks the own player to a map point the way a click on the ground there does (path finding, the walk sent to the server).
+            /// @details Nothing happens when the player can't walk now (a battle, an event, a team follower, a stall, ...).
+            /// @param mapPoint The map point.
+            /// @return True when the player walks there; false when it can't walk now.
+            bool walkTo(core::Point mapPoint);
+
+            /// @brief A window the player opens themselves, as the party's Ctrl+click moves it (qol multi-login).
+            struct MovableWindow {
+                std::string key;        // stable id of the window kind, e.g. "item", "status", "pets"
+                core::Point position;   // its top left on the screen
+                std::uint64_t usedAtMs; // when it was last opened or clicked in (the scene's update time)
+            };
+
+            /// @brief The movable window the player used last, of those open now (qol multi-login).
+            /// @return The most recently used movable window that is open now, if any.
+            std::optional<MovableWindow> lastUsedWindow() const;
+
+            /// @brief Closes the movable window of that key if open.
+            /// @param key The window kind (MovableWindow::key).
+            /// @return True when it was open.
+            bool closeMovableWindow(const std::string& key);
+
+            /// @brief Opens the movable window of that key at a screen position, or moves it there and brings it to the front if already open.
+            /// @param key The window kind (MovableWindow::key).
+            /// @param position Its top left on the screen.
+            /// @return False for an unknown key or one that can't open now (e.g. in battle, or a precondition fails).
+            bool openMovableWindow(const std::string& key, core::Point position);
+
         private:
+            /// @brief A kind of window the player opens themselves, tracked for the party's Ctrl+click (qol multi-login).
+            struct MovableKind {
+                std::string key;                  // MovableWindow::key
+                std::vector<ui::Window*> windows; // its windows (the group's tabs are windows of their own); the first shown one is its place
+                std::function<void()> open;       // opens it the way its button or hot key does (it may stay closed: a precondition failed)
+                std::function<void()> close;      // closes it the way its Escape does
+                std::uint64_t usedAtMs = 0;       // when it was last opened or clicked in (m_nowMs)
+                bool wasOpen = false;             // whether it was open at the last check, to see it open
+            };
+
+            /// @brief Fills m_movableWindows and hooks the screen's presses to them (qol multi-login).
+            void setUpMovableWindows();
+
+            /// @brief Marks the movable windows that opened since the last check as used now.
+            void trackMovableWindows();
+
+            /// @brief The shown window of a movable kind.
+            /// @param kind The kind.
+            /// @return The window, or null when the kind is closed.
+            static ui::Window* shownWindowOf(const MovableKind& kind);
+
+            /// @brief Finds a movable kind by its key.
+            /// @param key The key.
+            /// @return The kind, or null when unknown.
+            MovableKind* movableKind(const std::string& key);
+
             /// @brief Loads a map and puts the own player at a position.
             /// @param mapId Map id.
             /// @param position Start position on the map.
@@ -655,6 +729,10 @@ namespace client {
             /// @return True when walking is allowed.
             bool canWalk() const;
 
+            /// @brief Whether the own player may walk now, or could but follows a team leader (who walks for the team).
+            /// @return True when walking is allowed, a team follower aside.
+            bool canWalkUnlessFollowing() const;
+
             /// @brief Turns the own player to face the mouse.
             /// @return True when the facing was changed.
             bool faceMouse();
@@ -668,7 +746,18 @@ namespace client {
             /// @param mapPoint The destination on the map.
             /// @param byKeyboard True when the walk comes from the arrow keys.
             /// @return The destination the own player was left with (Player.FDestX / FDestY), where the click's walk mark goes.
-            core::Point walkTo(core::Point mapPoint, bool byKeyboard = false);
+            core::Point walkOwnPlayer(core::Point mapPoint, bool byKeyboard = false);
+
+            /// @brief Hands a ground walk of the own player to another own character (GameServices::walkElsewhere, qol multi-login).
+            /// @param mapPoint The map point walked to.
+            /// @return True when another own character walks there instead; the walk mark shows at the point.
+            bool walkElsewhere(core::Point mapPoint);
+
+            /// @brief Whether a ground walk handed to the team's leader (walkElsewhere) goes on: the leader, as seen here, still walks.
+            /// @details A held mouse walks again only while the walk goes on (moveCharacters); the own player, a follower, stops on its
+            /// trail point long before the leader does.
+            /// @return True when the last ground walk was handed off and the leader walks now.
+            bool handedWalkGoesOn();
 
             /// @brief The path through a floor room from one map point to another. Original: FindHouseMovePath and CellPathToScreen.
             /// @param from Start map point.
@@ -4284,6 +4373,8 @@ namespace client {
             SkillWindow m_skillWindow;
             SettingsWindow m_systemWindow;
             GroupWindow m_groupWindow;
+            PartyLoginWindow m_partyLogin;
+            std::weak_ptr<void> m_partyLogOutAsked; // alive while the talk box holds the party log-out question's answers
             NoticeBoard m_publicBoard;
             NoticeBoard m_guildBoard;
             NoticeReadForm m_noticeRead;
@@ -4554,6 +4645,8 @@ namespace client {
             bool m_mouseHeld = false;
             core::Point m_mouse;
             std::uint64_t m_lastWalkMs = 0;
+            bool m_walkHandedOff = false; // the last ground walk went to the team's leader (walkElsewhere), not the own player
+            std::vector<MovableKind> m_movableWindows; // the windows the player opens themselves (qol multi-login)
             std::uint64_t m_keyWalkMs = 0;
             bool m_padInUse = false; // a game pad is the input in use
             std::filesystem::path m_musicBeforeStars; // the music the star book took over from (empty: none remembered)

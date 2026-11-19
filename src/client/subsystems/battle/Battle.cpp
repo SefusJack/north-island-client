@@ -1153,7 +1153,9 @@ namespace client {
             m_ownId,
             nowMs,
             [this, nowMs](int ms) {
-                if (m_services.freeFrames) {
+                // an unseen own character's battle (qol multi-login) runs on the same thread as the shown one: a sleep there would
+                // stall every scene's frame, so it holds its own clock as with free frames
+                if (m_services.freeFrames || m_services.unseenPartyMember) {
                     // one tick is held at most one sleep (35 ms) however many fighters ask
                     constexpr std::uint64_t kTickHoldMs = 35; // the longest hold of one tick, ms
                     m_holdMs = std::max(m_holdMs, std::min(m_holdMs + static_cast<std::uint64_t>(ms), nowMs + kTickHoldMs));

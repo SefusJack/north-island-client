@@ -308,6 +308,7 @@ namespace client {
                [this](core::Point at) { m_instanceWindow.open(at); },
                [this] { m_instanceWindow.close(); }}
           ),
+          m_partyLogin(services, m_screen),
           m_publicBoard(false, noticeBoardHooks()),
           m_guildBoard(true, noticeBoardHooks()),
           m_noticeRead(
@@ -1641,11 +1642,14 @@ namespace client {
                 clickVehicle(*vehicle);
                 return;
             }
+            if (walkElsewhere(m_camera.toMap(m_mouse))) {
+                return;
+            }
             if (canWalk()) {
                 if (m_player.stall) {
                     m_messages.show("Unable to move when you are setting a stall", 1500); // message display time in ms
                 } else {
-                    m_walkMark.start(walkTo(m_camera.toMap(m_mouse)));
+                    m_walkMark.start(walkOwnPlayer(m_camera.toMap(m_mouse)));
                 }
             }
             clickDoorAt(m_camera.toMap(m_mouse));
@@ -1763,6 +1767,7 @@ namespace client {
         m_screen.on("onMainGroup", [this](const ui::EventArgs&) { toggleWindow('g'); });
         m_screen.on("onMainSocial", [this](const ui::EventArgs&) { toggleWindow('e'); });
         m_screen.on("onMainCompound", [this](const ui::EventArgs&) { toggleWindow('c'); });
+        setUpMovableWindows();
         m_talk.setExclusiveHook([this](bool exclusive) {
             showGameWindows(!exclusive);
             m_miniMap.setTalkHidden(exclusive);
@@ -2677,18 +2682,6 @@ namespace client {
             return found != m_status.skills.end() ? found->second.level : 0;
         };
         return user;
-    }
-
-    std::vector<std::int32_t> WorldScene::battlePanelIds() const {
-        std::vector<std::int32_t> ids;
-        if (!m_battle.isOn()) {
-            return ids;
-        }
-        for (const int slot : m_battle.members()) {
-            const auto fighter = m_battle.field().fighter(slot);
-            ids.push_back(fighter ? fighter->get().id : 0);
-        }
-        return ids;
     }
 
     void WorldScene::saveExpBeforeFight() {
@@ -4401,10 +4394,12 @@ namespace client {
         return character ? character->level : 1;
     }
 
-    bool WorldScene::canWalk() const {
-        return !m_entering && m_inWorld && !m_eventRunner.isRunning() && !m_moveLocked && !m_inputLocked && !m_npcMaking && m_map &&
-               !m_teams.isMember(m_player.id) && !m_quiz.isOpen() && m_fightState == 0 && m_activeSport == 0 && m_innSleep == InnSleep::Awake && !m_darkMode &&
-               !m_remote.isWandering() && !m_mall.isOpen() && !m_cart.isOpen() && !m_maid.isActive() && !m_reFill.isOpen();
+    bool WorldScene::canWalk() const { return canWalkUnlessFollowing() && !m_teams.isMember(m_player.id); }
+
+    bool WorldScene::canWalkUnlessFollowing() const {
+        return !m_entering && m_inWorld && !m_eventRunner.isRunning() && !m_moveLocked && !m_inputLocked && !m_npcMaking && m_map && !m_quiz.isOpen() &&
+               m_fightState == 0 && m_activeSport == 0 && m_innSleep == InnSleep::Awake && !m_darkMode && !m_remote.isWandering() && !m_mall.isOpen() &&
+               !m_cart.isOpen() && !m_maid.isActive() && !m_reFill.isOpen();
     }
 
     bool WorldScene::faceMouse() {
@@ -4438,8 +4433,52 @@ namespace client {
         return true;
     }
 
-    core::Point WorldScene::walkTo(core::Point mapPoint, bool byKeyboard) {
+    bool WorldScene::walkTo(core::Point mapPoint) {
+        if (!canWalk() || m_player.stall) {
+            return false;
+        }
+        m_walkMark.start(walkOwnPlayer(mapPoint));
+        return true;
+    }
+
+    bool WorldScene::fightsWith(std::int32_t playerId) const {
+        if (!m_battle.isOn()) {
+            return false;
+        }
+        constexpr int kPlayerFighter = 2; // Fighter::kind 2: a player
+        for (int slot = 1; slot <= BattleField::kSlots; ++slot) {
+            if (const auto fighter = m_battle.field().fighter(slot); fighter && fighter->get().kind == kPlayerFighter && fighter->get().id == playerId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool WorldScene::walkElsewhere(core::Point mapPoint) {
+        if (!m_services.walkElsewhere || !canWalkUnlessFollowing() || m_player.stall || !m_services.walkElsewhere(mapPoint)) {
+            return false;
+        }
         m_lastWalkMs = m_nowMs;
+        m_walkHandedOff = true;
+        m_walkMark.start(mapPoint);
+        return true;
+    }
+
+    bool WorldScene::handedWalkGoesOn() {
+        if (!m_walkHandedOff) {
+            return false;
+        }
+        const auto leaderId = m_teams.leaderOf(m_player.id);
+        if (!leaderId || *leaderId == m_player.id) {
+            return false;
+        }
+        const auto leader = characterOf(*leaderId);
+        return leader && leader->get().walking;
+    }
+
+    core::Point WorldScene::walkOwnPlayer(core::Point mapPoint, bool byKeyboard) {
+        m_lastWalkMs = m_nowMs;
+        m_walkHandedOff = false;
         m_ownTile = {m_player.position.x / formats::MapFile::kCellSize, m_player.position.y / formats::MapFile::kCellSize};
         std::vector<core::Point> path;
         core::Point lastCorner = m_player.position;
@@ -4546,8 +4585,11 @@ namespace client {
     }
 
     void WorldScene::moveCharacters(std::uint64_t nowMs) {
-        if (m_mouseHeld && m_player.walking && canWalk() && !m_player.stall && nowMs - m_lastWalkMs >= kHeldWalkMs) {
-            m_walkMark.start(walkTo(m_camera.toMap(m_mouse)));
+        if (m_mouseHeld && (m_player.walking || handedWalkGoesOn()) && canWalkUnlessFollowing() && !m_player.stall && nowMs - m_lastWalkMs >= kHeldWalkMs) {
+            const core::Point point = m_camera.toMap(m_mouse);
+            if (!walkElsewhere(point) && canWalk()) {
+                m_walkMark.start(walkOwnPlayer(point));
+            }
         }
         const auto stand = [this](MapCharacter& character) {
             if (character.horse) {
@@ -4617,7 +4659,7 @@ namespace client {
                 stop.x += (waysBefore & 2) != 0 ? kPadStop : (waysBefore & 1) != 0 ? -kPadStop : 0;
                 stop.y += (waysBefore & 8) != 0 ? kPadStop : (waysBefore & 4) != 0 ? -kPadStop : 0;
                 m_keyWalkMs = nowMs;
-                walkTo(stop, true);
+                walkOwnPlayer(stop, true);
             }
             return;
         }
@@ -4647,7 +4689,7 @@ namespace client {
         if (down) {
             target.y = m_player.position.y + kKeyStep;
         }
-        walkTo(target, true);
+        walkOwnPlayer(target, true);
     }
 
     void WorldScene::onEnterWorldFinished() { finishEntering(); }
@@ -4789,9 +4831,6 @@ namespace client {
 
     InputBar::Sent WorldScene::sendChat(int typedChannel, const std::string& text) {
         using Sent = InputBar::Sent;
-        if (m_services.partyChat && m_services.partyChat(typedChannel, text)) {
-            return Sent::Sent;
-        }
         if (m_chat.isHidden()) {
             m_messages.show("Chat window is closed.", 2000); // message display time in ms
             return Sent::Kept;
@@ -5525,6 +5564,7 @@ namespace client {
         m_services.zoom.setOutAllowed(!m_battle.isOn());
         followView(nowMs);
         m_nowMs = nowMs;
+        trackMovableWindows();
         constexpr std::uint64_t kDimStepMs = 20; // time between two dim steps, ms
         if (m_dimStep != m_dimTarget && nowMs - m_dimStepMs >= kDimStepMs) {
             m_dimStepBefore = m_dimStep;
@@ -5959,6 +5999,42 @@ namespace client {
     void WorldScene::teamNotice(std::int32_t playerId, const std::string& text, int durationMs) {
         m_messages.show(text, durationMs);
         m_chat.add(10, text, playerId); // chat channel 10: notice line
+    }
+
+    void WorldScene::openPartyLogin() {
+        if (m_services.partyLogIn && m_services.videoSettings().partyLogin) {
+            m_partyLogin.open();
+        }
+    }
+
+    void WorldScene::askPartyLogOut(std::int32_t playerId, const std::string& name) {
+        std::optional<TalkDialog::Speaker> who;
+        if (const auto mate = teamMate(playerId)) {
+            who = TalkDialog::Speaker{mate->sceneLook, mate->name};
+        }
+        // the token lives in the answers the talk box holds: it goes once the question is answered, closed or replaced
+        const auto asked = std::make_shared<int>(0);
+        m_partyLogOutAsked = asked;
+        m_talk.ask(
+            "Log " + name + " out?",
+            who,
+            [this, playerId, asked] {
+                if (m_services.partyLogOut) {
+                    m_services.partyLogOut(playerId);
+                }
+            },
+            [asked] {}
+        );
+    }
+
+    void WorldScene::offerLeadTo(std::int32_t memberId) { m_groupWindow.appointLeader(memberId); }
+
+    void WorldScene::closePartyForms() {
+        m_partyLogin.close();
+        if (!m_partyLogOutAsked.expired()) {
+            m_talk.close();
+        }
+        m_partyLogOutAsked.reset();
     }
 
     std::optional<TeamMate> WorldScene::teamMate(std::int32_t playerId) const {
@@ -6485,7 +6561,8 @@ namespace client {
         if (m_others.count(inviteeId) == 0) {
             return;
         }
-        const std::string name = playerName(m_teamTarget);
+        // the invitee the server names: an invitation sent without the menu (the qol party's own logins) leaves m_teamTarget unset
+        const std::string name = playerName(inviteeId);
         if (answer == 1) {
             m_messages.show(name + " accepted your invitation", 1000); // message display time in ms
         } else if (answer == 2) { // answer 2: refused
