@@ -35,6 +35,7 @@ namespace ui {
             std::uint64_t nowMs = 0;
             core::Rect view{0, 0, 800, 600}; // the game's 800 x 600 screen
             bool ctrlHeld = false;
+            bool shiftHeld = false;
             bool releaseOfDoubleClick = false;
             bool dropPartial = false; // the Drop being raised puts one thing down and the drag goes on
             int dropCarried = 0; // how many things the drag being dropped carried

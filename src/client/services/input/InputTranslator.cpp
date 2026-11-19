@@ -112,8 +112,9 @@ namespace client {
                 }
                 const ui::MouseButton button = event.button.button == SDL_BUTTON_LEFT ? ui::MouseButton::Left : ui::MouseButton::Right;
                 const bool ctrl = (SDL_GetModState() & SDL_KMOD_CTRL) != 0;
+                const bool shift = (SDL_GetModState() & SDL_KMOD_SHIFT) != 0;
                 if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-                    screen.mouseDown(at(event.button.x, event.button.y, origin), button, event.button.clicks, ctrl);
+                    screen.mouseDown(at(event.button.x, event.button.y, origin), button, event.button.clicks, ctrl, shift);
                 } else {
                     screen.mouseUp(at(event.button.x, event.button.y, origin), button, ctrl);
                 }

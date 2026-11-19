@@ -169,6 +169,11 @@ namespace client {
         screen.on("onItemRightClick", [this](const ui::EventArgs& args) { rightClickBagItem(args.index); });
         screen.on("onUnequip", [this](const ui::EventArgs& args) { unequip(args.index); });
         screen.on("onItemDrop", [this](const ui::EventArgs& args) { dropped(args); });
+        screen.on("onItemQuickMove", [this](const ui::EventArgs& args) {
+            if (m_services.videoSettings().modernBag && m_quickMove && m_marks.vehicleState(args.index) == 0) {
+                m_quickMove(args.index);
+            }
+        });
         screen.on("onAddStatPoint", [this](const ui::EventArgs& args) {
             for (std::size_t i = 0; i < kPointButtons.size(); ++i) {
                 if (args.source == kPointButtons[i]) {
@@ -324,7 +329,12 @@ namespace client {
 
     void ItemWindow::update() {
         // the bag and the Storeroom, whose things go to and fro between them, both carry things the modern way
-        m_screen.setModernDrag(m_services.videoSettings().modernBag ? std::vector<std::string>{"ItemBag", "StoreroomCells"} : std::vector<std::string>{});
+        constexpr int kMostStack = 50; // most things in one stack, in the bag and the Storeroom
+        m_screen.setModernDrag(
+            m_services.videoSettings().modernBag ? std::vector<std::string>{"ItemBag", "StoreroomCells"} : std::vector<std::string>{}, kMostStack
+        );
+        // the bank's grids keep their clicks (they mark things) and take only the Shift click
+        m_screen.setQuickMoveGrids(m_services.videoSettings().modernBag ? std::vector<std::string>{"BankItemBank", "BankItemBag"} : std::vector<std::string>{});
         if (const auto hovered = m_screen.isDragging() ? std::nullopt : hoveredItem()) { // nothing is told of what lies under a carried thing
             std::optional<protocol::ItemInstance> worn;
             const auto record = m_services.items.find(hovered->item.itemId);
@@ -788,8 +798,8 @@ namespace client {
     void ItemWindow::rightClickBagItem(int slot) {
         const protocol::ItemInstance& item = m_inventory.bagItem(slot);
         if (!item.empty() && item.count > 1 && m_services.videoSettings().modernBag && m_marks.vehicleState(slot) == 0) {
-            // the modern way: half of the stack is taken up and follows the mouse until a click puts it down
-            m_screen.startStickyDrag("ItemBag", slot, item.count / 2);
+            // the modern way: the bigger half of the stack is taken up and follows the mouse until a click puts it down
+            m_screen.startStickyDrag("ItemBag", slot, (item.count + 1) / 2);
             return;
         }
         if (!item.empty() && m_rightClicked) {
@@ -961,13 +971,28 @@ namespace client {
                 if (m_marks.vehicleState(args.index) != 0) {
                     return;
                 }
+                if (modern && args.target == "ItemBag" && !args.ctrl && target > 0 && target != args.index && m_requests) {
+                    // the modern way: one put down of what is carried, the part taken up, or else the whole stack; what does not fit
+                    // stays carried, and a whole stack on another thing swaps with it and carries that on
+                    const int want = args.partial ? 1 : args.carried > 0 ? std::min(args.carried, item.count) : item.count;
+                    const int fits = there.empty() || there.itemId == item.itemId ? m_inventory.fitCount(target, item.itemId, want, args.index) : 0;
+                    if (fits > 0) {
+                        const int sent = m_requests->get().moveItem(args.index, fits, target) ? fits : 0;
+                        m_screen.placed(sent); // shown in the target at once, before the server answers
+                        if (!args.partial && sent < want) {
+                            m_screen.keepCarrying(want - sent);
+                        }
+                    } else if (!args.partial && want == item.count && !there.empty() && there.itemId != item.itemId &&
+                               m_requests->get().swapItems(args.index, target)) {
+                        m_screen.keepCarrying(0); // the other thing is carried on from where the stack was
+                    } else if (!args.partial) {
+                        m_screen.keepCarrying(want);
+                    }
+                    return;
+                }
                 if (target > 0 && target != args.index && (there.empty() || there.itemId == item.itemId) && m_requests) {
                     if (args.ctrl) {
                         m_requests->get().askMoveCount(args.index, target);
-                    } else if (modern && args.target == "ItemBag") {
-                        // the modern way: one put down of what is carried, the part taken up, or else the whole stack
-                        const int count = args.partial ? 1 : args.carried > 0 ? std::min(args.carried, item.count) : item.count;
-                        m_requests->get().moveItem(args.index, count, target);
                     } else {
                         m_requests->get().moveItem(args.index, 1, target);
                     }

@@ -139,7 +139,6 @@ namespace client {
                [this] { return m_map ? m_map->id() : 0; },
                [this](bool pet) { return m_battleSkills.recent(pet); },
                [this](int itemId) { return m_inventory.nextSlotWith(itemId); },
-               [this] { m_itemWindow.close(); },
                [this](std::int32_t ownerId, int npcId) -> std::optional<std::pair<int, std::int32_t>> {
                    const int place = ownerId == m_player.id ? m_pets.placeOf(npcId) : 0;
                    const auto& pet = place != 0 ? m_pets.at(place) : std::nullopt;
@@ -1335,6 +1334,7 @@ namespace client {
         m_itemWindow.setBagRequests(m_bagRequests);
         m_itemWindow.setItemBagDrop([this](const ui::EventArgs& args) { m_itemBag.bagItemDropped(args); });
         m_itemWindow.setStoreroomDrop([this](const ui::EventArgs& args) { m_storeroom.bagItemDropped(args); });
+        m_itemWindow.setQuickMove([this](int slot) { return m_storeroom.quickPut(slot); });
         m_itemWindow.setAutoCombat([this] { return m_remote.isOn() && m_remote.settings().ticks[1]; });
         m_battleMain.setAutoFight([this] { return m_remote.isOn() && m_remote.settings().ticks[1]; });
         m_battleMain.setToWindow([this](core::Point point) { return isViewZoomed() ? ViewZoom::toWindow(point, m_camera.view(), m_services.view) : point; });

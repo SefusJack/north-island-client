@@ -81,7 +81,7 @@ namespace client {
         bool loadingSoundOn = true;
         bool sortButtons = false;
         bool partyLogin = false;
-        bool modernBag = false; // things in the bag move the modern way: the left button carries a whole stack, the right one puts one down or takes half
+        bool modernBag = false; // things in the bag and Storeroom move as in Minecraft: a click carries a stack, a right click takes half or puts one down, a held button spreads, Shift quick-moves
 #ifdef __ANDROID__
         SpeedupMode speedupMode = SpeedupMode::Auto; // a phone starts with the recommended speedups
 #else

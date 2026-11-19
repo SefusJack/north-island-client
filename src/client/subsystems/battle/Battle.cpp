@@ -424,9 +424,6 @@ namespace client {
         if (m_actor == 0) {
             return;
         }
-        if (m_hooks.hideItems) {
-            m_hooks.hideItems();
-        }
         m_actor = nextOwnFighter(m_actor);
         while (m_actor != 0 && cannotCommand(m_actor)) {
             m_actor = nextOwnFighter(m_actor);
@@ -1674,9 +1671,6 @@ namespace client {
             if (m_countdown < 0) {
                 m_actor = 0;
                 m_cursor = ui::CursorKind::Normal;
-                if (m_hooks.hideItems) {
-                    m_hooks.hideItems();
-                }
             }
         }
         if (m_roundCountdown >= 0 && nowMs - m_roundCountdownMs >= kSecondMs) {

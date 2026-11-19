@@ -13,8 +13,8 @@
     <ImageButton Name="BankItemWithdraw" Picture="Btn_ArrowR_5" Position="200,200" Size="17,17" Click="onBankItemWithdraw"/>
     <ImageButton Name="BankItemStore" Picture="Btn_ArrowL_5" Position="199,247" Size="17,17" Click="onBankItemStore"/>
     <IconGrid Name="BankItemBank" Position="20,83" Columns="5" Rows="10" Pitch="34" Draggable="true" Press="onBankItemPress" Click="onBankItemBankClick"
-              RightClick="onBankItemBankUnmark" Drop="onBankItemBankDrop"/>
+              RightClick="onBankItemBankUnmark" QuickMove="onBankItemBankQuickMove" Drop="onBankItemBankDrop"/>
     <IconGrid Name="BankItemBag" Position="224,83" Columns="5" Rows="10" Pitch="34" Draggable="true" Press="onBankItemPress" Click="onBankItemBagClick"
-              RightClick="onBankItemBagUnmark" Drop="onBankItemBagDrop"/>
+              RightClick="onBankItemBagUnmark" QuickMove="onBankItemBagQuickMove" Drop="onBankItemBagDrop"/>
   </Window>
 </Panel>
