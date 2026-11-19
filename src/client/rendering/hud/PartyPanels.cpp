@@ -1,5 +1,6 @@
 #include "client/rendering/hud/PartyPanels.h"
 
+#include "gfx/TextRenderer.h"
 #include "ui/Tooltip.h"
 
 #include <algorithm>
@@ -30,10 +31,9 @@ namespace client {
         const core::Color kWindowTag{120, 200, 255, 255}; // light blue outline of another character's window
         const core::Color kLoginBack{0, 0, 0, 110}; // the "+" row's backing: black at 110/255 strength
         const core::Color kLoginEdge{170, 170, 170, 255}; // grey outline of the "+" row
+        const core::Color kLoginBackHovered{255, 255, 255, 50}; // the "+" row's backing under the mouse: white at 50/255 strength
         const core::Color kLoginEdgeHovered{255, 255, 255, 255}; // white outline of the "+" row under the mouse
-        constexpr core::Point kPlus{6, 6}; // px: the large "+" within the row (over the chat head's place)
-        constexpr core::Point kLoginWord{26, 9}; // px: the "Log in" word within the row (at the parts' place)
-        constexpr int kLargeLine = 20; // px: line height of the large text
+        const std::string kLoginLabel = "+ Log in"; // the "+" row's label, centred in its box
         // the member's name and state lines in the chat's and the hints' look: shadowed text
         const gfx::TextStyle kState{{255, 255, 255, 255}, gfx::TextEffect::Shadow, std::nullopt}; // white text with shadow
         const gfx::TextStyle kGone{{255, 120, 120, 255}, gfx::TextEffect::Shadow, std::nullopt}; // red text with shadow
@@ -167,9 +167,16 @@ namespace client {
     void PartyPanels::drawLoginRow(gfx::Canvas& canvas, core::Point at, bool hovered) {
         const core::Rect area = rowBox(0).translated(at);
         canvas.fillRectAlpha(area, kLoginBack);
+        if (hovered) {
+            canvas.fillRectAlpha(area, kLoginBackHovered);
+        }
         canvas.drawRectOutline(area, hovered ? kLoginEdgeHovered : kLoginEdge, 1);
-        canvas.drawLargeText(at + kPlus, "+", kPlusText, kRowWidth, kLargeLine);
-        canvas.drawText(at + kLoginWord, "Log in", kPlusText);
+        const int width = gfx::TextRenderer::textWidth(kLoginLabel, kPlusText.effect);
+        const core::Point label{
+            area.x + (area.width - width) / 2, // centred across the box
+            area.y + (area.height - gfx::TextRenderer::kLineHeight) / 2 // centred down the box
+        };
+        canvas.drawText(label, kLoginLabel, kPlusText);
     }
 
     void PartyPanels::drawRow(gfx::Canvas& canvas, const PartyMemberView& member, core::Point at) {
