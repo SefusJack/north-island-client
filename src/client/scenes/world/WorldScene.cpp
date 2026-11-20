@@ -6010,7 +6010,7 @@ namespace client {
     }
 
     void WorldScene::openPartyLogin() {
-        if (m_services.partyLogIn && m_services.videoSettings().partyLogin) {
+        if (m_services.partyLogIn && m_services.videoSettings().partyLogin != ExtraSettings::PartyLogin::Off) {
             m_partyLogin.open();
         }
     }
