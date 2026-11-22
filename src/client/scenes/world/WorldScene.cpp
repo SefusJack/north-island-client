@@ -5737,8 +5737,8 @@ namespace client {
     }
 
     void WorldScene::paintWorld(gfx::Canvas& canvas, std::uint64_t nowMs) {
-        if (m_entering || !m_map || m_activeSport != 0 || m_quiz.isOpen() || m_movie.shown()) {
-            if (m_activeSport != 0 && !m_entering && m_map && !m_quiz.isOpen() && !m_movie.shown()) {
+        if (m_entering || !m_map || m_activeSport != 0 || m_quiz.isOpen() || m_movie.coversWorld()) {
+            if (m_activeSport != 0 && !m_entering && m_map && !m_quiz.isOpen() && !m_movie.coversWorld()) {
                 m_effects.drawUnder(canvas, m_camera.origin(), nowMs, effectConditions());
                 m_effects.drawOver(canvas, m_camera.origin(), nowMs, effectConditions());
             }
